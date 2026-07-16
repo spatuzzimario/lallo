@@ -1,0 +1,506 @@
+{
+  "_note": "Libreria parole per fonema. Ogni voce ha 'iniziale' (fonema a inizio parola) e 'mediana' (fonema in mezzo, tipicamente intervocalico o in nesso). Alcune categorie non hanno equivalenti naturali in italiano in una posizione (es. GLI raramente inizia parole comuni) — segnalato con lista vuota o ridotta. DA VALIDARE CON UN LOGOPEDISTA prima dell'uso clinico: questa è una prima bozza di copertura, non una lista clinicamente certificata.",
+  "b": {
+    "iniziale": [
+      {"parola": "balena", "emoji": "🐋"},
+      {"parola": "banana", "emoji": "🍌"},
+      {"parola": "bicicletta", "emoji": "🚲"},
+      {"parola": "bambola", "emoji": "🪆"},
+      {"parola": "barca", "emoji": "⛵"},
+      {"parola": "bottone", "emoji": "🔘"},
+      {"parola": "burro", "emoji": "🧈"},
+      {"parola": "borsa", "emoji": "👜"}
+    ],
+    "mediana": [
+      {"parola": "sabbia", "emoji": "🏖️"},
+      {"parola": "gabbia", "emoji": "🦜"},
+      {"parola": "tubo", "emoji": "🧴"},
+      {"parola": "cubo", "emoji": "🧊"},
+      {"parola": "nebbia", "emoji": "🌫️"},
+      {"parola": "gobba", "emoji": "🐫"},
+      {"parola": "abito", "emoji": "👗"},
+      {"parola": "sabato", "emoji": "📅"}
+    ]
+  },
+  "c": {
+    "_desc": "C dura /k/ (ca, co, cu, chi, che)",
+    "iniziale": [
+      {"parola": "cane", "emoji": "🐶"},
+      {"parola": "casa", "emoji": "🏠"},
+      {"parola": "cuore", "emoji": "❤️"},
+      {"parola": "colore", "emoji": "🎨"},
+      {"parola": "cavallo", "emoji": "🐴"},
+      {"parola": "cucchiaio", "emoji": "🥄"},
+      {"parola": "coccinella", "emoji": "🐞"},
+      {"parola": "cappello", "emoji": "🎩"}
+    ],
+    "mediana": [
+      {"parola": "fuoco", "emoji": "🔥"},
+      {"parola": "secchio", "emoji": "🪣"},
+      {"parola": "pacco", "emoji": "📦"},
+      {"parola": "amico", "emoji": "🧑‍🤝‍🧑"},
+      {"parola": "oca", "emoji": "🦆"},
+      {"parola": "mucca", "emoji": "🐄"},
+      {"parola": "ricco", "emoji": "💰"},
+      {"parola": "baco", "emoji": "🐛"}
+    ]
+  },
+  "ci": {
+    "_desc": "C dolce /tʃ/ (ci, ce)",
+    "iniziale": [
+      {"parola": "ciliegia", "emoji": "🍒"},
+      {"parola": "cioccolato", "emoji": "🍫"},
+      {"parola": "cielo", "emoji": "☁️"},
+      {"parola": "cerchio", "emoji": "⭕"},
+      {"parola": "cena", "emoji": "🍽️"},
+      {"parola": "cesto", "emoji": "🧺"},
+      {"parola": "cintura", "emoji": "👖"},
+      {"parola": "cinque", "emoji": "5️⃣"}
+    ],
+    "mediana": [
+      {"parola": "bicicletta", "emoji": "🚲"},
+      {"parola": "faccia", "emoji": "😊"},
+      {"parola": "doccia", "emoji": "🚿"},
+      {"parola": "arancia", "emoji": "🍊"},
+      {"parola": "focaccia", "emoji": "🍞"},
+      {"parola": "pancia", "emoji": "🫃"},
+      {"parola": "caccia", "emoji": "🏹"},
+      {"parola": "traccia", "emoji": "👣"}
+    ]
+  },
+  "d": {
+    "iniziale": [
+      {"parola": "dado", "emoji": "🎲"},
+      {"parola": "dito", "emoji": "☝️"},
+      {"parola": "delfino", "emoji": "🐬"},
+      {"parola": "dente", "emoji": "🦷"},
+      {"parola": "drago", "emoji": "🐉"},
+      {"parola": "disegno", "emoji": "🖍️"},
+      {"parola": "donna", "emoji": "👩"},
+      {"parola": "dolce", "emoji": "🍰"}
+    ],
+    "mediana": [
+      {"parola": "nido", "emoji": "🪺"},
+      {"parola": "cadere", "emoji": "⬇️"},
+      {"parola": "radio", "emoji": "📻"},
+      {"parola": "moda", "emoji": "👗"},
+      {"parola": "medaglia", "emoji": "🏅"},
+      {"parola": "edera", "emoji": "🌿"},
+      {"parola": "candela", "emoji": "🕯️"},
+      {"parola": "freddo", "emoji": "🥶"}
+    ]
+  },
+  "f": {
+    "iniziale": [
+      {"parola": "fungo", "emoji": "🍄"},
+      {"parola": "foglia", "emoji": "🍃"},
+      {"parola": "farfalla", "emoji": "🦋"},
+      {"parola": "fiore", "emoji": "🌸"},
+      {"parola": "fuoco", "emoji": "🔥"},
+      {"parola": "fragola", "emoji": "🍓"},
+      {"parola": "forchetta", "emoji": "🍴"},
+      {"parola": "formica", "emoji": "🐜"}
+    ],
+    "mediana": [
+      {"parola": "caffè", "emoji": "☕"},
+      {"parola": "elefante", "emoji": "🐘"},
+      {"parola": "telefono", "emoji": "📞"},
+      {"parola": "giraffa", "emoji": "🦒"},
+      {"parola": "buffo", "emoji": "🤡"},
+      {"parola": "profumo", "emoji": "🌺"},
+      {"parola": "sofà", "emoji": "🛋️"},
+      {"parola": "gonfio", "emoji": "🎈"}
+    ]
+  },
+  "g": {
+    "_desc": "G dura /g/ (ga, go, gu, ghi, ghe)",
+    "iniziale": [
+      {"parola": "gatto", "emoji": "🐱"},
+      {"parola": "gallina", "emoji": "🐔"},
+      {"parola": "gomma", "emoji": "🧽"},
+      {"parola": "gufo", "emoji": "🦉"},
+      {"parola": "gonna", "emoji": "👗"},
+      {"parola": "guanto", "emoji": "🧤"},
+      {"parola": "gomito", "emoji": "💪"},
+      {"parola": "gabbiano", "emoji": "🐦"}
+    ],
+    "mediana": [
+      {"parola": "fungo", "emoji": "🍄"},
+      {"parola": "lago", "emoji": "🏞️"},
+      {"parola": "mago", "emoji": "🧙"},
+      {"parola": "igloo", "emoji": "🧊"},
+      {"parola": "ago", "emoji": "🪡"},
+      {"parola": "fuga", "emoji": "🏃"},
+      {"parola": "rughe", "emoji": "👵"},
+      {"parola": "sugo", "emoji": "🍝"}
+    ]
+  },
+  "gi": {
+    "_desc": "G dolce /dʒ/ (gi, ge)",
+    "iniziale": [
+      {"parola": "giraffa", "emoji": "🦒"},
+      {"parola": "gelato", "emoji": "🍦"},
+      {"parola": "gioco", "emoji": "🎮"},
+      {"parola": "giacca", "emoji": "🧥"},
+      {"parola": "girasole", "emoji": "🌻"},
+      {"parola": "ginocchio", "emoji": "🦵"},
+      {"parola": "gemello", "emoji": "👯"},
+      {"parola": "gelso", "emoji": "🌳"}
+    ],
+    "mediana": [
+      {"parola": "formaggio", "emoji": "🧀"},
+      {"parola": "valigia", "emoji": "🧳"},
+      {"parola": "magia", "emoji": "✨"},
+      {"parola": "orologio", "emoji": "⌚"},
+      {"parola": "pagina", "emoji": "📄"},
+      {"parola": "angelo", "emoji": "👼"},
+      {"parola": "spiaggia", "emoji": "🏖️"},
+      {"parola": "coraggio", "emoji": "🦁"}
+    ]
+  },
+  "gli": {
+    "_desc": "/ʎ/ — raro a inizio parola comune, quasi sempre mediano/finale",
+    "iniziale": [],
+    "mediana": [
+      {"parola": "famiglia", "emoji": "👪"},
+      {"parola": "figlio", "emoji": "🧒"},
+      {"parola": "maglia", "emoji": "👕"},
+      {"parola": "aglio", "emoji": "🧄"},
+      {"parola": "foglia", "emoji": "🍃"},
+      {"parola": "coniglio", "emoji": "🐰"},
+      {"parola": "bottiglia", "emoji": "🍾"},
+      {"parola": "sveglia", "emoji": "⏰"}
+    ]
+  },
+  "gn": {
+    "iniziale": [
+      {"parola": "gnomo", "emoji": "🧙‍♂️"},
+      {"parola": "gnocchi", "emoji": "🍝"}
+    ],
+    "mediana": [
+      {"parola": "castagna", "emoji": "🌰"},
+      {"parola": "montagna", "emoji": "⛰️"},
+      {"parola": "ragno", "emoji": "🕷️"},
+      {"parola": "bagno", "emoji": "🛁"},
+      {"parola": "sogno", "emoji": "💭"},
+      {"parola": "cigno", "emoji": "🦢"},
+      {"parola": "legno", "emoji": "🪵"},
+      {"parola": "lasagna", "emoji": "🍝"}
+    ]
+  },
+  "l": {
+    "iniziale": [
+      {"parola": "luna", "emoji": "🌙"},
+      {"parola": "leone", "emoji": "🦁"},
+      {"parola": "limone", "emoji": "🍋"},
+      {"parola": "lupo", "emoji": "🐺"},
+      {"parola": "libro", "emoji": "📖"},
+      {"parola": "lampada", "emoji": "💡"},
+      {"parola": "lucertola", "emoji": "🦎"},
+      {"parola": "latte", "emoji": "🥛"}
+    ],
+    "mediana": [
+      {"parola": "palla", "emoji": "⚽"},
+      {"parola": "gelato", "emoji": "🍦"},
+      {"parola": "mela", "emoji": "🍎"},
+      {"parola": "valigia", "emoji": "🧳"},
+      {"parola": "colore", "emoji": "🎨"},
+      {"parola": "salame", "emoji": "🥓"},
+      {"parola": "elica", "emoji": "🚁"},
+      {"parola": "isola", "emoji": "🏝️"}
+    ]
+  },
+  "m": {
+    "iniziale": [
+      {"parola": "mela", "emoji": "🍎"},
+      {"parola": "mano", "emoji": "✋"},
+      {"parola": "mare", "emoji": "🌊"},
+      {"parola": "mucca", "emoji": "🐄"},
+      {"parola": "moto", "emoji": "🏍️"},
+      {"parola": "matita", "emoji": "✏️"},
+      {"parola": "monte", "emoji": "⛰️"},
+      {"parola": "mago", "emoji": "🧙"}
+    ],
+    "mediana": [
+      {"parola": "gomma", "emoji": "🧽"},
+      {"parola": "camera", "emoji": "🛏️"},
+      {"parola": "limone", "emoji": "🍋"},
+      {"parola": "animale", "emoji": "🐾"},
+      {"parola": "camicia", "emoji": "👕"},
+      {"parola": "camino", "emoji": "🔥"},
+      {"parola": "fumo", "emoji": "💨"},
+      {"parola": "gomito", "emoji": "💪"}
+    ]
+  },
+  "n": {
+    "iniziale": [
+      {"parola": "naso", "emoji": "👃"},
+      {"parola": "nave", "emoji": "🚢"},
+      {"parola": "nido", "emoji": "🪺"},
+      {"parola": "neve", "emoji": "❄️"},
+      {"parola": "nonna", "emoji": "👵"},
+      {"parola": "noce", "emoji": "🌰"},
+      {"parola": "numero", "emoji": "🔢"},
+      {"parola": "nuvola", "emoji": "☁️"}
+    ],
+    "mediana": [
+      {"parola": "banana", "emoji": "🍌"},
+      {"parola": "luna", "emoji": "🌙"},
+      {"parola": "tenda", "emoji": "⛺"},
+      {"parola": "penna", "emoji": "🖊️"},
+      {"parola": "farina", "emoji": "🌾"},
+      {"parola": "gonna", "emoji": "👗"},
+      {"parola": "ananas", "emoji": "🍍"},
+      {"parola": "cannuccia", "emoji": "🥤"}
+    ]
+  },
+  "mnl_cons": {
+    "_desc": "m, n, l seguite da consonante nello stesso nesso (campo, ponte, dolce...)",
+    "iniziale": [],
+    "mediana": [
+      {"parola": "campo", "emoji": "🏕️"},
+      {"parola": "ponte", "emoji": "🌉"},
+      {"parola": "dolce", "emoji": "🍰"},
+      {"parola": "elmo", "emoji": "⛑️"},
+      {"parola": "salto", "emoji": "🤸"},
+      {"parola": "angolo", "emoji": "📐"},
+      {"parola": "mondo", "emoji": "🌍"},
+      {"parola": "tempo", "emoji": "⏰"}
+    ]
+  },
+  "p": {
+    "iniziale": [
+      {"parola": "pane", "emoji": "🍞"},
+      {"parola": "palla", "emoji": "⚽"},
+      {"parola": "pesce", "emoji": "🐟"},
+      {"parola": "penna", "emoji": "🖊️"},
+      {"parola": "porta", "emoji": "🚪"},
+      {"parola": "pizza", "emoji": "🍕"},
+      {"parola": "panda", "emoji": "🐼"},
+      {"parola": "pollo", "emoji": "🐔"}
+    ],
+    "mediana": [
+      {"parola": "lampada", "emoji": "💡"},
+      {"parola": "scopa", "emoji": "🧹"},
+      {"parola": "capra", "emoji": "🐐"},
+      {"parola": "sapone", "emoji": "🧼"},
+      {"parola": "topo", "emoji": "🐭"},
+      {"parola": "papero", "emoji": "🦆"},
+      {"parola": "zoppo", "emoji": "🦯"},
+      {"parola": "cupola", "emoji": "🕌"}
+    ]
+  },
+  "r": {
+    "iniziale": [
+      {"parola": "rana", "emoji": "🐸"},
+      {"parola": "razzo", "emoji": "🚀"},
+      {"parola": "riso", "emoji": "🍚"},
+      {"parola": "rosa", "emoji": "🌹"},
+      {"parola": "ruota", "emoji": "🛞"},
+      {"parola": "radio", "emoji": "📻"},
+      {"parola": "robot", "emoji": "🤖"},
+      {"parola": "riccio", "emoji": "🦔"}
+    ],
+    "mediana": [
+      {"parola": "farfalla", "emoji": "🦋"},
+      {"parola": "corona", "emoji": "👑"},
+      {"parola": "sirena", "emoji": "🧜‍♀️"},
+      {"parola": "faro", "emoji": "🗼"},
+      {"parola": "forno", "emoji": "🔥"},
+      {"parola": "carota", "emoji": "🥕"},
+      {"parola": "cereali", "emoji": "🥣"},
+      {"parola": "arancia", "emoji": "🍊"}
+    ]
+  },
+  "cons_r": {
+    "_desc": "consonante + R (pr, tr, cr, br, dr, fr, gr)",
+    "iniziale": [
+      {"parola": "treno", "emoji": "🚂"},
+      {"parola": "drago", "emoji": "🐉"},
+      {"parola": "fragola", "emoji": "🍓"},
+      {"parola": "granchio", "emoji": "🦀"},
+      {"parola": "prato", "emoji": "🌾"},
+      {"parola": "trattore", "emoji": "🚜"},
+      {"parola": "principe", "emoji": "🤴"},
+      {"parola": "bruco", "emoji": "🐛"}
+    ],
+    "mediana": [
+      {"parola": "sopra", "emoji": "⬆️"},
+      {"parola": "aprile", "emoji": "📅"},
+      {"parola": "vetro", "emoji": "🪟"},
+      {"parola": "cetriolo", "emoji": "🥒"},
+      {"parola": "fabbro", "emoji": "🔨"},
+      {"parola": "quadro", "emoji": "🖼️"},
+      {"parola": "ombra", "emoji": "🌑"},
+      {"parola": "libro", "emoji": "📖"}
+    ]
+  },
+  "r_cons": {
+    "_desc": "R + consonante nello stesso nesso (porta, carta, tartaruga...)",
+    "iniziale": [],
+    "mediana": [
+      {"parola": "porta", "emoji": "🚪"},
+      {"parola": "carta", "emoji": "📄"},
+      {"parola": "cartone", "emoji": "📦"},
+      {"parola": "forchetta", "emoji": "🍴"},
+      {"parola": "tartaruga", "emoji": "🐢"},
+      {"parola": "orso", "emoji": "🐻"},
+      {"parola": "corda", "emoji": "🪢"},
+      {"parola": "verde", "emoji": "🟢"}
+    ]
+  },
+  "s": {
+    "_desc": "S sorda (sole, sasso)",
+    "iniziale": [
+      {"parola": "sole", "emoji": "☀️"},
+      {"parola": "sasso", "emoji": "🪨"},
+      {"parola": "serpente", "emoji": "🐍"},
+      {"parola": "sedia", "emoji": "🪑"},
+      {"parola": "salame", "emoji": "🥓"},
+      {"parola": "sette", "emoji": "7️⃣"},
+      {"parola": "sacco", "emoji": "🎒"},
+      {"parola": "sole", "emoji": "☀️"}
+    ],
+    "mediana": [
+      {"parola": "cassa", "emoji": "📦"},
+      {"parola": "tosse", "emoji": "🤧"},
+      {"parola": "pasta", "emoji": "🍝"},
+      {"parola": "vespa", "emoji": "🐝"},
+      {"parola": "castello", "emoji": "🏰"},
+      {"parola": "salsiccia", "emoji": "🌭"},
+      {"parola": "riposo", "emoji": "😴"},
+      {"parola": "musica", "emoji": "🎵"}
+    ]
+  },
+  "s_cons": {
+    "_desc": "S + consonante (sp, st, sc, sf, sv, sm, sn)",
+    "iniziale": [
+      {"parola": "spada", "emoji": "⚔️"},
+      {"parola": "stella", "emoji": "⭐"},
+      {"parola": "scala", "emoji": "🪜"},
+      {"parola": "spazzolino", "emoji": "🪥"},
+      {"parola": "stivale", "emoji": "👢"},
+      {"parola": "spinaci", "emoji": "🥬"},
+      {"parola": "sveglia", "emoji": "⏰"},
+      {"parola": "sfera", "emoji": "🔮"}
+    ],
+    "mediana": [
+      {"parola": "finestra", "emoji": "🪟"},
+      {"parola": "orchestra", "emoji": "🎻"},
+      {"parola": "minestra", "emoji": "🍲"},
+      {"parola": "castello", "emoji": "🏰"},
+      {"parola": "pastore", "emoji": "🐑"},
+      {"parola": "canestro", "emoji": "🏀"},
+      {"parola": "mostro", "emoji": "👹"},
+      {"parola": "vestito", "emoji": "👗"}
+    ]
+  },
+  "sci_sce": {
+    "_desc": "/ʃ/ (sci, sce)",
+    "iniziale": [
+      {"parola": "sciarpa", "emoji": "🧣"},
+      {"parola": "scivolo", "emoji": "🛝"},
+      {"parola": "scienza", "emoji": "🔬"},
+      {"parola": "scelta", "emoji": "🤔"}
+    ],
+    "mediana": [
+      {"parola": "pesce", "emoji": "🐟"},
+      {"parola": "uscita", "emoji": "🚪"},
+      {"parola": "ascensore", "emoji": "🛗"},
+      {"parola": "cuscino", "emoji": "🛏️"},
+      {"parola": "striscia", "emoji": "🌈"},
+      {"parola": "nascita", "emoji": "👶"},
+      {"parola": "crescita", "emoji": "📈"},
+      {"parola": "prosciutto", "emoji": "🍖"}
+    ]
+  },
+  "t": {
+    "iniziale": [
+      {"parola": "tavolo", "emoji": "🪑"},
+      {"parola": "topo", "emoji": "🐭"},
+      {"parola": "torta", "emoji": "🎂"},
+      {"parola": "tigre", "emoji": "🐯"},
+      {"parola": "tazza", "emoji": "☕"},
+      {"parola": "tartaruga", "emoji": "🐢"},
+      {"parola": "tenda", "emoji": "⛺"},
+      {"parola": "toro", "emoji": "🐂"}
+    ],
+    "mediana": [
+      {"parola": "gatto", "emoji": "🐱"},
+      {"parola": "patata", "emoji": "🥔"},
+      {"parola": "matita", "emoji": "✏️"},
+      {"parola": "bottiglia", "emoji": "🍾"},
+      {"parola": "latte", "emoji": "🥛"},
+      {"parola": "dita", "emoji": "🖐️"},
+      {"parola": "aquilotto", "emoji": "🦅"},
+      {"parola": "gomito", "emoji": "💪"}
+    ]
+  },
+  "v": {
+    "iniziale": [
+      {"parola": "vaso", "emoji": "🏺"},
+      {"parola": "vela", "emoji": "⛵"},
+      {"parola": "volpe", "emoji": "🦊"},
+      {"parola": "vulcano", "emoji": "🌋"},
+      {"parola": "vento", "emoji": "💨"},
+      {"parola": "valigia", "emoji": "🧳"},
+      {"parola": "vacca", "emoji": "🐄"},
+      {"parola": "verme", "emoji": "🪱"}
+    ],
+    "mediana": [
+      {"parola": "uovo", "emoji": "🥚"},
+      {"parola": "avvocato", "emoji": "🥑"},
+      {"parola": "chiave", "emoji": "🔑"},
+      {"parola": "cavallo", "emoji": "🐴"},
+      {"parola": "uva", "emoji": "🍇"},
+      {"parola": "divano", "emoji": "🛋️"},
+      {"parola": "nave", "emoji": "🚢"},
+      {"parola": "polvere", "emoji": "💨"}
+    ]
+  },
+  "z_dz": {
+    "_desc": "Z sonora /dz/ (zaino, zanzara)",
+    "iniziale": [
+      {"parola": "zaino", "emoji": "🎒"},
+      {"parola": "zanzara", "emoji": "🦟"},
+      {"parola": "zero", "emoji": "0️⃣"},
+      {"parola": "zolla", "emoji": "🌱"}
+    ],
+    "mediana": [
+      {"parola": "orzo", "emoji": "🌾"},
+      {"parola": "mezzo", "emoji": "🚌"},
+      {"parola": "azzurro", "emoji": "🔵"},
+      {"parola": "zenzero", "emoji": "🫚"}
+    ]
+  },
+  "zeta_generico": {
+    "_desc": "Categoria generica Z, usata come introduzione prima di distinguere sorda/sonora",
+    "iniziale": [
+      {"parola": "zebra", "emoji": "🦓"},
+      {"parola": "zucca", "emoji": "🎃"},
+      {"parola": "zucchero", "emoji": "🍬"},
+      {"parola": "zio", "emoji": "👨"}
+    ],
+    "mediana": [
+      {"parola": "pizza", "emoji": "🍕"},
+      {"parola": "pazzo", "emoji": "🤪"},
+      {"parola": "ragazzo", "emoji": "👦"},
+      {"parola": "palazzo", "emoji": "🏰"}
+    ]
+  },
+  "z_ts": {
+    "_desc": "Z sorda /ts/ (zucchero, pizza)",
+    "iniziale": [
+      {"parola": "zucchero", "emoji": "🍬"},
+      {"parola": "zucca", "emoji": "🎃"},
+      {"parola": "zitto", "emoji": "🤫"},
+      {"parola": "zampa", "emoji": "🐾"}
+    ],
+    "mediana": [
+      {"parola": "pizza", "emoji": "🍕"},
+      {"parola": "calzino", "emoji": "🧦"},
+      {"parola": "marzo", "emoji": "📅"},
+      {"parola": "piazza", "emoji": "🏛️"}
+    ]
+  }
+}
