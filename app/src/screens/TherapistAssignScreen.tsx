@@ -13,6 +13,7 @@ import { ClinicalLevel } from "../types/gamification";
 const COLORS = { bg: "#FFF8EE", primary: "#2A20E0", text: "#1A1A1A", subtext: "#666", jade: "#137A6E" };
 
 export default function TherapistAssignScreen({ navigation }: any) {
+  const profile = useGamificationStore((s) => s.profile);
   const assignPlan = useGamificationStore((s) => s.assignPlan);
   const [phoneme, setPhoneme] = useState<PhonemeKey>("r");
   const [position, setPosition] = useState<"iniziale" | "mediana">("iniziale");
@@ -21,6 +22,10 @@ export default function TherapistAssignScreen({ navigation }: any) {
   const meta = WORD_BANK[phoneme];
   const hasIniziale = meta.iniziale.length > 0;
   const hasMediana = meta.mediana.length > 0;
+  // Suoni segnalati dal genitore in onboarding (vedi punto 6, feedback clinico luglio 2026):
+  // sono solo un suggerimento pre-compilato, non un'assegnazione — il logopedista deve
+  // comunque toccare "Assegna piano della settimana" qui sotto per attivarli davvero.
+  const parentReportedConcerns = profile?.parentReportedConcerns ?? [];
 
   function handleSelectPhoneme(key: PhonemeKey) {
     setPhoneme(key);
@@ -44,6 +49,23 @@ export default function TherapistAssignScreen({ navigation }: any) {
         </Pressable>
         <Text style={styles.title}>Assegna piano</Text>
       </View>
+
+      {parentReportedConcerns.length > 0 && (
+        <>
+          <Text style={styles.fieldLabel}>SEGNALATI DAL GENITORE (da confermare)</Text>
+          <View style={styles.chipRow}>
+            {parentReportedConcerns.map((key) => (
+              <Pressable
+                key={key}
+                onPress={() => handleSelectPhoneme(key as PhonemeKey)}
+                style={styles.suggestChip}
+              >
+                <Text style={styles.suggestChipText}>{WORD_BANK[key as PhonemeKey]?.label ?? key}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
 
       <Text style={styles.fieldLabel}>FONEMA</Text>
       <View style={styles.chipRow}>
@@ -104,6 +126,8 @@ const styles = StyleSheet.create({
   chipDisabled: { opacity: 0.35 },
   chipText: { fontSize: 12, fontWeight: "600", color: COLORS.text },
   chipTextSelected: { color: "#fff" },
+  suggestChip: { paddingVertical: 8, paddingHorizontal: 13, borderRadius: 999, borderWidth: 1.5, borderColor: "#FFC53D", backgroundColor: "#FFF3D6" },
+  suggestChipText: { fontSize: 12, fontWeight: "700", color: "#8A6A00" },
   assignBtn: { marginTop: 28, backgroundColor: "#FF6A4D", borderRadius: 14, padding: 15, alignItems: "center" },
   assignBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 });

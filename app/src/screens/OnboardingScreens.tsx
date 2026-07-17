@@ -39,8 +39,6 @@ export function TrustScreen({ navigation }: any) {
 
 // Screen 2 — the branch point Speech Blubs doesn't need. This is the key
 // B2B2C moment: does this family already have a prescribing therapist?
-// Third option added: hybrid marketplace interest capture (waitlist only —
-// not a live booking flow yet, see reasoning in project notes on sequencing).
 export function TherapistLinkScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
@@ -55,12 +53,12 @@ export function TherapistLinkScreen({ navigation }: any) {
         onPress={() => navigation.navigate("TherapistCodeEntry")}
       />
       <Pressable
-        onPress={() => navigation.navigate("RemoteTherapistWaitlist")}
+        onPress={() => navigation.navigate("FindTherapist")}
         style={styles.secondaryOption}
       >
         <Text style={styles.secondaryOptionTitle}>Non ho un logopedista</Text>
         <Text style={styles.secondaryOptionSubtitle}>
-          Fatti assegnare un logopedista Lallo da remoto
+          Trova un logopedista vicino a te
         </Text>
       </Pressable>
       <Pressable
@@ -73,65 +71,27 @@ export function TherapistLinkScreen({ navigation }: any) {
   );
 }
 
-// Screen 2c — waitlist capture for the remote-therapist marketplace track.
-// Intentionally NOT a live booking flow: collects interest + rough
-// availability so demand can be sized before any therapist is contracted.
-// See sequencing rationale: validate B2B2C first, pilot this with 2-3
-// freelance logopedisti before treating it as a launch feature.
-export function RemoteTherapistWaitlistScreen({ navigation, route }: any) {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  if (submitted) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Ti abbiamo messo in lista ✅</Text>
-        <Text style={styles.subtitle}>
-          Ti contatteremo appena avremo un logopedista disponibile nella tua
-          zona. Nel frattempo puoi comunque iniziare a usare Lallo.
-        </Text>
-        <View style={{ flex: 1 }} />
-        <ContinueButton onPress={() => navigation.navigate("ChildName")} />
-      </View>
-    );
-  }
-
+// Screen 2c — sostituisce il vecchio flusso "logopedista da remoto" (telemedicina):
+// validato con Carlotta Canclini, logopedista, in una call di luglio 2026 — per bambini
+// piccoli con disturbi fonetico-fonologici il lavoro in presenza è considerato necessario,
+// quindi non proponiamo più una presa in carico da remoto. La mappa dei logopedisti Lallo
+// è a roadmap ma non ancora costruita: questo schermo comunica lo stato reale, senza
+// promettere una rete di professionisti che non esiste ancora.
+export function FindTherapistScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
-      <Text style={styles.title}>Presto disponibile</Text>
+      <Text style={styles.title}>Trova un logopedista vicino a te</Text>
       <Text style={styles.subtitle}>
-        Stiamo selezionando i primi logopedisti Lallo per le sedute da
-        remoto. Lasciaci la tua email e sarai tra i primi ad essere
-        contattato.
+        Per i disturbi fonetico-fonologici nei bambini piccoli il lavoro in presenza con un
+        logopedista fa la differenza. La mappa dei logopedisti Lallo è in arrivo: nel
+        frattempo puoi chiedere indicazioni al pediatra o cercare un logopedista
+        specializzato in disturbi del linguaggio infantile nella tua zona.
       </Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="La tua email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={styles.input}
-      />
       <View style={{ flex: 1 }} />
-      <ContinueButton
-        label="Iscrivimi alla lista"
-        disabled={email.length < 5}
-        onPress={() => {
-          // TODO: send to waitlist table (Supabase) keyed by email + rough
-          // location, so pilot ops can see where demand clusters before
-          // deciding which region to launch the freelance pilot in.
-          setSubmitted(true);
-        }}
-      />
-      <Pressable
-        onPress={() => navigation.navigate("ChildName")}
-        style={styles.skipLink}
-      >
-        <Text style={styles.skipText}>Continua senza iscrivermi</Text>
-      </Pressable>
+      <ContinueButton label="Ho capito" onPress={() => navigation.goBack()} />
     </View>
   );
 }

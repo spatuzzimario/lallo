@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Switch, Alert } from "react-native";
 import { useGamificationStore } from "../store/useGamificationStore";
 
 const COLORS = {
@@ -161,6 +161,11 @@ export function ParentDashboardScreen({ navigation }: any) {
           {profile.displayName} alla prossima seduta — questa vista serve a tenervi allineati, non sostituisce il piano clinico.
         </Text>
       </View>
+
+      <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("PrivacyConsent")}>
+        <Text style={dashStyles.privacyRowText}>🔒 Privacy e registrazioni</Text>
+        <Text style={dashStyles.chevron}>›</Text>
+      </Pressable>
     </View>
   );
 }
@@ -187,4 +192,94 @@ const dashStyles = StyleSheet.create({
   levelPct: { fontSize: 12, width: 36, textAlign: "right", color: COLORS.text },
   therapistNote: { backgroundColor: "#E9F5F1", borderRadius: 14, padding: 14, marginTop: 8, marginBottom: 24 },
   therapistNoteText: { fontSize: 12.5, color: COLORS.jade, lineHeight: 18 },
+  privacyRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    backgroundColor: "#fff", borderRadius: 14, padding: 14, marginBottom: 24,
+  },
+  privacyRowText: { fontSize: 13.5, fontWeight: "700", color: COLORS.text },
+  chevron: { fontSize: 18, color: COLORS.subtext },
+});
+
+/* ---------------- Privacy e registrazioni ----------------
+   Consenso esplicito alla registrazione audio (punto 5 del feedback clinico/legale,
+   luglio 2026): raggiungibile solo dalla sezione genitori, dietro l'adult gate. Finché
+   audioRecordingConsent è false, esercizi come il Registratore restano bloccati (vedi
+   SessionScreen.tsx). Link a Privacy Policy/Cookie Policy: strutturati qui ma i documenti
+   legali veri non esistono ancora — vedi TODO sotto, non inventarne il contenuto. */
+export function PrivacyConsentScreen({ navigation }: any) {
+  const profile = useGamificationStore((s) => s.profile);
+  const setAudioRecordingConsent = useGamificationStore((s) => s.setAudioRecordingConsent);
+
+  function openLegalDoc(name: string) {
+    // TODO: collegare l'URL vero della Privacy Policy / Cookie Policy (probabilmente
+    // ospitata sul dominio della landing page) prima della submission App Store/Play Store.
+    // Non fabbricare qui un testo legale placeholder: meglio segnalare che manca.
+    Alert.alert(`${name} — in preparazione`, "Il documento sarà collegato qui prima della pubblicazione sugli store.");
+  }
+
+  if (!profile) return null;
+
+  return (
+    <ScrollView style={privacyStyles.container} contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 40 }}>
+      <View style={privacyStyles.header}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={privacyStyles.back}>‹</Text>
+        </Pressable>
+        <Text style={privacyStyles.title}>Privacy e registrazioni</Text>
+      </View>
+
+      <View style={privacyStyles.card}>
+        <Text style={privacyStyles.cardTitle}>Registrazione della voce</Text>
+        <Text style={privacyStyles.cardText}>
+          Alcuni esercizi (come il Registratore) usano la registrazione della voce di{" "}
+          {profile.displayName} per confrontarla con la pronuncia corretta — ed
+          eventualmente, in futuri aggiornamenti, anche un breve video. La registrazione
+          avviene solo con il tuo consenso qui sotto. I file restano collegati al profilo
+          di {profile.displayName} e vengono conservati solo per il tempo necessario a
+          fornire il servizio, come descritto nella Privacy Policy.
+        </Text>
+        <View style={privacyStyles.consentRow}>
+          <Text style={privacyStyles.consentLabel}>
+            Acconsento alla registrazione vocale di {profile.displayName} per gli esercizi
+            di pronuncia
+          </Text>
+          <Switch
+            value={profile.audioRecordingConsent}
+            onValueChange={setAudioRecordingConsent}
+            trackColor={{ false: "#D9CEBC", true: COLORS.jade }}
+          />
+        </View>
+      </View>
+
+      <Pressable style={privacyStyles.linkRow} onPress={() => openLegalDoc("Privacy Policy")}>
+        <Text style={privacyStyles.linkRowText}>Privacy Policy</Text>
+        <Text style={privacyStyles.chevronLink}>›</Text>
+      </Pressable>
+      <Pressable style={privacyStyles.linkRow} onPress={() => openLegalDoc("Cookie Policy")}>
+        <Text style={privacyStyles.linkRowText}>Cookie Policy</Text>
+        <Text style={privacyStyles.chevronLink}>›</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+const privacyStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 },
+  back: { fontSize: 26, color: COLORS.primary },
+  title: { fontSize: 20, fontWeight: "800", color: COLORS.text },
+  card: { backgroundColor: "#fff", borderRadius: 16, padding: 16, marginBottom: 16 },
+  cardTitle: { fontWeight: "800", fontSize: 15, color: COLORS.text, marginBottom: 8 },
+  cardText: { fontSize: 13, color: COLORS.subtext, lineHeight: 19 },
+  consentRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    gap: 12, marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: "#EEE",
+  },
+  consentLabel: { flex: 1, fontSize: 13, color: COLORS.text, lineHeight: 18 },
+  linkRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    backgroundColor: "#fff", borderRadius: 14, padding: 14, marginBottom: 10,
+  },
+  linkRowText: { fontSize: 13.5, fontWeight: "700", color: COLORS.text },
+  chevronLink: { fontSize: 18, color: COLORS.subtext },
 });

@@ -42,6 +42,15 @@ export interface ChildProfile {
   // Piano di oggi. In produzione arriva dal backend condiviso con l'app
   // separata del logopedista (non ancora costruita) — qui è seed/demo.
   assignedToday: AssignedExercise[];
+  // Suoni segnalati dal genitore nel questionario diagnostico self-directed (es. "non sa
+  // dire la R"). È un FLAG per il logopedista da confermare/correggere in TherapistAssignScreen,
+  // non un filtro automatico che decide quali esercizi vedere il bambino — vedi
+  // `unlockedByTherapist` su PhonemeGroup, che resta l'unica cosa che sblocca davvero un esercizio.
+  parentReportedConcerns: string[];
+  // Consenso esplicito del genitore (dato dietro l'adult gate, sezione Privacy) alla
+  // registrazione audio — ed eventualmente video in futuro — durante esercizi come il
+  // Registratore. Finché è false, quegli esercizi non devono registrare nulla.
+  audioRecordingConsent: boolean;
 }
 
 export interface StreakState {

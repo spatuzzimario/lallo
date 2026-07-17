@@ -11,6 +11,8 @@ interface GamificationStore {
   setProfile: (p: ChildProfile) => void;
   recordSession: (result: SessionResult) => void;
   assignPlan: (phonemeGroupId: string, groupName: string, level: LevelProgress["level"]) => void;
+  setParentReportedConcerns: (concerns: string[]) => void;
+  setAudioRecordingConsent: (consent: boolean) => void;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -193,5 +195,19 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         },
       });
     }
+  },
+
+  // Salva i suoni segnalati dal genitore nel questionario diagnostico come nota per il
+  // logopedista — non tocca phonemeGroups/unlockedByTherapist, quindi non sblocca nulla da sola.
+  setParentReportedConcerns: (concerns) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, parentReportedConcerns: concerns } });
+  },
+
+  setAudioRecordingConsent: (consent) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, audioRecordingConsent: consent } });
   },
 }));

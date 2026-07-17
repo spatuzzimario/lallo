@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
 import { PHONEME_ORDER, WORD_BANK, PhonemeKey } from "../constants/wordBank";
+import { useGamificationStore } from "../store/useGamificationStore";
 
 const C = {
   bg: "#FBF6EE",
@@ -62,17 +63,23 @@ export function WordCountScreen({ navigation, route }: any) {
   );
 }
 
-/* 2 — valutato da un logopedista? */
+/* 2 — valutato da uno specialista? NOTA CLINICA (validata con Carlotta Canclini,
+   logopedista, luglio 2026): il logopedista NON fa diagnosi — non attribuirgliela mai
+   in questo testo. La valutazione arriva da un neuropsichiatra infantile, un'équipe
+   multidisciplinare, o un invio ad accertamenti dal pediatra. */
 export function EvaluatedByTherapistScreen({ navigation, route }: any) {
   const name = route.params?.name || "il bambino";
-  function next(evaluated: boolean | null) {
+  function next(evaluated: boolean) {
     navigation.navigate("DiagnosedConditions", { ...route.params, evaluated });
   }
   return (
     <View style={styles.screen}>
       <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
         <Header onBack={() => navigation.goBack()} step={2} total={TOTAL_STEPS} />
-        <Text style={styles.title}>{name} è mai stato valutato da un logopedista?</Text>
+        <Text style={styles.title}>
+          {name} è mai stato valutato da uno specialista (neuropsichiatra infantile, équipe
+          multidisciplinare, o pediatra che lo ha inviato ad accertamenti)?
+        </Text>
         <View style={{ flex: 1 }} />
         <View style={styles.yesNoRow}>
           <Pressable style={styles.yesBtn} onPress={() => next(true)}>
@@ -82,19 +89,19 @@ export function EvaluatedByTherapistScreen({ navigation, route }: any) {
             <Text style={styles.noText}>No</Text>
           </Pressable>
         </View>
-        <Pressable onPress={() => next(null)}>
-          <Text style={styles.skipText}>Non so dirlo</Text>
-        </Pressable>
       </View>
     </View>
   );
 }
 
-/* 3 — condizioni diagnosticate (lista corta, non esaustiva) */
+/* 3 — condizioni diagnosticate. Lista ridotta ai disturbi fonetico-fonologici pertinenti
+   all'app (validata con Carlotta Canclini, logopedista, luglio 2026) — niente spettro
+   neuroevolutivo generico (autismo, ipoacusia, disprassia, palatoschisi...), non è il
+   target di Lallo. Balbuzie rimossa: non abbiamo esercizi per la fluenza. */
 const CONDITIONS = [
-  "Ritardo del linguaggio", "Disturbo dello spettro autistico", "Disprassia verbale",
-  "Disturbo specifico del linguaggio (DSL)", "Ipoacusia", "Palatoschisi",
-  "Balbuzie", "Nessuna di queste", "Non so",
+  "Disturbo Specifico del Linguaggio (generico)",
+  "Ritardo del linguaggio",
+  "Disturbi fonetico-fonologici",
 ];
 export function DiagnosedConditionsScreen({ navigation, route }: any) {
   const wasEvaluated = route.params?.evaluated === true;
@@ -240,7 +247,71 @@ export function ResultsScreen({ navigation, route }: any) {
         </Text>
       </View>
       <View style={{ padding: 24 }}>
-        <ContinueBtn onPress={() => navigation.navigate("Paywall", route.params)} label="Vedi il piano completo" />
+        <ContinueBtn onPress={() => navigation.navigate("PlanPreview", route.params)} label="Vedi l'anteprima del piano" />
+      </View>
+    </View>
+  );
+}
+
+// Fonema sempre disponibile (gratuito, vedi FREE_PHONEMES) usato per la prova rapida
+// senza codice — un solo suono demo, non un piano personalizzato.
+const DEMO_PHONEME: PhonemeKey = "s";
+
+/* 7 — GATING CLINICO (punto 2, validato con Carlotta Canclini, logopedista, luglio 2026):
+   il flusso self-directed (senza codice del logopedista) non deve sbloccare gli esercizi
+   pieni nemmeno dopo il questionario diagnostico proxy — senza una valutazione dal vivo,
+   dare esercizi "a freddo" può essere controproducente. Qui mostriamo un'anteprima
+   bloccata del piano + CTA per trovare un logopedista, invece dello sblocco diretto.
+   I suoni segnalati dal genitore vengono salvati come `parentReportedConcerns` (nota per
+   il logopedista da confermare), NON come filtro che sblocca esercizi da solo. */
+export function PlanPreviewScreen({ navigation, route }: any) {
+  const name = route.params?.name || "tuo figlio";
+  const sounds: PhonemeKey[] = route.params?.strugglingSounds?.length ? route.params.strugglingSounds : ["r"];
+  const setParentReportedConcerns = useGamificationStore((s) => s.setParentReportedConcerns);
+
+  useEffect(() => {
+    setParentReportedConcerns(sounds);
+  }, []);
+
+  return (
+    <View style={styles.screen}>
+      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
+        <Text style={styles.title}>Ecco un'anteprima del piano di {name}</Text>
+        <Text style={styles.subtitle}>
+          Il piano si sblocca dopo un incontro con un logopedista: senza una valutazione dal
+          vivo, iniziare gli esercizi su questi suoni potrebbe non essere il momento giusto
+          per {name}.
+        </Text>
+        <View style={[styles.chipWrap, { marginTop: 16 }]}>
+          {sounds.map((key) => (
+            <View key={key} style={[styles.resultChip, styles.resultChipLocked]}>
+              <Text style={styles.resultChipText}>🔒 {WORD_BANK[key].label}</Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.disclaimerText}>
+          Non è una diagnosi. Solo un logopedista può stabilire se {name} è pronto a
+          esercitarsi su questi suoni.
+        </Text>
+      </View>
+      <View style={{ padding: 24, gap: 12 }}>
+        <ContinueBtn
+          label="Trova un logopedista vicino a te"
+          onPress={() => navigation.navigate("FindTherapist")}
+        />
+        <Pressable
+          onPress={() =>
+            navigation.navigate("Session", {
+              phonemeGroupId: DEMO_PHONEME,
+              level: 1,
+              position: "iniziale",
+              exerciseType: "caccia",
+              demo: true,
+            })
+          }
+        >
+          <Text style={styles.skipText}>Prova un assaggio senza codice (1 suono demo)</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -286,6 +357,7 @@ const styles = StyleSheet.create({
   soundChipLabelOn: { color: "#fff" },
   calcText: { fontSize: 16, fontWeight: "600", color: C.jade },
   resultChip: { backgroundColor: C.jade, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 16, marginBottom: 8 },
+  resultChipLocked: { backgroundColor: C.subtext, opacity: 0.6 },
   resultChipText: { color: "#fff", fontWeight: "700" },
   disclaimerText: { fontSize: 11.5, color: C.subtext, marginTop: 24, lineHeight: 17, fontStyle: "italic" },
 });

@@ -13,7 +13,7 @@ import {
   TrustScreen,
   TherapistLinkScreen,
   TherapistCodeEntryScreen,
-  RemoteTherapistWaitlistScreen,
+  FindTherapistScreen,
   ChildNameScreen,
   ChildBirthdateScreen,
 } from "./src/screens/OnboardingScreens";
@@ -24,13 +24,24 @@ import {
   StrugglingSoundsScreen,
   TrustStatScreen,
   ResultsScreen,
+  PlanPreviewScreen,
 } from "./src/screens/DiagnosticScreens";
 import PaywallScreen from "./src/screens/PaywallScreen";
-import { AdultGateScreen, ParentDashboardScreen } from "./src/screens/ParentScreens";
+import { AdultGateScreen, ParentDashboardScreen, PrivacyConsentScreen } from "./src/screens/ParentScreens";
 // NOTA: TherapistAssignScreen è stato rimosso da questa app su richiesta esplicita —
 // il logopedista avrà un'app separata con login proprio. Il file resta nel
 // repository (src/screens/TherapistAssignScreen.tsx) per essere riusato lì,
 // ma non è più importato né raggiungibile da qui.
+//
+// TODO (aperto, non implementare senza conferma esplicita — call con Carlotta Canclini,
+// logopedista, luglio 2026): discusso se la scelta "professionista / bambino" debba restare
+// una app separata (architettura attuale) o diventare la primissima schermata di questa
+// stessa app. Nessuna decisione presa: non cambiare l'architettura finché non se ne riparla.
+//
+// PaywallScreen resta importato/instradato ma non è più collegato dal flusso self-directed
+// (vedi PlanPreviewScreen): dare accesso agli esercizi dietro pagamento, senza una valutazione
+// dal vivo, contraddice il gating clinico del punto 2. Resta un possibile futuro entry point
+// di monetizzazione (es. per famiglie già collegate a un logopedista), da ridecidere.
 
 import { useGamificationStore } from "./src/store/useGamificationStore";
 import { ChildProfile } from "./src/types/gamification";
@@ -56,6 +67,8 @@ const seedProfile: ChildProfile = {
   },
   unlockedCosmetics: [],
   preferredTopics: [],
+  parentReportedConcerns: [],
+  audioRecordingConsent: false,
   phonemeGroups: [
     {
       id: "r",
@@ -141,7 +154,7 @@ export default function App() {
           <Stack.Screen name="Trust" component={TrustScreen} />
           <Stack.Screen name="TherapistLink" component={TherapistLinkScreen} />
           <Stack.Screen name="TherapistCodeEntry" component={TherapistCodeEntryScreen} />
-          <Stack.Screen name="RemoteTherapistWaitlist" component={RemoteTherapistWaitlistScreen} />
+          <Stack.Screen name="FindTherapist" component={FindTherapistScreen} />
           <Stack.Screen name="ChildName" component={ChildNameScreen} />
           <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
           <Stack.Screen name="WordCount" component={WordCountScreen} />
@@ -150,11 +163,13 @@ export default function App() {
           <Stack.Screen name="StrugglingSounds" component={StrugglingSoundsScreen} />
           <Stack.Screen name="TrustStat" component={TrustStatScreen} />
           <Stack.Screen name="Results" component={ResultsScreen} />
+          <Stack.Screen name="PlanPreview" component={PlanPreviewScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Session" component={SessionScreen} />
           <Stack.Screen name="AdultGate" component={AdultGateScreen} options={{ presentation: "modal" }} />
           <Stack.Screen name="ParentDashboard" component={ParentDashboardScreen} />
+          <Stack.Screen name="PrivacyConsent" component={PrivacyConsentScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

@@ -15,11 +15,19 @@ import { AttemptResult, ClinicalLevel, SessionResult } from "../types/gamificati
 
 type ExerciseType = "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze";
 
+// TODO (nice-to-have, priorità bassa): video dimostrativi della posizione linguale/labiale
+// per fonema, integrati in-app e scaricabili on-demand per singolo pacchetto-fonema (non
+// tutta la libreria insieme, non link esterni a YouTube) — promemoria per il bambino, non
+// sostituto della spiegazione del logopedista in seduta. Non ancora implementato.
+
 interface SessionParams {
   phonemeGroupId: string; // deve combaciare con una PhonemeKey del word bank
   level: ClinicalLevel;
   position?: "iniziale" | "mediana";
   exerciseType?: ExerciseType;
+  // Prova rapida senza codice (vedi PlanPreviewScreen, gating clinico punto 2): un solo
+  // suono demo, non un piano assegnato dal logopedista — non deve scrivere progressi reali.
+  demo?: boolean;
 }
 
 function say(text: string) {
@@ -38,6 +46,13 @@ export default function SessionScreen({ navigation, route }: any) {
   const [attempts, setAttempts] = useState<AttemptResult[]>([]);
 
   function finishSession() {
+    if (params.demo) {
+      // Prova rapida senza codice: non c'è un piano assegnato dal logopedista su questo
+      // fonema, quindi non scriviamo progressi reali sul profilo — torniamo semplicemente
+      // all'anteprima del piano da cui si è partiti.
+      navigation.goBack();
+      return;
+    }
     const result: SessionResult = {
       phonemeGroupId: params.phonemeGroupId,
       level: params.level,
@@ -217,7 +232,10 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
-/* ---------------- Registratore ---------------- */
+/* ---------------- Registratore ----------------
+   Registra la voce del bambino: richiede il consenso esplicito del genitore (dato dietro
+   l'adult gate, in Genitori → Privacy e registrazioni) prima di attivare il microfono —
+   vedi audioRecordingConsent su ChildProfile. Senza consenso il tasto resta bloccato. */
 function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
@@ -227,10 +245,12 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   const word = useMemo(() => pickRandom(wordsFor(phonemeKey, position), 1)[0], [phonemeKey, position, round]);
   const [recording, setRecording] = useState(false);
   const [attemptsThisWord, setAttemptsThisWord] = useState(0);
+  const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
 
   function playModel() { say(word.parola); }
 
   function toggleRecord() {
+    if (!hasConsent) return;
     if (!recording) {
       setRecording(true);
     } else {
@@ -249,12 +269,22 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
       <Text style={styles.recEmoji}>{word.emoji}</Text>
       <Text style={styles.recWord}>{word.parola}</Text>
       <Text style={styles.recMeta}>{meta.label} · {position}</Text>
+      {!hasConsent && (
+        <Text style={styles.warnNote}>
+          Serve il consenso di un genitore per registrare la voce. Vai su Genitori → Privacy
+          e registrazioni per attivarlo.
+        </Text>
+      )}
       <View style={styles.recRow}>
         <Pressable style={styles.recListenBtn} onPress={playModel}>
           <Text style={styles.recBtnText}>▶</Text>
         </Pressable>
-        <Pressable style={[styles.recMicBtn, recording && styles.recMicBtnActive]} onPress={toggleRecord}>
-          <Text style={styles.recBtnText}>{recording ? "⏸" : "🎤"}</Text>
+        <Pressable
+          style={[styles.recMicBtn, recording && styles.recMicBtnActive, !hasConsent && styles.recMicBtnLocked]}
+          onPress={toggleRecord}
+          disabled={!hasConsent}
+        >
+          <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : recording ? "⏸" : "🎤"}</Text>
         </Pressable>
       </View>
       <View style={styles.actionRow}>
@@ -455,6 +485,7 @@ const styles = StyleSheet.create({
   recListenBtn: { width: 60, height: 60, borderRadius: 30, backgroundColor: "#137A6E", alignItems: "center", justifyContent: "center" },
   recMicBtn: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#FF6A4D", alignItems: "center", justifyContent: "center" },
   recMicBtnActive: { backgroundColor: "#E84B30" },
+  recMicBtnLocked: { backgroundColor: "#B0A99A" },
   recBtnText: { fontSize: 26, color: "#fff" },
   actionRow: { flexDirection: "row", justifyContent: "center", gap: 10, marginTop: 16, flexWrap: "wrap" },
   secondaryBtn: { borderWidth: 1.5, borderColor: "#137A6E", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14 },
