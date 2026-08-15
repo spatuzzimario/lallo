@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import {
+  AssignedExercise,
   ChildProfile,
   SessionResult,
   StreakState,
   LevelProgress,
 } from "../types/gamification";
+import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
 
 interface GamificationStore {
   profile: ChildProfile | null;
@@ -13,6 +15,7 @@ interface GamificationStore {
   assignPlan: (phonemeGroupId: string, groupName: string, level: LevelProgress["level"]) => void;
   setParentReportedConcerns: (concerns: string[]) => void;
   setAudioRecordingConsent: (consent: boolean) => void;
+  startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -209,5 +212,69 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, audioRecordingConsent: consent } });
+  },
+
+  // Avvia il piano self-directed (nessun logopedista collegato) al termine dello screener.
+  // Decisione parent-first (validata luglio 2026): niente più anteprima bloccata — il
+  // genitore sceglie i suoni, si parte subito al livello 1 (suono isolato), che è il punto
+  // di partenza corretto per QUALSIASI fonema nuovo, indipendentemente dall'età/vocabolario.
+  // unlockedByTherapist resta false: recordSession non farà avanzare automaticamente al
+  // livello successivo dopo la maestria finché un logopedista non lo conferma — l'esercizio
+  // al livello corrente resta comunque giocabile.
+  startSelfDirectedPlan: (sounds) => {
+    const profile = get().profile;
+    if (!profile) return;
+    if (sounds.length === 0) return;
+
+    const newGroups = sounds.map((key) => ({
+      id: key,
+      name: `Suono ${WORD_BANK[key].label}`,
+      islandAsset: "",
+      unlockedByTherapist: false,
+      levels: [1, 2, 3, 4, 5].map((level) => ({
+        level: level as LevelProgress["level"],
+        status: (level === 1 ? "available" : "locked") as LevelProgress["status"],
+        masteryThreshold: 0.75,
+        starsEarned: 0,
+        starsPossible: 0,
+      })),
+    }));
+
+    const firstKey = sounds[0];
+    const firstLabel = WORD_BANK[firstKey].label;
+    const todayPlan: AssignedExercise[] = [
+      {
+        id: `self-${firstKey}-caccia`,
+        exerciseType: "caccia",
+        exerciseLabel: "Caccia al suono",
+        phonemeGroupId: firstKey,
+        phonemeLabel: firstLabel,
+        position: "iniziale",
+        level: 1,
+        levelRangeLabel: "livello 1",
+      },
+      {
+        id: `self-${firstKey}-memory`,
+        exerciseType: "memory",
+        exerciseLabel: "Memory dei suoni",
+        phonemeGroupId: firstKey,
+        phonemeLabel: firstLabel,
+        position: "iniziale",
+        level: 1,
+        levelRangeLabel: "livello 1",
+      },
+    ];
+
+    set({
+      profile: {
+        ...profile,
+        parentReportedConcerns: sounds,
+        phonemeGroups: [
+          ...profile.phonemeGroups.filter((g) => !sounds.includes(g.id as PhonemeKey)),
+          ...newGroups,
+        ],
+        assignedToday: todayPlan,
+      },
+    });
   },
 }));

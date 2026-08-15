@@ -210,9 +210,18 @@ export function TrustStatScreen({ navigation, route }: any) {
   );
 }
 
-/* 6 — breve attesa "calcolo" poi riepilogo del piano proposto */
+/* 6 — breve attesa "calcolo" poi riepilogo del piano proposto. GATING (punto 2, validato
+   con Carlotta Canclini, logopedista, luglio 2026 — poi rivisto: modello parent-first,
+   vedi CLAUDE.md §1): il genitore sceglie i suoni e inizia subito, si parte dal livello 1
+   (suono isolato) su ciascun fonema — non è "a freddo" perché level 1 è il punto di
+   partenza corretto per qualsiasi fonema nuovo. Il logopedista resta un potenziamento
+   opzionale (vedi TherapistLinkScreen/FindTherapistScreen), non un cancello. I suoni
+   scelti diventano `parentReportedConcerns` (nota per un eventuale logopedista futuro da
+   confermare) E, contemporaneamente, il piano attivo del bambino — le due cose insieme,
+   non in alternativa, ora che l'accesso non è più bloccato. */
 export function ResultsScreen({ navigation, route }: any) {
   const [calculating, setCalculating] = useState(true);
+  const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
   useEffect(() => {
     const t = setTimeout(() => setCalculating(false), 1400);
     return () => clearTimeout(t);
@@ -232,7 +241,8 @@ export function ResultsScreen({ navigation, route }: any) {
       <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
         <Text style={styles.title}>Ecco da dove iniziamo</Text>
         <Text style={styles.subtitle}>
-          In base a quello che ci hai detto, il piano di {route.params?.name || "tuo figlio"} parte da questi suoni:
+          In base a quello che ci hai detto, il piano di {route.params?.name || "tuo figlio"} parte da questi suoni,
+          dal livello base:
         </Text>
         <View style={[styles.chipWrap, { marginTop: 16 }]}>
           {sounds.map((key) => (
@@ -247,71 +257,13 @@ export function ResultsScreen({ navigation, route }: any) {
         </Text>
       </View>
       <View style={{ padding: 24 }}>
-        <ContinueBtn onPress={() => navigation.navigate("PlanPreview", route.params)} label="Vedi l'anteprima del piano" />
-      </View>
-    </View>
-  );
-}
-
-// Fonema sempre disponibile (gratuito, vedi FREE_PHONEMES) usato per la prova rapida
-// senza codice — un solo suono demo, non un piano personalizzato.
-const DEMO_PHONEME: PhonemeKey = "s";
-
-/* 7 — GATING CLINICO (punto 2, validato con Carlotta Canclini, logopedista, luglio 2026):
-   il flusso self-directed (senza codice del logopedista) non deve sbloccare gli esercizi
-   pieni nemmeno dopo il questionario diagnostico proxy — senza una valutazione dal vivo,
-   dare esercizi "a freddo" può essere controproducente. Qui mostriamo un'anteprima
-   bloccata del piano + CTA per trovare un logopedista, invece dello sblocco diretto.
-   I suoni segnalati dal genitore vengono salvati come `parentReportedConcerns` (nota per
-   il logopedista da confermare), NON come filtro che sblocca esercizi da solo. */
-export function PlanPreviewScreen({ navigation, route }: any) {
-  const name = route.params?.name || "tuo figlio";
-  const sounds: PhonemeKey[] = route.params?.strugglingSounds?.length ? route.params.strugglingSounds : ["r"];
-  const setParentReportedConcerns = useGamificationStore((s) => s.setParentReportedConcerns);
-
-  useEffect(() => {
-    setParentReportedConcerns(sounds);
-  }, []);
-
-  return (
-    <View style={styles.screen}>
-      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
-        <Text style={styles.title}>Ecco un'anteprima del piano di {name}</Text>
-        <Text style={styles.subtitle}>
-          Il piano si sblocca dopo un incontro con un logopedista: senza una valutazione dal
-          vivo, iniziare gli esercizi su questi suoni potrebbe non essere il momento giusto
-          per {name}.
-        </Text>
-        <View style={[styles.chipWrap, { marginTop: 16 }]}>
-          {sounds.map((key) => (
-            <View key={key} style={[styles.resultChip, styles.resultChipLocked]}>
-              <Text style={styles.resultChipText}>🔒 {WORD_BANK[key].label}</Text>
-            </View>
-          ))}
-        </View>
-        <Text style={styles.disclaimerText}>
-          Non è una diagnosi. Solo un logopedista può stabilire se {name} è pronto a
-          esercitarsi su questi suoni.
-        </Text>
-      </View>
-      <View style={{ padding: 24, gap: 12 }}>
         <ContinueBtn
-          label="Trova un logopedista vicino a te"
-          onPress={() => navigation.navigate("FindTherapist")}
+          label="Inizia a giocare"
+          onPress={() => {
+            startSelfDirectedPlan(sounds);
+            navigation.navigate("MainTabs");
+          }}
         />
-        <Pressable
-          onPress={() =>
-            navigation.navigate("Session", {
-              phonemeGroupId: DEMO_PHONEME,
-              level: 1,
-              position: "iniziale",
-              exerciseType: "caccia",
-              demo: true,
-            })
-          }
-        >
-          <Text style={styles.skipText}>Prova un assaggio senza codice (1 suono demo)</Text>
-        </Pressable>
       </View>
     </View>
   );
@@ -357,7 +309,6 @@ const styles = StyleSheet.create({
   soundChipLabelOn: { color: "#fff" },
   calcText: { fontSize: 16, fontWeight: "600", color: C.jade },
   resultChip: { backgroundColor: C.jade, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 16, marginBottom: 8 },
-  resultChipLocked: { backgroundColor: C.subtext, opacity: 0.6 },
   resultChipText: { color: "#fff", fontWeight: "700" },
   disclaimerText: { fontSize: 11.5, color: C.subtext, marginTop: 24, lineHeight: 17, fontStyle: "italic" },
 });

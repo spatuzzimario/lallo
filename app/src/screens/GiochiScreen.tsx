@@ -5,6 +5,7 @@ import { useGamificationStore } from "../store/useGamificationStore";
 const C = { paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC" };
 
 const GAMES = [
+  { type: "pappagallo", label: "Ripeti con Lallo", meta: "Novità · il pappagallo ti ripete!", bg: "#fff", emoji: "🦜", featured: true },
   { type: "caccia", label: "Caccia al suono", meta: "Discriminazione · liv. 1–3", bg: "#FDECE7", emoji: "🔎" },
   { type: "registratore", label: "Registratore", meta: "Produzione · liv. 3–5", bg: "#E9F5F1", emoji: "🎤" },
   { type: "memory", label: "Memory", meta: "Discriminazione · liv. 2–3", bg: "#FFF3D6", emoji: "🧩" },
@@ -27,7 +28,7 @@ export default function GiochiScreen({ navigation }: any) {
       {GAMES.map((g) => (
         <Pressable
           key={g.type}
-          style={styles.card}
+          style={[styles.card, "featured" in g && g.featured && styles.cardFeatured]}
           onPress={() =>
             defaultPlan &&
             navigation.navigate("Session", {
@@ -43,7 +44,7 @@ export default function GiochiScreen({ navigation }: any) {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>{g.label}</Text>
-            <Text style={styles.cardMeta}>{g.meta}</Text>
+            <Text style={[styles.cardMeta, "featured" in g && g.featured && styles.cardMetaFeatured]}>{g.meta}</Text>
           </View>
           <Text style={styles.chevron}>›</Text>
         </Pressable>
@@ -64,10 +65,12 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#fff", borderWidth: 1.5, borderColor: C.line,
     borderRadius: 18, padding: 13, marginBottom: 11,
   },
+  cardFeatured: { borderWidth: 2, borderColor: "#FF6A4D", backgroundColor: "#FDECE7" },
   iconBox: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   iconEmoji: { fontSize: 20 },
   cardTitle: { fontSize: 14.5, fontWeight: "700", color: C.ink },
   cardMeta: { fontSize: 11.5, color: C.inkSoft, marginTop: 2 },
+  cardMetaFeatured: { color: "#E84B30", fontWeight: "700" },
   chevron: { fontSize: 18, color: C.line },
   emptyNote: { fontSize: 13, color: C.inkSoft, textAlign: "center", marginTop: 20, lineHeight: 20 },
 });

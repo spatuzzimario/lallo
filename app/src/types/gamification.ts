@@ -19,7 +19,7 @@ export interface LevelProgress {
 
 export interface AssignedExercise {
   id: string;
-  exerciseType: "caccia" | "registratore" | "memory" | "coppie" | "oca" | "sequenze";
+  exerciseType: "caccia" | "registratore" | "memory" | "coppie" | "oca" | "sequenze" | "pappagallo";
   exerciseLabel: string; // es. "Caccia al suono"
   phonemeGroupId: string;
   phonemeLabel: string; // es. "R"

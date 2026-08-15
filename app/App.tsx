@@ -24,7 +24,6 @@ import {
   StrugglingSoundsScreen,
   TrustStatScreen,
   ResultsScreen,
-  PlanPreviewScreen,
 } from "./src/screens/DiagnosticScreens";
 import PaywallScreen from "./src/screens/PaywallScreen";
 import { AdultGateScreen, ParentDashboardScreen, PrivacyConsentScreen } from "./src/screens/ParentScreens";
@@ -38,10 +37,12 @@ import { AdultGateScreen, ParentDashboardScreen, PrivacyConsentScreen } from "./
 // una app separata (architettura attuale) o diventare la primissima schermata di questa
 // stessa app. Nessuna decisione presa: non cambiare l'architettura finché non se ne riparla.
 //
-// PaywallScreen resta importato/instradato ma non è più collegato dal flusso self-directed
-// (vedi PlanPreviewScreen): dare accesso agli esercizi dietro pagamento, senza una valutazione
-// dal vivo, contraddice il gating clinico del punto 2. Resta un possibile futuro entry point
-// di monetizzazione (es. per famiglie già collegate a un logopedista), da ridecidere.
+// NOTA (agosto 2026, brief aggiornato — vedi CLAUDE.md): il modello è ora parent-first,
+// non più B2B2C con gate clinico. Il vecchio PlanPreviewScreen (piano bloccato in attesa di
+// un logopedista) è stato rimosso — ResultsScreen ora sblocca il piano subito, si parte dal
+// livello 1. PaywallScreen resta instradato ma non ancora ricollegato al flusso onboarding:
+// il brief prevede un trial di 7 giorni prima del paywall (§7), da agganciare nel prossimo
+// giro insieme a RevenueCat.
 
 import { useGamificationStore } from "./src/store/useGamificationStore";
 import { ChildProfile } from "./src/types/gamification";
@@ -163,7 +164,6 @@ export default function App() {
           <Stack.Screen name="StrugglingSounds" component={StrugglingSoundsScreen} />
           <Stack.Screen name="TrustStat" component={TrustStatScreen} />
           <Stack.Screen name="Results" component={ResultsScreen} />
-          <Stack.Screen name="PlanPreview" component={PlanPreviewScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Session" component={SessionScreen} />
