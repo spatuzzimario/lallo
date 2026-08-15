@@ -110,6 +110,12 @@ create table if not exists waitlist (
 );
 
 -- ---------- Row Level Security ----------
+-- Ogni policy è preceduta da un "drop policy if exists" con lo stesso nome: rende l'intero
+-- script sicuro da rieseguire più volte (idempotente), anche se in parte è già stato
+-- applicato — utile visto che `waitlist` esiste già collegata alla landing page. Se la tua
+-- `waitlist` ha già una sua policy con un nome diverso, questa si aggiunge senza conflitti
+-- (le policy permissive si sommano in OR); se preferisci non toccarla, salta pure il blocco
+-- `waitlist` più sotto — tutto il resto non dipende da quella tabella.
 
 alter table profiles enable row level security;
 alter table children enable row level security;
@@ -121,12 +127,15 @@ alter table therapists enable row level security;
 alter table therapist_links enable row level security;
 alter table waitlist enable row level security;
 
+drop policy if exists "profiles: self read/write" on profiles;
 create policy "profiles: self read/write" on profiles
   for all using (id = auth.uid()) with check (id = auth.uid());
 
+drop policy if exists "children: owner full access" on children;
 create policy "children: owner full access" on children
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 
+drop policy if exists "children: linked active therapist can read" on children;
 create policy "children: linked active therapist can read" on children
   for select using (
     exists (
@@ -138,6 +147,7 @@ create policy "children: linked active therapist can read" on children
     )
   );
 
+drop policy if exists "targets: owner full access" on targets;
 create policy "targets: owner full access" on targets
   for all using (
     exists (select 1 from children c where c.id = targets.child_id and c.owner_id = auth.uid())
@@ -145,6 +155,7 @@ create policy "targets: owner full access" on targets
     exists (select 1 from children c where c.id = targets.child_id and c.owner_id = auth.uid())
   );
 
+drop policy if exists "targets: linked active therapist can read/write" on targets;
 create policy "targets: linked active therapist can read/write" on targets
   for all using (
     exists (
@@ -156,9 +167,11 @@ create policy "targets: linked active therapist can read/write" on targets
     )
   );
 
+drop policy if exists "content: readable by any authenticated user" on content;
 create policy "content: readable by any authenticated user" on content
   for select using (auth.role() = 'authenticated');
 
+drop policy if exists "sessions: owner full access" on sessions;
 create policy "sessions: owner full access" on sessions
   for all using (
     exists (select 1 from children c where c.id = sessions.child_id and c.owner_id = auth.uid())
@@ -166,6 +179,7 @@ create policy "sessions: owner full access" on sessions
     exists (select 1 from children c where c.id = sessions.child_id and c.owner_id = auth.uid())
   );
 
+drop policy if exists "sessions: linked active therapist can read" on sessions;
 create policy "sessions: linked active therapist can read" on sessions
   for select using (
     exists (
@@ -177,6 +191,7 @@ create policy "sessions: linked active therapist can read" on sessions
     )
   );
 
+drop policy if exists "achievements: owner full access" on achievements;
 create policy "achievements: owner full access" on achievements
   for all using (
     exists (select 1 from children c where c.id = achievements.child_id and c.owner_id = auth.uid())
@@ -184,19 +199,25 @@ create policy "achievements: owner full access" on achievements
     exists (select 1 from children c where c.id = achievements.child_id and c.owner_id = auth.uid())
   );
 
+drop policy if exists "therapists: self read/write" on therapists;
 create policy "therapists: self read/write" on therapists
   for all using (profile_id = auth.uid()) with check (profile_id = auth.uid());
 
+drop policy if exists "therapist_links: therapist can see own links" on therapist_links;
 create policy "therapist_links: therapist can see own links" on therapist_links
   for select using (
     exists (select 1 from therapists t where t.id = therapist_links.therapist_id and t.profile_id = auth.uid())
   );
 
+drop policy if exists "therapist_links: parent can see links for own children" on therapist_links;
 create policy "therapist_links: parent can see links for own children" on therapist_links
   for select using (
     exists (select 1 from children c where c.id = therapist_links.child_id and c.owner_id = auth.uid())
   );
 
--- anon key: solo insert su waitlist (già il comportamento della landing page)
+-- anon key: solo insert su waitlist (già il comportamento della landing page). Se la tua
+-- tabella esistente ha già una policy equivalente con un altro nome, questa si aggiunge
+-- senza rompere nulla — puoi anche cancellarla dopo se preferisci tenere solo la tua.
+drop policy if exists "waitlist: anon insert only" on waitlist;
 create policy "waitlist: anon insert only" on waitlist
   for insert to anon with check (true);
