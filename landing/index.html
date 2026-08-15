@@ -23,9 +23,6 @@
     --line:#D9CEBC;
     --shadow: 18px 18px 0 rgba(31,46,43,.07);
     --radius:22px;
-    --radius-play:28px;
-    --radius-clinical:13px;
-    --sticker-shadow: 3px 4px 0 rgba(31,46,43,.10);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -151,7 +148,6 @@
   .chip{font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;cursor:pointer;transition:all .14s;user-select:none}
   .chip.sel{background:var(--jade);color:#fff;border-color:var(--jade)}
   .chip.sun.sel{background:var(--coral);border-color:var(--coral)}
-  .chip.disabled{opacity:.35;pointer-events:none}
   .field-label{font-size:12px;font-weight:700;color:var(--ink-soft);margin:13px 2px 2px}
   .assign-btn{width:100%;margin-top:16px;background:var(--coral);color:#fff;border:none;border-radius:14px;padding:13px;font-family:"Figtree";font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 0 var(--coral-deep)}
   .assign-btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--coral-deep)}
@@ -198,10 +194,33 @@
   .seq-card.wrong{border-color:var(--coral);background:#FDECE7;animation:shake .3s}
   .seq-story{background:var(--mist);border-radius:14px;padding:13px 14px;font-size:13.5px;color:var(--ink);min-height:52px;line-height:1.45}
 
-  /* shuffle button (new) */
-  .shuffle-btn{display:flex;align-items:center;gap:6px;margin:0 auto 12px;background:#fff;border:1.5px solid var(--line);color:var(--jade-deep);font-family:"Figtree";font-weight:600;font-size:12.5px;border-radius:999px;padding:7px 13px;cursor:pointer;transition:all .14s}
-  .shuffle-btn:hover{border-color:var(--jade);background:var(--mist)}
-  .shuffle-btn:active{transform:scale(.96)}
+  /* pappagallo Lallo (viral) */
+  .gal-feat{border:2px solid var(--coral)!important;background:#FDECE7!important}
+  .gal-feat .meta{color:var(--coral-deep)!important;font-weight:700}
+  .pp-fig{text-align:center;margin:6px 0 4px}
+  .pp-emoji{display:block;font-size:44px;line-height:1}
+  .pp-word{font-family:"Bricolage Grotesque";font-weight:800;font-size:26px;color:var(--ink)}
+  .pp-parrot{text-align:center;font-size:70px;line-height:1;margin:6px 0 2px;transition:transform .1s}
+  .pp-parrot.talk{animation:ppwiggle .5s ease}
+  @keyframes ppwiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-8deg) scale(1.12)}75%{transform:rotate(8deg) scale(1.12)}}
+  .pp-cap{text-align:center;font-size:13px;color:var(--ink-soft);min-height:20px;margin-bottom:12px}
+  .pp-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+  .pp-btn{border:none;border-radius:14px;padding:13px 8px;font-family:"Figtree";font-weight:700;font-size:14px;cursor:pointer;transition:transform .12s}
+  .pp-btn.mic{background:var(--jade);color:#fff;box-shadow:0 4px 0 var(--jade-deep)}
+  .pp-btn.rep{background:var(--coral);color:#fff;box-shadow:0 4px 0 var(--coral-deep)}
+  .pp-btn:active{transform:translateY(2px)}
+  .pp-share{width:100%;background:var(--sun);color:var(--ink);border:none;border-radius:14px;padding:12px;font-family:"Figtree";font-weight:700;font-size:14px;cursor:pointer}
+  .pp-share:active{transform:translateY(2px)}
+  /* milestone card (viral) */
+  .milestone{background:linear-gradient(135deg,var(--jade),var(--jade-deep));border-radius:18px;padding:16px;margin-bottom:14px;color:#fff;text-align:center}
+  .milestone .ms-emoji{font-size:34px;line-height:1}
+  .milestone .ms-txt{font-family:"Bricolage Grotesque";font-weight:800;font-size:16px;margin:6px 0 2px}
+  .milestone .ms-sub{font-size:12px;opacity:.85;margin-bottom:12px}
+  .ms-share{background:var(--sun);color:var(--ink);border:none;border-radius:12px;padding:10px 18px;font-family:"Figtree";font-weight:700;font-size:13.5px;cursor:pointer}
+  .ms-share:active{transform:translateY(2px)}
+  /* child toast */
+  .ctoast{position:absolute;left:16px;right:16px;bottom:74px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;text-align:center;z-index:30;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+  .ctoast.show{opacity:1;transform:none}
 
   /* ---------- SECTIONS ---------- */
   section.band{padding:80px 0}
@@ -275,6 +294,23 @@
   .wl-success .big{font-size:50px}
   @media(max-width:860px){.wl-grid{grid-template-columns:1fr;gap:30px}}
 
+  /* pricing (Speech Blubs style) */
+  .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:760px;margin:44px auto 0;align-items:stretch}
+  .price-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:28px 26px;display:flex;flex-direction:column;position:relative}
+  .price-card.feat{border:2.5px solid var(--coral);box-shadow:var(--shadow)}
+  .price-badge{position:absolute;top:-13px;left:26px;background:var(--coral);color:#fff;font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:999px}
+  .price-save{display:inline-block;background:var(--mist);color:var(--jade-deep);font-size:12.5px;font-weight:700;padding:4px 11px;border-radius:999px;margin-bottom:12px;align-self:flex-start}
+  .price-name{font-family:"Bricolage Grotesque";font-weight:700;font-size:20px;margin-bottom:6px}
+  .price-amt{font-family:"Bricolage Grotesque";font-weight:800;font-size:44px;line-height:1;color:var(--ink)}
+  .price-amt small{font-size:17px;font-weight:600;color:var(--ink-soft)}
+  .price-note{font-size:14px;color:var(--ink-soft);margin:8px 0 18px;min-height:20px}
+  .price-cta{margin-top:auto;display:block;text-align:center;border:none;cursor:pointer;border-radius:14px;padding:14px;font-family:"Figtree";font-weight:700;font-size:15px;transition:transform .12s}
+  .price-cta.primary{background:var(--coral);color:#fff;box-shadow:0 4px 0 var(--coral-deep)}
+  .price-cta.primary:active{transform:translateY(2px);box-shadow:0 2px 0 var(--coral-deep)}
+  .price-cta.ghost{background:var(--paper);color:var(--jade);border:1.5px solid var(--jade)}
+  .price-fine{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:22px}
+  @media(max-width:640px){.price-grid{grid-template-columns:1fr;max-width:420px}}
+
   footer{background:var(--paper-2);border-top:1px solid var(--line);padding:40px 0;font-size:14px;color:var(--ink-soft)}
   .foot-in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;align-items:center}
 
@@ -287,50 +323,6 @@
   }
 
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
-
-  /* ================= DESIGN PASS 2: mascotte, strappi, tono duale ================= */
-
-  /* ---- mascotte protagonista in hero ---- */
-  .mascot-hero-wrap{position:absolute;top:-26px;right:18px;z-index:5;filter:drop-shadow(3px 5px 0 rgba(31,46,43,.12))}
-  .mascot-hero{width:86px;height:86px;animation:mascotBob 3.4s ease-in-out infinite}
-  .mascot-hero .wing{transform-origin:70% 55%;animation:wingFlap 2.6s ease-in-out infinite}
-  .mascot-hero .eye-lid{animation:blink 4.8s ease-in-out infinite}
-  @keyframes mascotBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}
-  @keyframes wingFlap{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-14deg)}}
-  @keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
-  @media(max-width:860px){.mascot-hero-wrap{right:-6px;top:-18px}.mascot-hero{width:64px;height:64px}}
-
-  .mascot-float{width:52px;height:52px;display:inline-block;vertical-align:middle;animation:mascotBob 3.4s ease-in-out infinite}
-  .mascot-float .wing{transform-origin:70% 55%;animation:wingFlap 2.6s ease-in-out infinite}
-
-  /* ---- divisore "carta strappata" tra le zone ---- */
-  .torn-divider{display:block;width:100%;height:36px;margin-top:-35px;position:relative;z-index:3}
-  .torn-divider path{fill:var(--paper)}
-  .torn-fill-jade path{fill:var(--jade)}
-  .torn-fill-paper2 path{fill:var(--paper-2)}
-  .torn-fill-ink path{fill:var(--ink)}
-  .torn-fill-paper path{fill:var(--paper)}
-
-  /* ---- angolo "adesivo" sulle card esercizi (zona bambino) ---- */
-  .zone-play .exq{position:relative;overflow:visible;border-radius:var(--radius-play)}
-  .zone-play .exq::after{
-    content:"";position:absolute;top:-7px;right:14px;width:26px;height:26px;
-    background:var(--sun);border-radius:7px;transform:rotate(18deg);
-    box-shadow:var(--sticker-shadow);border:2px solid rgba(31,46,43,.08);
-  }
-  .zone-play .exq:hover{transform:translateY(-4px) rotate(-.6deg);box-shadow:10px 12px 0 rgba(31,46,43,.06)}
-  .zone-play .step{border-radius:var(--radius-play)}
-  .zone-play .step:hover{transform:translateY(-3px) rotate(.5deg)}
-
-  /* ---- zona clinica: più composta, meno decorata ---- */
-  .zone-clinical .stat{border-radius:var(--radius-clinical)}
-  .zone-clinical .stat .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-  .zone-clinical .ct{border-radius:var(--radius-clinical)}
-  .zone-clinical .ct:hover{transform:none}
-
-  /* ---- pappagallo che tifa vicino alla waitlist ---- */
-  .wl-mascot{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-weight:700;color:var(--jade-deep);font-size:14.5px}
-
 </style>
 </head>
 <body>
@@ -353,7 +345,8 @@
     <div class="nav-links">
       <a href="#demo">Demo</a>
       <a href="#esercizi">Esercizi</a>
-      <a href="#logopedisti">Per logopedisti</a>
+      <a href="#prezzi">Prezzi</a>
+      <a href="#logopedisti">Col logopedista</a>
       <a href="#lista" class="btn btn-coral navcta">Entra in lista</a>
     </div>
   </div>
@@ -363,14 +356,14 @@
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow">🦜 Per logopedisti e famiglie</span>
-      <h1>I compiti a casa che i tuoi pazienti <em>faranno davvero.</em></h1>
-      <p class="lead">Tu imposti il fonema, la posizione e gli esercizi. Lallo li trasforma in giochi che il bambino vuole fare tra una seduta e l'altra — e ti riporta i progressi, pronti per la visita.</p>
+      <span class="eyebrow">🦜 Logopedia che sembra un gioco</span>
+      <h1>Aiuta tuo figlio a <em>parlare meglio,</em> giocando.</h1>
+      <p class="lead">Lallo trasforma gli esercizi di logopedia in giochi che il bambino vuole fare. Pensato per l'italiano, approvato dai logopedisti. Inizi da solo — e se hai già un logopedista, colleghi gli esercizi alla sua terapia.</p>
       <div class="hero-cta">
-        <a href="#lista" class="btn btn-coral">Entra in lista d'attesa</a>
+        <a href="#prezzi" class="btn btn-coral">Inizia gratis</a>
         <a href="#demo" class="btn btn-ghost">Prova la demo ↓</a>
       </div>
-      <div class="trust"><span class="dot"></span> Il logopedista resta al centro. Sempre.</div>
+      <div class="trust"><span class="dot"></span> Approvato dai logopedisti · Niente pubblicità · In italiano</div>
     </div>
 
     <!-- ===== INTERACTIVE PHONE DEMO ===== -->
@@ -381,17 +374,6 @@
       </div>
 
       <div class="phone-stage" id="demo">
-        <div class="mascot-hero-wrap" aria-hidden="true">
-          <svg class="mascot-hero" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="16" cy="18" rx="9" ry="10" fill="#137A6E"/>
-            <ellipse cx="16" cy="20" rx="5.5" ry="6.5" fill="#FFC53D"/>
-            <circle cx="12.5" cy="11" r="6" fill="#FF6A4D"/>
-            <circle cx="11" cy="10" r="2.4" fill="#fff"/>
-            <circle class="eye-lid" cx="10.6" cy="10.4" r="1.1" fill="#1F2E2B"/>
-            <path d="M6.5 11 Q3.5 11.5 5.5 14 Q7 13 8 12 Z" fill="#FFC53D"/>
-            <path class="wing" d="M19 16 Q24 14 23 20 Q20 19 18.5 18 Z" fill="#0E5C53"/>
-          </svg>
-        </div>
         <div class="phone">
           <div class="notch"></div>
           <div class="phone-screen">
@@ -399,7 +381,7 @@
             <!-- ===== CHILD VIEW ===== -->
             <div id="view-child" style="display:flex;flex-direction:column;flex:1;min-height:0">
               <div class="app-top">
-                <div><div class="who">Ciao, Marco! 👋</div><div class="sub" id="childSub">Suono di oggi: la R</div></div>
+                <div><div class="who">Ciao, Marco! 👋</div><div class="sub">Suono di oggi: la R</div></div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <button class="snd-btn" id="sndBtn" onclick="toggleSound(this)" title="Attiva/disattiva audio">🔊</button>
                   <div class="pill">🔥 4 giorni</div>
@@ -416,12 +398,12 @@
                   <div class="sec-label">Da fare oggi</div>
                   <div class="card" onclick="openEx('caccia','oggi')">
                     <div class="ic" style="background:#FDECE7">🔎</div>
-                    <div><h4>Caccia al suono</h4><div class="meta" id="oggiMetaCaccia">R iniziale · livello 3</div></div>
+                    <div><h4>Caccia al suono</h4><div class="meta">R iniziale · livello 3</div></div>
                     <div class="chev">›</div>
                   </div>
                   <div class="card" onclick="openEx('rec','oggi')">
                     <div class="ic" style="background:#E9F5F1">🎤</div>
-                    <div><h4>Registratore</h4><div class="meta" id="oggiMetaRec">R intervocalica · livello 3</div></div>
+                    <div><h4>Registratore</h4><div class="meta">R intervocalica · livello 3</div></div>
                     <div class="chev">›</div>
                   </div>
                   <div class="card" onclick="openEx('memory','oggi')">
@@ -434,19 +416,24 @@
                 <!-- CACCIA AL SUONO -->
                 <div class="screen" data-c="caccia">
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Caccia al suono</div></div>
-                  <div class="ex-q" id="cacciaQ">Tocca tutte le parole che iniziano con <b>R</b> 🦜</div>
-                  <button class="shuffle-btn" onclick="cacciaReset(true)">🔀 Nuove parole</button>
-                  <div class="grid2" id="cacciaGrid"></div>
+                  <div class="ex-q">Tocca tutte le parole che iniziano con <b>R</b> 🦜</div>
+                  <div class="grid2">
+                    <div class="tile" onclick="hit(this,true,'rana')"><span class="emo">🐸</span>Rana</div>
+                    <div class="tile" onclick="hit(this,false,'gatto')"><span class="emo">🐱</span>Gatto</div>
+                    <div class="tile" onclick="hit(this,true,'rosa')"><span class="emo">🌹</span>Rosa</div>
+                    <div class="tile" onclick="hit(this,false,'limone')"><span class="emo">🍋</span>Limone</div>
+                    <div class="tile" onclick="hit(this,true,'robot')"><span class="emo">🤖</span>Robot</div>
+                    <div class="tile" onclick="hit(this,false,'mela')"><span class="emo">🍎</span>Mela</div>
+                  </div>
                 </div>
 
                 <!-- REGISTRATORE -->
                 <div class="screen" data-c="rec" id="recScreen">
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Registratore</div></div>
                   <div class="ex-q">Ascolta come si dice, poi prova tu.</div>
-                  <button class="shuffle-btn" onclick="recReset(true)">🔀 Nuova parola</button>
-                  <div style="text-align:center;font-size:48px;line-height:1;margin:4px 0 2px" id="recEmoji">🗼</div>
-                  <div class="rec-word" id="recWord">toRRe</div>
-                  <div class="rec-ipa" id="recMeta">R intervocalica</div>
+                  <div style="text-align:center;font-size:48px;line-height:1;margin:4px 0 2px">🗼</div>
+                  <div class="rec-word">toRRe</div>
+                  <div class="rec-ipa">/ˈtor.re/ · R intervocalica</div>
                   <div class="wave"><i style="height:8px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:14px"></i><i style="height:22px"></i><i style="height:10px"></i><i style="height:20px"></i><i style="height:8px"></i></div>
                   <div class="rec-row">
                     <button class="rec-btn rec-listen" onclick="playModel()" title="Ascolta il modello">▶</button>
@@ -458,6 +445,10 @@
                 <!-- GIOCHI (galleria) -->
                 <div class="screen" data-c="giochi">
                   <div class="sec-label">Tutti i giochi</div>
+                  <div class="card gal-feat" onclick="openEx('pappagallo','giochi')">
+                    <div class="ic" style="background:#fff">🦜</div>
+                    <div><h4>Ripeti con Lallo</h4><div class="meta">Novità · il pappagallo ti ripete!</div></div><div class="chev">›</div>
+                  </div>
                   <div class="card" onclick="openEx('caccia','giochi')">
                     <div class="ic" style="background:#FDECE7">🔎</div>
                     <div><h4>Caccia al suono</h4><div class="meta">Discriminazione · liv. 1–3</div></div><div class="chev">›</div>
@@ -487,9 +478,15 @@
                 <!-- MEMORY -->
                 <div class="screen" data-c="memory">
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Memory</div></div>
-                  <div class="ex-q" id="memoryQ">Trova le coppie di parole con la <b>R</b> 🦜</div>
-                  <button class="shuffle-btn" onclick="memReset(true)">🔀 Nuove carte</button>
-                  <div class="mem-grid" id="memGrid"></div>
+                  <div class="ex-q">Trova le coppie di parole con la <b>R</b> 🦜</div>
+                  <div class="mem-grid">
+                    <div class="mem-card" data-id="rana" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🐸<small>rana</small></span></div>
+                    <div class="mem-card" data-id="rosa" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🌹<small>rosa</small></span></div>
+                    <div class="mem-card" data-id="rana" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🐸<small>rana</small></span></div>
+                    <div class="mem-card" data-id="robot" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🤖<small>robot</small></span></div>
+                    <div class="mem-card" data-id="rosa" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🌹<small>rosa</small></span></div>
+                    <div class="mem-card" data-id="robot" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🤖<small>robot</small></span></div>
+                  </div>
                   <div class="rec-cap" id="memMsg">Tocca due carte uguali</div>
                 </div>
 
@@ -498,7 +495,7 @@
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Coppie minime</div></div>
                   <div class="ex-q">Ascolta, poi tocca la parola che hai sentito.</div>
                   <div class="cm-play"><button class="rec-btn rec-listen" onclick="cmPlay()" title="Ascolta">▶</button></div>
-                  <div class="grid2" id="cmGrid">
+                  <div class="grid2">
                     <div class="tile" onclick="cmPick(this,'sole')"><span class="emo">🌞</span>SOLE</div>
                     <div class="tile" onclick="cmPick(this,'sale')"><span class="emo">🧂</span>SALE</div>
                   </div>
@@ -534,9 +531,29 @@
                   <div class="seq-story" id="seqStory">Tocca l'immagine giusta per iniziare…</div>
                 </div>
 
+                <!-- PAPPAGALLO LALLO (feature virale) -->
+                <div class="screen" data-c="pappagallo">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Ripeti con Lallo</div></div>
+                  <div class="ex-q">Dì la parola… e senti come la ripete Lallo! 🦜</div>
+                  <div class="pp-fig" onclick="ppNext()" title="Cambia parola"><span class="pp-emoji" id="ppEmoji">🐸</span><span class="pp-word" id="ppWord">rana</span></div>
+                  <div class="pp-parrot" id="ppParrot">🦜</div>
+                  <div class="pp-cap" id="ppCap">Tocca il microfono e prova!</div>
+                  <div class="pp-row">
+                    <button class="pp-btn mic" onclick="ppSay()">🎤 Dillo tu</button>
+                    <button class="pp-btn rep" onclick="ppRepeat()">🦜 Lallo ripete!</button>
+                  </div>
+                  <button class="pp-share" onclick="ppShare()">🎬 Salva la clip da condividere</button>
+                </div>
+
                 <!-- PROGRESSI -->
                 <div class="screen" data-c="progressi">
                   <div class="sec-label">I progressi di Marco</div>
+                  <div class="milestone">
+                    <div class="ms-emoji">🎉</div>
+                    <div class="ms-txt">Marco ha conquistato la R iniziale!</div>
+                    <div class="ms-sub">Traguardo sbloccato oggi</div>
+                    <button class="ms-share" onclick="msShare()">🦜 Condividi il traguardo</button>
+                  </div>
                   <div class="pbar-row"><div class="pbar-top"><span>R iniziale</span><span>80%</span></div><div class="pbar"><i style="width:80%"></i></div></div>
                   <div class="pbar-row"><div class="pbar-top"><span>R intervocalica</span><span>55%</span></div><div class="pbar"><i style="width:55%"></i></div></div>
                   <div class="pbar-row"><div class="pbar-top"><span>Gruppo TR / PR</span><span>30%</span></div><div class="pbar"><i style="width:30%"></i></div></div>
@@ -547,6 +564,7 @@
                 </div>
 
               </div>
+              <div class="ctoast" id="childToast"></div>
               <div class="tabbar">
                 <button class="tab active" data-tab="oggi" onclick="goChild('oggi')"><span class="ti">🏠</span>Oggi</button>
                 <button class="tab" data-tab="giochi" onclick="goChild('giochi')"><span class="ti">🎮</span>Giochi</button>
@@ -594,12 +612,19 @@
                   <div class="ex-head"><button class="ex-back" onclick="goPro('pazienti')">‹</button><div class="ex-title">Assegna a Marco</div></div>
 
                   <div class="field-label">FONEMA</div>
-                  <div class="chiprow" id="phonemeChips"></div>
+                  <div class="chiprow">
+                    <div class="chip sel" onclick="tog(this,'mono')">R</div>
+                    <div class="chip" onclick="tog(this,'mono')">S</div>
+                    <div class="chip" onclick="tog(this,'mono')">Z</div>
+                    <div class="chip" onclick="tog(this,'mono')">SC/SCI</div>
+                    <div class="chip" onclick="tog(this,'mono')">GN</div>
+                  </div>
 
                   <div class="field-label">POSIZIONE</div>
-                  <div class="chiprow" id="positionChips">
-                    <div class="chip sel" data-pos="iniziale" onclick="togPosition(this)">Iniziale</div>
-                    <div class="chip sel" data-pos="mediana" onclick="togPosition(this)">Mediana</div>
+                  <div class="chiprow">
+                    <div class="chip sel" onclick="tog(this)">Iniziale</div>
+                    <div class="chip sel" onclick="tog(this)">Intervocalica</div>
+                    <div class="chip" onclick="tog(this)">Gruppo cons.</div>
                   </div>
 
                   <div class="field-label">TIPI DI ESERCIZIO</div>
@@ -652,35 +677,34 @@
 </header>
 
 <!-- ===== PROBLEM ===== -->
-<svg class="torn-divider torn-fill-paper" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0,0 L40.0,16 L80.0,2 L120.0,16 L160.0,2 L200.0,16 L240.0,2 L280.0,16 L320.0,2 L360.0,16 L400.0,2 L440.0,16 L480.0,2 L520.0,16 L560.0,2 L600.0,16 L640.0,2 L680.0,16 L720.0,2 L760.0,16 L800.0,2 L840.0,16 L880.0,2 L920.0,16 L960.0,2 L1000.0,16 L1040.0,2 L1080.0,16 L1120.0,2 L1160.0,16 L1200.0,2 L1200,40 L0,40 Z"/></svg>
-<section class="band problem zone-clinical">
+<section class="band problem">
   <div class="wrap">
-    <div class="kicker">Il vero problema non è la domanda</div>
-    <h2 class="big">Hai pazienti in lista d'attesa. Quello che ti manca è la continuità tra una seduta e l'altra.</h2>
+    <div class="kicker">Perché Lallo</div>
+    <h2 class="big">Se tuo figlio fatica con alcuni suoni, puoi aiutarlo da oggi.</h2>
     <div class="stats">
-      <div class="stat"><div class="num">1 su 10</div><div class="lbl">bambini in età scolare con difficoltà di linguaggio in Italia</div></div>
-      <div class="stat"><div class="num">12–24</div><div class="lbl">mesi di attesa nel servizio pubblico per una presa in carico</div></div>
-      <div class="stat"><div class="num">~32</div><div class="lbl">pazienti in carico per logopedista, con agende spesso già piene</div></div>
+      <div class="stat"><div class="num">1 su 10</div><div class="lbl">bambini in età scolare ha difficoltà di linguaggio in Italia</div></div>
+      <div class="stat"><div class="num">12–24</div><div class="lbl">mesi di attesa nel servizio pubblico — ma non devi aspettare per iniziare</div></div>
+      <div class="stat"><div class="num">10 min</div><div class="lbl">al giorno di gioco bastano per tenere vivo l'allenamento</div></div>
     </div>
-    <p class="punch">Il bambino che a casa non si allena <span>regredisce</span>, e a ogni seduta riparti da capo. Lallo tiene vivo l'esercizio nei giorni in mezzo.</p>
+    <p class="punch">Mentre aspetti la prima seduta — o tra una e l'altra — Lallo mantiene vivo l'esercizio con giochi che <span>tuo figlio adora</span>. Da solo, o insieme al suo logopedista.</p>
   </div>
 </section>
 
 <!-- ===== HOW IT WORKS ===== -->
-<section class="band zone-play" id="come">
+<section class="band" id="come">
   <div class="wrap">
     <div class="kicker">Come funziona</div>
-    <h2 class="big">Tre passi. Tu al comando in tutti e tre.</h2>
+    <h2 class="big">Tre passi. Bastano pochi minuti al giorno.</h2>
     <div class="steps">
-      <div class="step"><div class="n">1</div><h3>Imposti il piano</h3><p>Scegli il fonema, la posizione (iniziale, intervocalica, gruppo consonantico) e quali esercizi assegnare. Struttura clinica, non contenuto a caso.</p></div>
-      <div class="step"><div class="n">2</div><h3>Il bambino gioca a casa</h3><p>Stessi esercizi, set di parole che ruotano: alla decima sessione non rivede le stesse identiche immagini. L'aderenza non crolla.</p></div>
-      <div class="step"><div class="n">3</div><h3>Vedi i progressi</h3><p>Aderenza, suoni acquisiti, sessioni da rivedere insieme. Un report pronto da aprire all'inizio della seduta.</p></div>
+      <div class="step"><div class="n">1</div><h3>Scegli il suono</h3><p>Scegli tu il suono da allenare — la R, le sibilanti, i gruppi. Oppure lo imposta il tuo logopedista, se ne hai uno.</p></div>
+      <div class="step"><div class="n">2</div><h3>Il bambino gioca a casa</h3><p>Giochi con parole che ruotano: alla decima sessione non rivede le stesse immagini. Pochi minuti al giorno, senza che sembri un compito.</p></div>
+      <div class="step"><div class="n">3</div><h3>Vedi i progressi</h3><p>Segui i suoni conquistati e festeggia ogni traguardo. E se hai un logopedista, condividi i progressi con lui.</p></div>
     </div>
   </div>
 </section>
 
 <!-- ===== EXERCISES TAXONOMY ===== -->
-<section class="band zone-play" id="esercizi" style="background:var(--paper-2)">
+<section class="band" id="esercizi" style="background:var(--paper-2)">
   <div class="wrap">
     <div class="kicker">Gli esercizi</div>
     <h2 class="big">Ogni gioco ha uno scopo clinico preciso.</h2>
@@ -709,35 +733,48 @@
 </section>
 
 <!-- ===== ANTI-THREAT / THERAPIST-CENTRED ===== -->
-<section class="band center-band zone-clinical" id="logopedisti">
+<section class="band center-band" id="logopedisti">
   <div class="wrap">
-    <div class="kicker">Per i logopedisti</div>
-    <h2 class="big">Lallo non sostituisce te. Ti fa fare più strada.</h2>
+    <div class="kicker">Con o senza logopedista</div>
+    <h2 class="big">Usalo da solo. O collegalo alla terapia.</h2>
     <div class="ct-grid">
-      <div class="ct"><div class="em">🩺</div><h3>Non diagnostica</h3><p>È sempre il logopedista a impostare il fonema e il piano. Lallo esegue i compiti, non valuta il disturbo.</p></div>
-      <div class="ct"><div class="em">📄</div><h3>Ti fa risparmiare tempo</h3><p>Report pronti per la seduta e assegnazione remota del piano. Meno preparazione manuale, più tempo clinico.</p></div>
-      <div class="ct"><div class="em">📈</div><h3>Più progressi, più passaparola</h3><p>Bambini che si allenano davvero migliorano più in fretta. Le famiglie lo notano — e ti raccomandano.</p></div>
+      <div class="ct"><div class="em">👨‍👩‍👧</div><h3>Da solo, a casa</h3><p>Scegli i suoni, il bambino gioca, tu segui i progressi. Non serve altro per iniziare oggi.</p></div>
+      <div class="ct"><div class="em">🩺</div><h3>Collegato al logopedista</h3><p>Hai già un logopedista? Può impostare il piano e seguire i progressi: gli esercizi seguono la sua terapia. È un'opzione, non un obbligo.</p></div>
+      <div class="ct"><div class="em">✓</div><h3>Approvato dai professionisti</h3><p>Costruito con logopedisti italiani. Lallo affianca la terapia, non la sostituisce — e se serve, ti invita a rivolgerti a un professionista.</p></div>
     </div>
   </div>
 </section>
 
+<!-- ===== PRICING ===== -->
+<section class="band" id="prezzi" style="background:var(--paper-2)">
+  <div class="wrap" style="text-align:center">
+    <div class="kicker" style="justify-content:center">Prezzi</div>
+    <h2 class="big" style="margin:0 auto">Prova gratis. Poi scegli tu.</h2>
+    <p class="lead2" style="margin:16px auto 0">7 giorni di prova gratuita. Nessun addebito finché non decidi. Per i logopedisti, Lallo è sempre gratis.</p>
+    <div class="price-grid">
+      <div class="price-card feat">
+        <div class="price-badge">★ Più scelto</div>
+        <span class="price-save">Risparmia 50%</span>
+        <div class="price-name">Annuale</div>
+        <div class="price-amt">€3,99<small> /mese</small></div>
+        <div class="price-note">Fatturato €47,88/anno · 7 giorni gratis, poi si rinnova</div>
+        <button class="price-cta primary" onclick="document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Inizia la prova gratuita</button>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Mensile</div>
+        <div class="price-amt">€7,99<small> /mese</small></div>
+        <div class="price-note">Flessibile · disdici quando vuoi</div>
+        <button class="price-cta ghost" onclick="document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Abbonati</button>
+      </div>
+    </div>
+    <p class="price-fine">Prezzi in fase di test · disdici quando vuoi · l'annuale costa come ~2 mesi in meno rispetto al mensile 🦜</p>
+  </div>
+</section>
+
 <!-- ===== WAITLIST ===== -->
-<svg class="torn-divider torn-fill-ink" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0,0 L40.0,16 L80.0,2 L120.0,16 L160.0,2 L200.0,16 L240.0,2 L280.0,16 L320.0,2 L360.0,16 L400.0,2 L440.0,16 L480.0,2 L520.0,16 L560.0,2 L600.0,16 L640.0,2 L680.0,16 L720.0,2 L760.0,16 L800.0,2 L840.0,16 L880.0,2 L920.0,16 L960.0,2 L1000.0,16 L1040.0,2 L1080.0,16 L1120.0,2 L1160.0,16 L1200.0,2 L1200,40 L0,40 Z"/></svg>
-<section class="band zone-play" id="lista">
+<section class="band" id="lista">
   <div class="wrap wl-grid">
     <div>
-      <div class="wl-mascot">
-        <svg class="mascot-float" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="16" cy="18" rx="9" ry="10" fill="#137A6E"/>
-          <ellipse cx="16" cy="20" rx="5.5" ry="6.5" fill="#FFC53D"/>
-          <circle cx="12.5" cy="11" r="6" fill="#FF6A4D"/>
-          <circle cx="11" cy="10" r="2.4" fill="#fff"/>
-          <circle cx="10.6" cy="10.4" r="1.1" fill="#1F2E2B"/>
-          <path d="M6.5 11 Q3.5 11.5 5.5 14 Q7 13 8 12 Z" fill="#FFC53D"/>
-          <path class="wing" d="M19 16 Q24 14 23 20 Q20 19 18.5 18 Z" fill="#0E5C53"/>
-        </svg>
-        Lallo ti aspetta
-      </div>
       <div class="kicker">Lista d'attesa</div>
       <h2 class="big">Entra tra i primi.</h2>
       <p class="lead2">Stiamo costruendo Lallo con un gruppo ristretto di logopedisti. Iscriviti: avrai accesso prioritario alla beta e, se sei un professionista, potrai dare forma agli esercizi prima del lancio.</p>
@@ -774,110 +811,7 @@
 </footer>
 
 <script>
-/* ==================================================================
-   WORD BANK — libreria parole per fonema (iniziale/mediana)
-   Generata come prima bozza; DA VALIDARE con un logopedista prima
-   di uso clinico reale, in particolare i nessi consonantici.
-   ================================================================== */
-const WORD_BANK = {
-  b:   { label:'B',         iniziale:[["balena","🐋"],["banana","🍌"],["bicicletta","🚲"],["bambola","🪆"],["barca","⛵"],["bottone","🔘"],["burro","🧈"],["borsa","👜"]],
-                             mediana:[["sabbia","🏖️"],["gabbia","🦜"],["tubo","🧴"],["cubo","🧊"],["nebbia","🌫️"],["gobba","🐫"],["abito","👗"],["sabato","📅"]] },
-  c:   { label:'C (dura)',  iniziale:[["cane","🐶"],["casa","🏠"],["cuore","❤️"],["colore","🎨"],["cavallo","🐴"],["cucchiaio","🥄"],["coccinella","🐞"],["cappello","🎩"]],
-                             mediana:[["fuoco","🔥"],["secchio","🪣"],["pacco","📦"],["amico","🧑‍🤝‍🧑"],["oca","🦆"],["mucca","🐄"],["ricco","💰"],["baco","🐛"]] },
-  ci:  { label:'CI (dolce)',iniziale:[["ciliegia","🍒"],["cioccolato","🍫"],["cielo","☁️"],["cerchio","⭕"],["cena","🍽️"],["cesto","🧺"],["cintura","👖"],["cinque","5️⃣"]],
-                             mediana:[["bicicletta","🚲"],["faccia","😊"],["doccia","🚿"],["arancia","🍊"],["focaccia","🍞"],["pancia","🫃"],["caccia","🏹"],["traccia","👣"]] },
-  d:   { label:'D',         iniziale:[["dado","🎲"],["dito","☝️"],["delfino","🐬"],["dente","🦷"],["drago","🐉"],["disegno","🖍️"],["donna","👩"],["dolce","🍰"]],
-                             mediana:[["nido","🪺"],["cadere","⬇️"],["radio","📻"],["moda","👗"],["medaglia","🏅"],["edera","🌿"],["candela","🕯️"],["freddo","🥶"]] },
-  f:   { label:'F',         iniziale:[["fungo","🍄"],["foglia","🍃"],["farfalla","🦋"],["fiore","🌸"],["fuoco","🔥"],["fragola","🍓"],["forchetta","🍴"],["formica","🐜"]],
-                             mediana:[["caffè","☕"],["elefante","🐘"],["telefono","📞"],["giraffa","🦒"],["buffo","🤡"],["profumo","🌺"],["sofà","🛋️"],["gonfio","🎈"]] },
-  g:   { label:'G (dura)',  iniziale:[["gatto","🐱"],["gallina","🐔"],["gomma","🧽"],["gufo","🦉"],["gonna","👗"],["guanto","🧤"],["gomito","💪"],["gabbiano","🐦"]],
-                             mediana:[["fungo","🍄"],["lago","🏞️"],["mago","🧙"],["igloo","🧊"],["ago","🪡"],["fuga","🏃"],["rughe","👵"],["sugo","🍝"]] },
-  gi:  { label:'GI (dolce)',iniziale:[["giraffa","🦒"],["gelato","🍦"],["gioco","🎮"],["giacca","🧥"],["girasole","🌻"],["ginocchio","🦵"],["gemello","👯"],["gelso","🌳"]],
-                             mediana:[["formaggio","🧀"],["valigia","🧳"],["magia","✨"],["orologio","⌚"],["pagina","📄"],["angelo","👼"],["spiaggia","🏖️"],["coraggio","🦁"]] },
-  gli: { label:'GLI',       iniziale:[],
-                             mediana:[["famiglia","👪"],["figlio","🧒"],["maglia","👕"],["aglio","🧄"],["foglia","🍃"],["coniglio","🐰"],["bottiglia","🍾"],["sveglia","⏰"]] },
-  gn:  { label:'GN',        iniziale:[["gnomo","🧙‍♂️"],["gnocchi","🍝"]],
-                             mediana:[["castagna","🌰"],["montagna","⛰️"],["ragno","🕷️"],["bagno","🛁"],["sogno","💭"],["cigno","🦢"],["legno","🪵"],["lasagna","🍝"]] },
-  l:   { label:'L',         iniziale:[["luna","🌙"],["leone","🦁"],["limone","🍋"],["lupo","🐺"],["libro","📖"],["lampada","💡"],["lucertola","🦎"],["latte","🥛"]],
-                             mediana:[["palla","⚽"],["gelato","🍦"],["mela","🍎"],["valigia","🧳"],["colore","🎨"],["salame","🥓"],["elica","🚁"],["isola","🏝️"]] },
-  m:   { label:'M',         iniziale:[["mela","🍎"],["mano","✋"],["mare","🌊"],["mucca","🐄"],["moto","🏍️"],["matita","✏️"],["monte","⛰️"],["mago","🧙"]],
-                             mediana:[["gomma","🧽"],["camera","🛏️"],["limone","🍋"],["animale","🐾"],["camicia","👕"],["camino","🔥"],["fumo","💨"],["gomito","💪"]] },
-  n:   { label:'N',         iniziale:[["naso","👃"],["nave","🚢"],["nido","🪺"],["neve","❄️"],["nonna","👵"],["noce","🌰"],["numero","🔢"],["nuvola","☁️"]],
-                             mediana:[["banana","🍌"],["luna","🌙"],["tenda","⛺"],["penna","🖊️"],["farina","🌾"],["gonna","👗"],["ananas","🍍"],["cannuccia","🥤"]] },
-  mnl_cons: { label:'M/N/L + cons.', iniziale:[],
-                             mediana:[["campo","🏕️"],["ponte","🌉"],["dolce","🍰"],["elmo","⛑️"],["salto","🤸"],["angolo","📐"],["mondo","🌍"],["tempo","⏰"]] },
-  p:   { label:'P',         iniziale:[["pane","🍞"],["palla","⚽"],["pesce","🐟"],["penna","🖊️"],["porta","🚪"],["pizza","🍕"],["panda","🐼"],["pollo","🐔"]],
-                             mediana:[["lampada","💡"],["scopa","🧹"],["capra","🐐"],["sapone","🧼"],["topo","🐭"],["papero","🦆"],["zoppo","🦯"],["cupola","🕌"]] },
-  r:   { label:'R',         iniziale:[["rana","🐸"],["razzo","🚀"],["riso","🍚"],["rosa","🌹"],["ruota","🛞"],["radio","📻"],["robot","🤖"],["riccio","🦔"]],
-                             mediana:[["farfalla","🦋"],["corona","👑"],["sirena","🧜‍♀️"],["faro","🗼"],["forno","🔥"],["carota","🥕"],["cereali","🥣"],["arancia","🍊"]] },
-  cons_r: { label:'cons. + R', iniziale:[["treno","🚂"],["drago","🐉"],["fragola","🍓"],["granchio","🦀"],["prato","🌾"],["trattore","🚜"],["principe","🤴"],["bruco","🐛"]],
-                             mediana:[["sopra","⬆️"],["aprile","📅"],["vetro","🪟"],["cetriolo","🥒"],["fabbro","🔨"],["quadro","🖼️"],["ombra","🌑"],["libro","📖"]] },
-  r_cons: { label:'R + cons.', iniziale:[],
-                             mediana:[["porta","🚪"],["carta","📄"],["cartone","📦"],["forchetta","🍴"],["tartaruga","🐢"],["orso","🐻"],["corda","🪢"],["verde","🟢"]] },
-  s:   { label:'S',         iniziale:[["sole","☀️"],["sasso","🪨"],["serpente","🐍"],["sedia","🪑"],["salame","🥓"],["sette","7️⃣"],["sacco","🎒"],["settimana","📅"]],
-                             mediana:[["cassa","📦"],["tosse","🤧"],["pasta","🍝"],["vespa","🐝"],["castello","🏰"],["salsiccia","🌭"],["riposo","😴"],["musica","🎵"]] },
-  s_cons: { label:'S + cons.', iniziale:[["spada","⚔️"],["stella","⭐"],["scala","🪜"],["spazzolino","🪥"],["stivale","👢"],["spinaci","🥬"],["sveglia","⏰"],["sfera","🔮"]],
-                             mediana:[["finestra","🪟"],["orchestra","🎻"],["minestra","🍲"],["castello","🏰"],["pastore","🐑"],["canestro","🏀"],["mostro","👹"],["vestito","👗"]] },
-  sci_sce: { label:'SCI/SCE', iniziale:[["sciarpa","🧣"],["scivolo","🛝"],["scienza","🔬"],["scelta","🤔"]],
-                             mediana:[["pesce","🐟"],["uscita","🚪"],["ascensore","🛗"],["cuscino","🛏️"],["striscia","🌈"],["nascita","👶"],["crescita","📈"],["prosciutto","🍖"]] },
-  t:   { label:'T',         iniziale:[["tavolo","🪑"],["topo","🐭"],["torta","🎂"],["tigre","🐯"],["tazza","☕"],["tartaruga","🐢"],["tenda","⛺"],["toro","🐂"]],
-                             mediana:[["gatto","🐱"],["patata","🥔"],["matita","✏️"],["bottiglia","🍾"],["latte","🥛"],["dita","🖐️"],["aquilotto","🦅"],["gomito","💪"]] },
-  v:   { label:'V',         iniziale:[["vaso","🏺"],["vela","⛵"],["volpe","🦊"],["vulcano","🌋"],["vento","💨"],["valigia","🧳"],["vacca","🐄"],["verme","🪱"]],
-                             mediana:[["uovo","🥚"],["avvocato","🥑"],["chiave","🔑"],["cavallo","🐴"],["uva","🍇"],["divano","🛋️"],["nave","🚢"],["polvere","💨"]] },
-  z_dz: { label:'Z (sonora, dz)', iniziale:[["zaino","🎒"],["zanzara","🦟"],["zero","0️⃣"],["zolla","🌱"]],
-                             mediana:[["orzo","🌾"],["mezzo","🚌"],["azzurro","🔵"],["zenzero","🫚"]] },
-  zeta: { label:'Zeta',     iniziale:[["zebra","🦓"],["zucca","🎃"],["zucchero","🍬"],["zio","👨"]],
-                             mediana:[["pizza","🍕"],["pazzo","🤪"],["ragazzo","👦"],["palazzo","🏰"]] },
-  z_ts: { label:'Z (sorda, ts)', iniziale:[["zucchero","🍬"],["zucca","🎃"],["zitto","🤫"],["zampa","🐾"]],
-                             mediana:[["pizza","🍕"],["calzino","🧦"],["marzo","📅"],["piazza","🏛️"]] }
-};
-const PHONEME_ORDER = ['b','c','ci','d','f','g','gi','gli','gn','l','m','n','mnl_cons','p','r','cons_r','r_cons','s','s_cons','sci_sce','t','v','z_dz','zeta','z_ts'];
-
-/* Coppie minime curate: solo per i fonemi dove ha senso clinico un
-   confronto a due. Non tutte le 25 categorie hanno una coppia naturale
-   — dove manca, il gioco usa una coppia di fallback e lo segnala. */
-const MINIMAL_PAIRS = {
-  s:   [["sole","🌞"],["sale","🧂"]],
-  z_ts:[["razzo","🚀"],["riso","🍚"]],
-  r:   [["rana","🐸"],["lana","🧶"]],
-  l:   [["luna","🌙"],["una","1️⃣"]],
-  t:   [["tana","🕳️"],["dana","➖"]],
-  c:   [["cane","🐶"],["pane","🍞"]],
-  p:   [["palla","⚽"],["balla","💃"]],
-  d:   [["dado","🎲"],["dado","🎲"]]
-};
-
-let currentPlan = { phoneme:'r', position:'iniziale', level:'parola' };
-
-function words(phonemeKey, position){
-  const p = WORD_BANK[phonemeKey];
-  if(!p) return [];
-  const list = p[position] && p[position].length ? p[position] : (p.iniziale.length ? p.iniziale : p.mediana);
-  return list || [];
-}
-function pickRandom(arr, n){
-  const copy = arr.slice();
-  for(let i=copy.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [copy[i],copy[j]]=[copy[j],copy[i]]; }
-  return copy.slice(0, n);
-}
-function distractorPool(excludeKey, n){
-  const others = PHONEME_ORDER.filter(k=>k!==excludeKey);
-  let pool=[];
-  pickRandom(others, 6).forEach(k=>{
-    const p=WORD_BANK[k];
-    const all=[...(p.iniziale||[]),...(p.mediana||[])];
-    pool = pool.concat(all);
-  });
-  // rough safety filter: drop any distractor that literally contains the
-  // target phoneme's core grapheme, to reduce accidental false positives
-  const core = excludeKey.replace('_cons','').replace('cons_','').replace('_dz','').replace('_ts','').replace('mnl','');
-  pool = pool.filter(w => (core.length>0 && core.length<=2) ? !w[0].toLowerCase().includes(core) : true);
-  return pickRandom(pool, n);
-}
-
-/* ==================================================================
-   AUDIO (Web Speech API)
-   ================================================================== */
+/* ---------- audio (Web Speech API) ---------- */
 let soundOn = true, itVoice = null;
 function loadVoice(){
   if(!window.speechSynthesis) return;
@@ -901,13 +835,29 @@ function toggleSound(btn){
   btn.textContent = soundOn ? '🔊' : '🔇';
   if(soundOn) say('Audio attivo');
 }
+function sayParrot(text){
+  if(!soundOn || !window.speechSynthesis || !text) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='it-IT'; u.rate = 1.35; u.pitch = 2;
+    if(itVoice) u.voice = itVoice;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function showChildToast(msg){
+  const t=document.getElementById('childToast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._ctoast); window._ctoast=setTimeout(()=>t.classList.remove('show'),2400);
+}
 const PROMPTS = {
-  caccia:'Tocca tutte le parole che iniziano con il suono di oggi',
+  caccia:'Tocca tutte le parole che iniziano con la erre',
   rec:'Ascolta come si dice, poi prova tu',
-  memory:'Trova le coppie di parole',
+  memory:'Trova le coppie di parole con la erre',
   coppie:'Ascolta, poi tocca la parola che hai sentito',
   oca:'Dì la parola per far avanzare il pappagallo',
-  sequenze:'Tocca le immagini in ordine per raccontare la storia'
+  sequenze:'Tocca le immagini in ordine per raccontare la storia',
+  pappagallo:'Dì la parola, poi senti come la ripete Lallo'
 };
 
 /* ---------- view switch ---------- */
@@ -930,78 +880,27 @@ function goChild(name){
   if(name==='coppie') cmReset();
   if(name==='oca') ocaReset();
   if(name==='sequenze') seqReset();
-  if(name==='rec') recReset();
+  if(name==='pappagallo') ppReset();
   if(PROMPTS[name]) say(PROMPTS[name]);
 }
 let exOrigin='giochi';
 function openEx(name, origin){ exOrigin = origin || 'giochi'; goChild(name); }
 function exBack(){ goChild(exOrigin); }
 
-/* ---------- caccia al suono (dinamico) ---------- */
-function cacciaReset(announce){
-  const { phoneme, position } = currentPlan;
-  const meta = WORD_BANK[phoneme];
-  const targets = pickRandom(words(phoneme, position), 3);
-  const distractors = distractorPool(phoneme, 3);
-  const tiles = pickRandom([...targets.map(w=>({...tileFromPair(w), correct:true})), ...distractors.map(w=>({...tileFromPair(w), correct:false}))], 6);
-  const grid = document.getElementById('cacciaGrid');
-  grid.innerHTML = tiles.map(t=>`<div class="tile" onclick="hit(this,${t.correct},'${t.word}')"><span class="emo">${t.emoji}</span>${cap(t.word)}</div>`).join('');
-  document.getElementById('cacciaQ').innerHTML = `Tocca tutte le parole con il suono <b>${meta.label}</b> (${position}) 🦜`;
-  if(announce) say('Nuove parole! ' + PROMPTS.caccia);
-}
-function tileFromPair(pair){ return { word: pair[0], emoji: pair[1] }; }
-function cap(w){ return w.charAt(0).toUpperCase()+w.slice(1); }
+/* caccia al suono */
 function hit(el,correct,word){
   if(el.classList.contains('correct')||el.classList.contains('wrong')) return;
   el.classList.add(correct?'correct':'wrong');
   if(word) say(word);
 }
+function cacciaReset(){ document.querySelectorAll('[data-c="caccia"] .tile').forEach(t=>t.classList.remove('correct','wrong')); }
 
-/* ---------- registratore (dinamico) ---------- */
-let recCurrentWord=null;
-function recReset(announce){
-  const { phoneme, position } = currentPlan;
-  const list = words(phoneme, position);
-  const pick = list[Math.floor(Math.random()*list.length)] || ['torre','🗼'];
-  recCurrentWord = pick[0];
-  document.getElementById('recEmoji').textContent = pick[1];
-  document.getElementById('recWord').textContent = pick[0];
-  document.getElementById('recMeta').textContent = `${WORD_BANK[phoneme].label} · ${position}`;
-  const s=document.getElementById('recScreen'); s.classList.remove('recording'); recState=false;
-  const cap=document.getElementById('recCap'); if(cap)cap.textContent='Tocca ▶ per il modello, 🎤 per registrarti';
-  if(announce) say('Nuova parola: ' + pick[0]);
-}
-function playModel(){
-  say(recCurrentWord);
-  document.getElementById('recCap').textContent = `🔊 "${recCurrentWord}" — ascolta bene il suono...`;
-}
-let recState=false;
-function toggleRec(btn){
-  const screen=document.getElementById('recScreen');
-  recState=!recState;
-  if(recState){ screen.classList.add('recording'); btn.textContent='⏸'; document.getElementById('recCap').textContent=`● Registrazione... ripeti "${recCurrentWord}"`; }
-  else { screen.classList.remove('recording'); btn.textContent='🎤'; document.getElementById('recCap').textContent='✓ Registrato! Il logopedista lo riascolterà nel report'; }
-}
-function resetRec(){
-  const s=document.getElementById('recScreen'); if(!s)return;
-  s.classList.remove('recording'); recState=false;
-}
-
-/* ---------- memory (dinamico) ---------- */
-let memFirst=null, memLock=false, memDone=0, memPairCount=3;
-function memReset(announce){
+/* memory */
+let memFirst=null, memLock=false, memDone=0;
+function memReset(){
   memFirst=null; memLock=false; memDone=0;
-  const { phoneme, position } = currentPlan;
-  const meta = WORD_BANK[phoneme];
-  const chosen = pickRandom(words(phoneme, position), 3);
-  const cards = [];
-  chosen.forEach(pair=>{ cards.push(pair); cards.push(pair); });
-  const shuffled = pickRandom(cards, cards.length);
-  const grid = document.getElementById('memGrid');
-  grid.innerHTML = shuffled.map(pair=>`<div class="mem-card" data-id="${pair[0]}" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">${pair[1]}<small>${pair[0]}</small></span></div>`).join('');
-  document.getElementById('memoryQ').innerHTML = `Trova le coppie di parole con <b>${meta.label}</b> 🦜`;
+  document.querySelectorAll('[data-c="memory"] .mem-card').forEach(c=>c.classList.remove('flip','matched'));
   const m=document.getElementById('memMsg'); if(m) m.textContent='Tocca due carte uguali';
-  if(announce) say('Nuove carte! ' + PROMPTS.memory);
 }
 function memFlip(el){
   if(memLock || el.classList.contains('flip') || el.classList.contains('matched')) return;
@@ -1010,52 +909,48 @@ function memFlip(el){
   if(!memFirst){ memFirst=el; return; }
   if(memFirst.dataset.id===el.dataset.id){
     memFirst.classList.add('matched'); el.classList.add('matched'); memFirst=null; memDone++;
-    if(memDone===memPairCount) document.getElementById('memMsg').textContent='Bravo! Tutte le coppie trovate 🦜';
+    if(memDone===3) document.getElementById('memMsg').textContent='Bravo! Tutte le coppie con la R 🦜';
   } else {
     memLock=true; const a=memFirst, b=el; memFirst=null;
     setTimeout(()=>{ a.classList.remove('flip'); b.classList.remove('flip'); memLock=false; }, 750);
   }
 }
 
-/* ---------- coppie minime ---------- */
-let cmPair = MINIMAL_PAIRS.s, cmTarget='sale';
+/* coppie minime */
+let cmTarget='sale';
 function cmReset(){
-  const { phoneme } = currentPlan;
-  cmPair = MINIMAL_PAIRS[phoneme] || MINIMAL_PAIRS.s;
-  cmTarget = cmPair[1][0];
-  const grid = document.getElementById('cmGrid');
-  grid.innerHTML = cmPair.map(p=>`<div class="tile" onclick="cmPick(this,'${p[0]}')"><span class="emo">${p[1]}</span>${p[0].toUpperCase()}</div>`).join('');
-  const c=document.getElementById('cmCap'); if(c) c.textContent = MINIMAL_PAIRS[phoneme] ? 'Tocca ▶ per ascoltare' : 'Coppia di esempio — da personalizzare per questo fonema';
+  document.querySelectorAll('[data-c="coppie"] .tile').forEach(t=>t.classList.remove('correct','wrong'));
+  const c=document.getElementById('cmCap'); if(c) c.textContent='Tocca ▶ per ascoltare';
 }
-function cmPlay(){ say(cmTarget); document.getElementById('cmCap').textContent = `🔊 Ho detto… "${cmTarget.toUpperCase()}"`; }
+function cmPlay(){ say('sale'); document.getElementById('cmCap').textContent='🔊 Ho detto… "SALE"'; }
 function cmPick(el,word){
   if(el.classList.contains('correct')) return;
   say(word);
-  if(word===cmTarget){ el.classList.add('correct'); document.getElementById('cmCap').textContent='✓ Esatto! Hai distinto le due parole.'; }
+  if(word===cmTarget){ el.classList.add('correct'); document.getElementById('cmCap').textContent='✓ Esatto! Hai distinto sole da sale.'; }
   else { el.classList.add('wrong'); document.getElementById('cmCap').textContent='Riascolta e riprova 🦜'; setTimeout(()=>el.classList.remove('wrong'),420); }
 }
 
-/* ---------- gioco dell'oca (dinamico) ---------- */
+/* gioco dell'oca */
 let ocaPos=0;
-let ocaWords=[{w:'rana',img:'🐸'}];
-function ocaReset(){
-  const { phoneme, position } = currentPlan;
-  const list = words(phoneme, position);
-  const picked = pickRandom(list, Math.min(6, list.length));
-  while(picked.length<6 && list.length){ picked.push(list[picked.length % list.length]); }
-  ocaWords = picked.map(p=>({w:p[0], img:p[1]}));
-  ocaPos=0; updateOca();
-}
+const ocaWords=[
+  {w:'rana',  img:'🐸'},
+  {w:'rosa',  img:'🌹'},
+  {w:'robot', img:'🤖'},
+  {w:'pera',  img:'🍐'},
+  {w:'mare',  img:'🌊'},
+  {w:'fiore', img:'🌸'},
+];
+function ocaReset(){ ocaPos=0; updateOca(); }
 function updateOca(){
   for(let i=0;i<6;i++){ const c=document.getElementById('oca'+i); if(!c) continue; c.classList.toggle('active', i===ocaPos); c.textContent = i===ocaPos ? '🦜' : (i+1); }
   const e=document.getElementById('ocaEmoji'); if(e) e.textContent=ocaWords[ocaPos].img;
   const w=document.getElementById('ocaWord'); if(w) w.textContent=ocaWords[ocaPos].w;
-  const cap=document.getElementById('ocaCap'); if(cap) cap.textContent = ocaPos===5 ? '🏆 Arrivato! Tutte le parole di oggi.' : ('Casella '+(ocaPos+1)+' di 6');
+  const cap=document.getElementById('ocaCap'); if(cap) cap.textContent = ocaPos===5 ? '🏆 Arrivato! Tutte le parole con la R.' : ('Casella '+(ocaPos+1)+' di 6');
 }
 function sayOcaWord(){ say(ocaWords[ocaPos].w); }
 function ocaSay(){ if(ocaPos<5){ ocaPos++; updateOca(); say(ocaWords[ocaPos].w); } }
 
-/* sequenze illustrate — narrazione fissa (livello 5, bassa priorità di rotazione) */
+/* sequenze illustrate */
 let seqNext=1;
 const seqChunks={1:'Prima piove… 🌧️ ',2:'poi esce l\'arcobaleno… 🌈 ',3:'e infine torna il sole! ☀️'};
 const seqSpeak={1:'Prima piove',2:'Poi esce l\'arcobaleno',3:'E infine torna il sole'};
@@ -1078,39 +973,43 @@ function seqTap(el,order){
   }
 }
 
-/* ==================================================================
-   THERAPIST VIEW — pannello Assegna, ora con tutte le 25 categorie
-   ================================================================== */
-function buildPhonemeChips(){
-  const container = document.getElementById('phonemeChips');
-  container.innerHTML = PHONEME_ORDER.map(key=>{
-    const sel = key===currentPlan.phoneme ? 'sel' : '';
-    return `<div class="chip ${sel}" data-key="${key}" onclick="togPhoneme(this,'${key}')">${WORD_BANK[key].label}</div>`;
-  }).join('');
+/* pappagallo Lallo (feature virale) */
+let ppPos=0;
+const ppWords=[{w:'rana',img:'🐸'},{w:'rosa',img:'🌹'},{w:'robot',img:'🤖'},{w:'orso',img:'🐻'},{w:'ruota',img:'🛞'}];
+function ppReset(){ ppPos=0; updatePp(); }
+function updatePp(){
+  const e=document.getElementById('ppEmoji'); if(e) e.textContent=ppWords[ppPos].img;
+  const w=document.getElementById('ppWord'); if(w) w.textContent=ppWords[ppPos].w;
+  const c=document.getElementById('ppCap'); if(c) c.textContent='Tocca il microfono e prova!';
 }
-function togPhoneme(el, key){
-  document.querySelectorAll('#phonemeChips .chip').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  currentPlan.phoneme = key;
-  syncPositionAvailability();
+function ppNext(){ ppPos=(ppPos+1)%ppWords.length; updatePp(); }
+function ppSay(){ say(ppWords[ppPos].w); document.getElementById('ppCap').textContent='Bravo! Ora tocca "Lallo ripete!" 🦜'; }
+function ppRepeat(){
+  sayParrot(ppWords[ppPos].w);
+  const p=document.getElementById('ppParrot'); if(p){ p.classList.remove('talk'); void p.offsetWidth; p.classList.add('talk'); }
+  document.getElementById('ppCap').textContent='Ahah! Lallo l\'ha ripetuta 🦜';
 }
-function syncPositionAvailability(){
-  const meta = WORD_BANK[currentPlan.phoneme];
-  const iniChip = document.querySelector('#positionChips [data-pos="iniziale"]');
-  const medChip = document.querySelector('#positionChips [data-pos="mediana"]');
-  const hasIni = meta.iniziale && meta.iniziale.length>0;
-  const hasMed = meta.mediana && meta.mediana.length>0;
-  iniChip.classList.toggle('disabled', !hasIni);
-  medChip.classList.toggle('disabled', !hasMed);
-  if(!hasIni && currentPlan.position==='iniziale'){ currentPlan.position='mediana'; }
-  if(!hasMed && currentPlan.position==='mediana'){ currentPlan.position='iniziale'; }
-  document.querySelectorAll('#positionChips .chip').forEach(c=>c.classList.toggle('sel', c.dataset.pos===currentPlan.position));
+function ppShare(){ showChildToast('🎬 Clip di Lallo salvata! Condividila con la famiglia 🦜'); }
+
+/* milestone card (feature virale) */
+function msShare(){ showChildToast('🦜 Traguardo condiviso! Un applauso a Marco 🎉'); }
+
+/* registratore */
+function playModel(){
+  say('torre');
+  document.getElementById('recCap').textContent='🔊 "torre" — ascolta la doppia R...';
 }
-function togPosition(el){
-  if(el.classList.contains('disabled')) return;
-  document.querySelectorAll('#positionChips .chip').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  currentPlan.position = el.dataset.pos;
+let recState=false;
+function toggleRec(btn){
+  const screen=document.getElementById('recScreen');
+  recState=!recState;
+  if(recState){ screen.classList.add('recording'); btn.textContent='⏸'; document.getElementById('recCap').textContent='● Registrazione... ripeti "torre"'; }
+  else { screen.classList.remove('recording'); btn.textContent='🎤'; document.getElementById('recCap').textContent='✓ Registrato! Il logopedista lo riascolterà nel report'; }
+}
+function resetRec(){
+  const s=document.getElementById('recScreen'); if(!s)return;
+  s.classList.remove('recording'); recState=false;
+  const cap=document.getElementById('recCap'); if(cap)cap.textContent='Tocca ▶ per il modello, 🎤 per registrarti';
 }
 
 /* ---------- therapist navigation ---------- */
@@ -1119,37 +1018,17 @@ function goPro(name){
   document.querySelectorAll('#view-pro .tab').forEach(t=>t.classList.toggle('active', t.dataset.ptab===name));
 }
 function tog(el,group){
-  if(group==='lvl'){
+  if(group==='mono'||group==='lvl'){
     el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
     el.classList.add('sel');
-    currentPlan.level = el.textContent.trim().toLowerCase();
   } else { el.classList.toggle('sel'); }
 }
 function assign(){
-  applyPlanToChildView();
   const t=document.getElementById('toast');
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
   setTimeout(()=>goPro('report'),900);
 }
-
-/* applica il piano assegnato dal logopedista alla vista bambino:
-   aggiorna intestazioni e rigenera tutti i giochi con le nuove parole */
-function applyPlanToChildView(){
-  const meta = WORD_BANK[currentPlan.phoneme];
-  const { position } = currentPlan;
-  document.getElementById('childSub').textContent = `Suono di oggi: ${meta.label}`;
-  document.getElementById('oggiMetaCaccia').textContent = `${meta.label} ${position} · livello 3`;
-  document.getElementById('oggiMetaRec').textContent = `${meta.label} ${position} · livello 3`;
-  cacciaReset(); recReset(); memReset(); cmReset(); ocaReset();
-}
-
-/* ---------- init ---------- */
-document.addEventListener('DOMContentLoaded', function(){
-  buildPhonemeChips();
-  syncPositionAvailability();
-  cacciaReset(); recReset(); memReset(); cmReset(); ocaReset();
-});
 
 /* ---------- waitlist ----------
    COME RACCOGLIERE LE ISCRIZIONI (genitori + logopedisti)
