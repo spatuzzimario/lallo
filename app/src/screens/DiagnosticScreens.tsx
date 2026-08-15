@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
 import { PHONEME_ORDER, WORD_BANK, PhonemeKey } from "../constants/wordBank";
-import { useGamificationStore } from "../store/useGamificationStore";
 
 const C = {
   bg: "#FBF6EE",
@@ -221,7 +220,6 @@ export function TrustStatScreen({ navigation, route }: any) {
    non in alternativa, ora che l'accesso non è più bloccato. */
 export function ResultsScreen({ navigation, route }: any) {
   const [calculating, setCalculating] = useState(true);
-  const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
   useEffect(() => {
     const t = setTimeout(() => setCalculating(false), 1400);
     return () => clearTimeout(t);
@@ -259,10 +257,7 @@ export function ResultsScreen({ navigation, route }: any) {
       <View style={{ padding: 24 }}>
         <ContinueBtn
           label="Inizia a giocare"
-          onPress={() => {
-            startSelfDirectedPlan(sounds);
-            navigation.navigate("MainTabs");
-          }}
+          onPress={() => navigation.navigate("Auth", { name: route.params?.name, strugglingSounds: sounds })}
         />
       </View>
     </View>

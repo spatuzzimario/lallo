@@ -178,7 +178,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
       <ContinueButton
         onPress={() =>
           hasTherapistCode
-            ? navigation.navigate("MainTabs")
+            ? navigation.navigate("Auth", { name })
             : navigation.navigate("WordCount", { name })
         }
       />

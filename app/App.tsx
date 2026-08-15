@@ -26,6 +26,7 @@ import {
   ResultsScreen,
 } from "./src/screens/DiagnosticScreens";
 import PaywallScreen from "./src/screens/PaywallScreen";
+import AuthScreen from "./src/screens/AuthScreen";
 import { AdultGateScreen, ParentDashboardScreen, PrivacyConsentScreen } from "./src/screens/ParentScreens";
 // NOTA: TherapistAssignScreen è stato rimosso da questa app su richiesta esplicita —
 // il logopedista avrà un'app separata con login proprio. Il file resta nel
@@ -164,6 +165,7 @@ export default function App() {
           <Stack.Screen name="StrugglingSounds" component={StrugglingSoundsScreen} />
           <Stack.Screen name="TrustStat" component={TrustStatScreen} />
           <Stack.Screen name="Results" component={ResultsScreen} />
+          <Stack.Screen name="Auth" component={AuthScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Session" component={SessionScreen} />

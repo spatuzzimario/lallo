@@ -3,6 +3,7 @@
     "name": "Lallo",
     "slug": "lallo",
     "version": "0.1.0",
+    "scheme": "lallo",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
