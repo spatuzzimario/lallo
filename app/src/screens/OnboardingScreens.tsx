@@ -160,9 +160,42 @@ export function ChildNameScreen({ navigation, route }: any) {
 
 // reference screenshots do ("When was Luigi born?"). Age drives which
 // phoneme levels are age-appropriate to surface first.
+//
+// Tre campi GG/MM/AAAA invece di un date-picker nativo: un date-picker nativo
+// (@react-native-community/datetimepicker) richiederebbe un modulo nativo aggiuntivo da
+// validare su Expo Go/SDK57/web — tre TextInput funzionano identici su iOS/Android/Expo Web
+// senza dipendenze in più.
 export function ChildBirthdateScreen({ navigation, route }: any) {
   const name = route?.params?.name || "il tuo bambino";
   const hasTherapistCode = !!route?.params?.therapistCode;
+  const [day, setDay] = useState("");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState("");
+
+  const d = parseInt(day, 10);
+  const m = parseInt(month, 10);
+  const y = parseInt(year, 10);
+  const currentYear = new Date().getFullYear();
+  const isValid =
+    day.length > 0 &&
+    month.length > 0 &&
+    year.length === 4 &&
+    d >= 1 &&
+    d <= 31 &&
+    m >= 1 &&
+    m <= 12 &&
+    y >= currentYear - 17 &&
+    y <= currentYear;
+
+  function next() {
+    const birthdate = isValid
+      ? `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`
+      : null;
+    const params = { ...route?.params, name, birthdate };
+    if (hasTherapistCode) navigation.navigate("Auth", params);
+    else navigation.navigate("WordCount", params);
+  }
+
   return (
     <View style={styles.container}>
       <Pressable onPress={() => navigation.goBack()}>
@@ -172,16 +205,34 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
       <Text style={styles.subtitle}>
         Ci serve la data di nascita per proporre esercizi adatti alla sua età.
       </Text>
-      {/* Date picker component goes here — native wheel picker,
-          same interaction as the reference screenshots */}
+      <View style={styles.dateRow}>
+        <TextInput
+          value={day}
+          onChangeText={(t: string) => setDay(t.replace(/[^0-9]/g, "").slice(0, 2))}
+          placeholder="GG"
+          keyboardType="number-pad"
+          maxLength={2}
+          style={[styles.input, styles.dateInputSmall]}
+        />
+        <TextInput
+          value={month}
+          onChangeText={(t: string) => setMonth(t.replace(/[^0-9]/g, "").slice(0, 2))}
+          placeholder="MM"
+          keyboardType="number-pad"
+          maxLength={2}
+          style={[styles.input, styles.dateInputSmall]}
+        />
+        <TextInput
+          value={year}
+          onChangeText={(t: string) => setYear(t.replace(/[^0-9]/g, "").slice(0, 4))}
+          placeholder="AAAA"
+          keyboardType="number-pad"
+          maxLength={4}
+          style={[styles.input, styles.dateInputLarge]}
+        />
+      </View>
       <View style={{ flex: 1 }} />
-      <ContinueButton
-        onPress={() =>
-          hasTherapistCode
-            ? navigation.navigate("Auth", { name })
-            : navigation.navigate("WordCount", { name })
-        }
-      />
+      <ContinueButton disabled={!isValid} onPress={next} />
     </View>
   );
 }
@@ -213,6 +264,9 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 18,
   },
+  dateRow: { flexDirection: "row", gap: 12, marginTop: 24 },
+  dateInputSmall: { width: 70, textAlign: "center", marginTop: 0 },
+  dateInputLarge: { width: 100, textAlign: "center", marginTop: 0 },
   cta: {
     backgroundColor: COLORS.primary,
     borderRadius: 14,

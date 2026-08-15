@@ -20,10 +20,12 @@ const C = {
 // sta per diventare reale (fine screener self-directed, oppure subito dopo aver inserito
 // un codice del logopedista) — non prima, per non aggiungere attrito allo screener stesso
 // (principio "genitore... fa un breve screener, e inizia da solo", brief §6.1). Email +
-// codice OTP a 6 cifre: niente password, coerente con "scarica e inizia da solo".
+// codice OTP: niente password, coerente con "scarica e inizia da solo". La lunghezza del
+// codice non è fissata lato app — dipende dal template email configurato in Supabase.
 export default function AuthScreen({ navigation, route }: any) {
   const name: string = route.params?.name || "il bambino";
   const sounds: PhonemeKey[] | undefined = route.params?.strugglingSounds;
+  const birthdate: string | null = route.params?.birthdate ?? null;
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -47,7 +49,7 @@ export default function AuthScreen({ navigation, route }: any) {
   }
 
   async function verifyCode() {
-    if (code.length < 6) return;
+    if (code.trim().length < 4) return;
     setLoading(true);
     setErrorMsg(null);
     const { error } = await verifyOtpCode(email.trim(), code.trim());
@@ -62,7 +64,7 @@ export default function AuthScreen({ navigation, route }: any) {
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.");
       return;
     }
-    const { error: childError } = await createChild({ name });
+    const { error: childError } = await createChild({ name, birthdate });
     setLoading(false);
     if (childError) {
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a salvare il profilo di " + name + ". Riprova.");
@@ -128,9 +130,9 @@ export default function AuthScreen({ navigation, route }: any) {
           <TextInput
             value={code}
             onChangeText={setCode}
-            placeholder="123456"
+            placeholder="Codice"
             keyboardType="number-pad"
-            maxLength={6}
+            maxLength={10}
             style={styles.input}
           />
           {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
@@ -139,7 +141,7 @@ export default function AuthScreen({ navigation, route }: any) {
             <ActivityIndicator color={C.primary} />
           ) : (
             <>
-              <ContinueButton label="Verifica" disabled={code.length < 6} onPress={verifyCode} />
+              <ContinueButton label="Verifica" disabled={code.trim().length < 4} onPress={verifyCode} />
               <Pressable onPress={() => setStep("email")} style={styles.retryLink}>
                 <Text style={styles.retryLinkText}>Usa un'altra email</Text>
               </Pressable>

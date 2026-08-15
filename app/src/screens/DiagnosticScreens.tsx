@@ -257,7 +257,13 @@ export function ResultsScreen({ navigation, route }: any) {
       <View style={{ padding: 24 }}>
         <ContinueBtn
           label="Inizia a giocare"
-          onPress={() => navigation.navigate("Auth", { name: route.params?.name, strugglingSounds: sounds })}
+          onPress={() =>
+            navigation.navigate("Auth", {
+              name: route.params?.name,
+              strugglingSounds: sounds,
+              birthdate: route.params?.birthdate,
+            })
+          }
         />
       </View>
     </View>
