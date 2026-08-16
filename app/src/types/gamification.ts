@@ -1,6 +1,14 @@
 // Clinical scale: 5 levels, matches logopedista's phoneme progression
 export type ClinicalLevel = 1 | 2 | 3 | 4 | 5;
 
+export const LEVEL_LABELS: Record<ClinicalLevel, string> = {
+  1: "Suono isolato",
+  2: "Sillaba",
+  3: "Parola",
+  4: "Frase",
+  5: "Racconto",
+};
+
 export interface PhonemeGroup {
   id: string;           // e.g. "r-sound", "s-sound"
   name: string;         // display name, e.g. "Suono R"

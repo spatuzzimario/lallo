@@ -20,7 +20,7 @@ import {
   isPremium,
 } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
-import { AttemptResult, ClinicalLevel, SessionResult } from "../types/gamification";
+import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS } from "../types/gamification";
 
 type ExerciseType = "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze" | "pappagallo";
 
@@ -62,6 +62,11 @@ export default function SessionScreen({ navigation, route }: any) {
   }, [locked]);
 
   const [attempts, setAttempts] = useState<AttemptResult[]>([]);
+  // Livello appena sbloccato da festeggiare prima di tornare a MainTabs — un overlay
+  // custom invece di Alert.alert(), che su React Native Web è un no-op totale (nessuna UI,
+  // nessuna callback): usarlo per il proseguimento della navigazione avrebbe bloccato
+  // l'app sulla schermata dell'esercizio finito su web, senza modo di continuare.
+  const [celebration, setCelebration] = useState<{ level: ClinicalLevel } | null>(null);
 
   function finishSession() {
     if (params.demo) {
@@ -71,6 +76,16 @@ export default function SessionScreen({ navigation, route }: any) {
       navigation.goBack();
       return;
     }
+
+    // Cattura lo stato del livello PRIMA di scrivere la sessione, per poter mostrare una
+    // festa quando lo sblocco del livello successivo avviene proprio ora — altrimenti
+    // l'avanzamento nella mappa (vedi GiochiScreen) succede silenziosamente in background
+    // e non è mai chiaro al bambino/genitore che è successo qualcosa.
+    const beforeGroup = useGamificationStore
+      .getState()
+      .profile?.phonemeGroups.find((g) => g.id === params.phonemeGroupId);
+    const wasMastered = beforeGroup?.levels.find((l) => l.level === params.level)?.status === "mastered";
+
     const result: SessionResult = {
       phonemeGroupId: params.phonemeGroupId,
       level: params.level,
@@ -78,6 +93,19 @@ export default function SessionScreen({ navigation, route }: any) {
       completedAt: new Date().toISOString(),
     };
     recordSession(result);
+
+    const afterGroup = useGamificationStore
+      .getState()
+      .profile?.phonemeGroups.find((g) => g.id === params.phonemeGroupId);
+    const justMastered =
+      !wasMastered && afterGroup?.levels.find((l) => l.level === params.level)?.status === "mastered";
+    const nextLevel = afterGroup?.levels.find((l) => l.level === (params.level + 1) as ClinicalLevel);
+    const justUnlocked = justMastered && nextLevel?.status === "available";
+
+    if (justUnlocked && nextLevel) {
+      setCelebration({ level: nextLevel.level });
+      return;
+    }
     navigation.navigate("MainTabs");
   }
 
@@ -96,15 +124,22 @@ export default function SessionScreen({ navigation, route }: any) {
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>‹</Text>
         </Pressable>
-        <Text style={styles.title}>
-          {exerciseType === "caccia" && "Caccia al suono"}
-          {exerciseType === "memory" && "Memory"}
-          {exerciseType === "registratore" && "Registratore"}
-          {exerciseType === "coppie" && "Coppie minime"}
-          {exerciseType === "oca" && "Gioco dell'oca"}
-          {exerciseType === "sequenze" && "Sequenze illustrate"}
-          {exerciseType === "pappagallo" && "Ripeti con Lallo"}
-        </Text>
+        <View>
+          <Text style={styles.title}>
+            {exerciseType === "caccia" && "Caccia al suono"}
+            {exerciseType === "memory" && "Memory"}
+            {exerciseType === "registratore" && "Registratore"}
+            {exerciseType === "coppie" && "Coppie minime"}
+            {exerciseType === "oca" && "Gioco dell'oca"}
+            {exerciseType === "sequenze" && "Sequenze illustrate"}
+            {exerciseType === "pappagallo" && "Ripeti con Lallo"}
+          </Text>
+          {/* Rende visibile la difficoltà scelta: suono + livello clinico + posizione —
+              prima non c'era modo di sapere, dentro l'esercizio, cosa si stava giocando. */}
+          <Text style={styles.subtitle}>
+            {meta.label} · Livello {params.level} · {LEVEL_LABELS[params.level]}
+          </Text>
+        </View>
       </View>
 
       {exerciseType === "caccia" && (
@@ -126,40 +161,61 @@ export default function SessionScreen({ navigation, route }: any) {
       {exerciseType === "pappagallo" && (
         <RipetiConLallo phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
+
+      {celebration && (
+        <View style={styles.celebrationOverlay}>
+          <View style={styles.celebrationCard}>
+            <Text style={styles.celebrationEmoji}>🎉</Text>
+            <Text style={styles.celebrationTitle}>Livello conquistato!</Text>
+            <Text style={styles.celebrationText}>
+              Hai sbloccato il Livello {celebration.level} · {LEVEL_LABELS[celebration.level]} per il suono{" "}
+              {meta.label}. Lo trovi nella mappa in Giochi.
+            </Text>
+            <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate("MainTabs")}>
+              <Text style={styles.primaryBtnText}>Evviva!</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
-/* ---------------- Caccia al suono ---------------- */
+/* ---------------- Caccia al suono ----------------
+   Auto-avanza da sola: appena il bambino ha trovato tutte le parole giuste (o ha comunque
+   toccato tutte le tessere), si passa all'esercizio successivo dopo una breve pausa — prima
+   serviva un tap manuale su "Fatto" che non era ovvio dovesse comparire. */
 function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
-  const [round, setRound] = useState(0);
   const tiles = useMemo(() => {
     const targets = pickRandom(wordsFor(phonemeKey, position), 3).map((w) => ({ ...w, correct: true }));
     const distractors = distractorPool(phonemeKey, 3).map((w) => ({ ...w, correct: false }));
     return pickRandom([...targets, ...distractors], 6);
-  }, [phonemeKey, position, round]);
+  }, [phonemeKey, position]);
 
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const meta = WORD_BANK[phonemeKey];
+  const targetCount = tiles.filter((t) => t.correct).length;
 
   useEffect(() => {
-    const count = tiles.filter((t) => t.correct).length;
-    say(`Trova le ${count} parole con il suono ${meta.label}`);
-  }, [round]);
+    say(`Trova le ${targetCount} parole con il suono ${meta.label}`);
+  }, []);
 
   function handlePick(t: WordEntry & { correct: boolean }) {
     if (picked[t.parola] !== undefined) return;
-    setPicked((p) => ({ ...p, [t.parola]: t.correct }));
+    const next = { ...picked, [t.parola]: t.correct };
+    setPicked(next);
     onAttempt(t.parola, t.correct);
     say(t.parola);
+
+    const targetsFound = tiles.filter((x) => x.correct && next[x.parola] === true).length;
+    const allAnswered = Object.keys(next).length === tiles.length;
+    if (targetsFound === targetCount || allAnswered) {
+      setTimeout(onDone, 900);
+    }
   }
-
-  const answered = Object.keys(picked).length;
-
-  const targetCount = tiles.filter((t) => t.correct).length;
 
   return (
     <View style={{ flex: 1 }}>
@@ -182,16 +238,6 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
             </Pressable>
           );
         })}
-      </View>
-      <View style={styles.actionRow}>
-        <Pressable style={styles.secondaryBtn} onPress={() => { setPicked({}); setRound((r) => r + 1); }}>
-          <Text style={styles.secondaryBtnText}>🔀 Nuove parole</Text>
-        </Pressable>
-        {answered >= 4 && (
-          <Pressable style={styles.primaryBtn} onPress={onDone}>
-            <Text style={styles.primaryBtnText}>Fatto ✓</Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );
@@ -254,10 +300,14 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
+const PRODUCTION_ROUNDS = 3;
+
 /* ---------------- Registratore ----------------
    Registra la voce del bambino: richiede il consenso esplicito del genitore (dato dietro
    l'adult gate, in Genitori → Privacy e registrazioni) prima di attivare il microfono —
-   vedi audioRecordingConsent su ChildProfile. Senza consenso il tasto resta bloccato. */
+   vedi audioRecordingConsent su ChildProfile. Senza consenso il tasto resta bloccato.
+   Auto-avanza tra le parole (3 a sessione): dopo ogni registrazione+riascolto non serve
+   più un tap manuale su "Fatto" — prima non era chiaro quando l'esercizio fosse finito. */
 function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
@@ -266,13 +316,13 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   const [round, setRound] = useState(0);
   const word = useMemo(() => pickRandom(wordsFor(phonemeKey, position), 1)[0], [phonemeKey, position, round]);
   const [recording, setRecording] = useState(false);
-  const [attemptsThisWord, setAttemptsThisWord] = useState(0);
+  const [justDone, setJustDone] = useState(false);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
 
   function playModel() { say(word.parola); }
 
   function toggleRecord() {
-    if (!hasConsent) return;
+    if (!hasConsent || justDone) return;
     if (!recording) {
       setRecording(true);
     } else {
@@ -280,17 +330,24 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
       // (expo-av + upload) e l'analisi di confidenza del motore articolatorio.
       // Per ora il completamento è marcato manualmente dal bambino/genitore.
       setRecording(false);
-      setAttemptsThisWord((a) => a + 1);
+      setJustDone(true);
       onAttempt(word.parola, true);
+      setTimeout(() => {
+        setJustDone(false);
+        if (round + 1 < PRODUCTION_ROUNDS) setRound((r) => r + 1);
+        else onDone();
+      }, 1100);
     }
   }
 
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
-      <Text style={styles.question}>Ascolta, poi prova tu</Text>
+      <Text style={styles.question}>{justDone ? "Bravo! 🎉" : "Ascolta, poi prova tu"}</Text>
       <Text style={styles.recEmoji}>{word.emoji}</Text>
       <Text style={styles.recWord}>{word.parola}</Text>
-      <Text style={styles.recMeta}>{meta.label} · {position}</Text>
+      <Text style={styles.recMeta}>
+        {meta.label} · {position} · parola {round + 1} di {PRODUCTION_ROUNDS}
+      </Text>
       {!hasConsent && (
         <Text style={styles.warnNote}>
           Serve il consenso di un genitore per registrare la voce. Vai su Genitori → Privacy
@@ -304,20 +361,10 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
         <Pressable
           style={[styles.recMicBtn, recording && styles.recMicBtnActive, !hasConsent && styles.recMicBtnLocked]}
           onPress={toggleRecord}
-          disabled={!hasConsent}
+          disabled={!hasConsent || justDone}
         >
           <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : recording ? "⏸" : "🎤"}</Text>
         </Pressable>
-      </View>
-      <View style={styles.actionRow}>
-        <Pressable style={styles.secondaryBtn} onPress={() => setRound((r) => r + 1)}>
-          <Text style={styles.secondaryBtnText}>🔀 Nuova parola</Text>
-        </Pressable>
-        {attemptsThisWord > 0 && (
-          <Pressable style={styles.primaryBtn} onPress={onDone}>
-            <Text style={styles.primaryBtnText}>Fatto ✓</Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );
@@ -331,6 +378,10 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
    di un modulo DSP nativo — approccio MVP proposto, da affinare più avanti se serve un
    effetto più realistico. Salvare/condividere la clip resta una scelta del genitore (mai
    automatica) — qui "salva" è ancora un placeholder, non c'è ancora persistenza reale. */
+// A differenza degli altri esercizi, qui NON auto-avanziamo dopo la prima risposta: il
+// punto della feature è proprio poter far ripetere a Lallo la stessa parola più volte per
+// gioco (brief §6.4) — auto-avanzare dopo un solo tap toglierebbe quella parte divertente.
+// Resta un avanzamento manuale, ma con etichetta ed indicatore di round più chiari.
 function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
@@ -381,7 +432,9 @@ function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
       <Text style={styles.question}>Dì la parola… e senti come la ripete Lallo! 🦜</Text>
       <Text style={styles.recEmoji}>{word.emoji}</Text>
       <Text style={styles.recWord}>{word.parola}</Text>
-      <Text style={styles.recMeta}>{meta.label} · {position}</Text>
+      <Text style={styles.recMeta}>
+        {meta.label} · {position} · parola {round + 1} di {PRODUCTION_ROUNDS}
+      </Text>
       {!hasConsent && (
         <Text style={styles.warnNote}>
           Serve il consenso di un genitore per registrare la voce. Vai su Genitori → Privacy
@@ -419,17 +472,27 @@ function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
           : "Tocca il microfono e dì la parola"}
       </Text>
       <View style={styles.actionRow}>
-        <Pressable style={styles.secondaryBtn} onPress={() => { setRecordedUri(null); setRound((r) => r + 1); }}>
-          <Text style={styles.secondaryBtnText}>🔀 Nuova parola</Text>
-        </Pressable>
         {recordedUri && (
           <Pressable style={styles.secondaryBtn} onPress={() => onAttempt(word.parola, true)}>
             <Text style={styles.secondaryBtnText}>🎬 Salva la clip</Text>
           </Pressable>
         )}
         {repeats > 0 && (
-          <Pressable style={styles.primaryBtn} onPress={onDone}>
-            <Text style={styles.primaryBtnText}>Fatto ✓</Text>
+          <Pressable
+            style={styles.primaryBtn}
+            onPress={() => {
+              if (round + 1 < PRODUCTION_ROUNDS) {
+                setRecordedUri(null);
+                setRepeats(0);
+                setRound((r) => r + 1);
+              } else {
+                onDone();
+              }
+            }}
+          >
+            <Text style={styles.primaryBtnText}>
+              {round + 1 < PRODUCTION_ROUNDS ? "Prossima parola →" : "Fatto ✓"}
+            </Text>
           </Pressable>
         )}
       </View>
@@ -437,28 +500,43 @@ function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
-/* ---------------- Coppie minime ---------------- */
+/* ---------------- Coppie minime ----------------
+   3 round che alternano quale delle due parole della coppia è il target, invece di una
+   singola domanda — più pratica per sessione, in linea con gli altri esercizi. Auto-avanza
+   dopo ogni risposta, niente più tap manuale su "Fatto". */
 function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const pair = MINIMAL_PAIRS[phonemeKey] ?? MINIMAL_PAIRS.s!;
   const meta = WORD_BANK[phonemeKey];
-  const target = pair[1];
-  const [picked, setPicked] = useState<string | null>(null);
   const [round, setRound] = useState(0);
+  const target = pair[round % 2];
+  const [picked, setPicked] = useState<string | null>(null);
 
   function playTarget() { say(target.parola); }
+
+  useEffect(() => {
+    playTarget();
+  }, [round]);
+
   function pick(word: WordEntry) {
     if (picked) return;
     setPicked(word.parola);
     const correct = word.parola === target.parola;
     onAttempt(word.parola, correct);
     say(word.parola);
+    setTimeout(() => {
+      setPicked(null);
+      if (round + 1 < PRODUCTION_ROUNDS) setRound((r) => r + 1);
+      else onDone();
+    }, 1100);
   }
 
   return (
     <View style={{ flex: 1 }}>
-      <Text style={styles.question}>Ascolta, poi tocca la parola che hai sentito.</Text>
+      <Text style={styles.question}>
+        Ascolta, poi tocca la parola che hai sentito · {round + 1} di {PRODUCTION_ROUNDS}
+      </Text>
       {!MINIMAL_PAIRS[phonemeKey] && (
         <Text style={styles.warnNote}>Coppia di esempio — da personalizzare per {meta.label}</Text>
       )}
@@ -484,13 +562,6 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
             </Pressable>
           );
         })}
-      </View>
-      <View style={styles.actionRow}>
-        {picked && (
-          <Pressable style={styles.primaryBtn} onPress={onDone}>
-            <Text style={styles.primaryBtnText}>Fatto ✓</Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );
@@ -597,6 +668,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 },
   back: { fontSize: 26, color: "#137A6E" },
   title: { fontSize: 20, fontWeight: "800" },
+  subtitle: { fontSize: 12, color: "#4A5A56", marginTop: 2 },
   question: { fontSize: 15, color: "#4A5A56", marginBottom: 14, textAlign: "center" },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 10 },
   tile: {
@@ -634,6 +706,16 @@ const styles = StyleSheet.create({
     alignSelf: "center", width: 60, height: 60, borderRadius: 30, backgroundColor: "#137A6E",
     alignItems: "center", justifyContent: "center", marginBottom: 20,
   },
+  celebrationOverlay: {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(31,46,43,0.55)", alignItems: "center", justifyContent: "center", padding: 24,
+  },
+  celebrationCard: {
+    backgroundColor: "#fff", borderRadius: 22, padding: 26, alignItems: "center", maxWidth: 340,
+  },
+  celebrationEmoji: { fontSize: 48, marginBottom: 8 },
+  celebrationTitle: { fontSize: 20, fontWeight: "800", color: "#1F2E2B", marginBottom: 10, textAlign: "center" },
+  celebrationText: { fontSize: 14, color: "#4A5A56", textAlign: "center", lineHeight: 20, marginBottom: 20 },
 });
 
 const ocaStyles = StyleSheet.create({

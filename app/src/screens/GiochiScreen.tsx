@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium, FREE_PHONEMES } from "../constants/wordBank";
-import { ClinicalLevel, LevelProgress } from "../types/gamification";
+import { ClinicalLevel, LevelProgress, LEVEL_LABELS } from "../types/gamification";
 
 const C = {
   paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC",
@@ -20,14 +20,6 @@ const GAMES = [
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", emoji: "🎲", levels: [3, 4] },
   { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", emoji: "📖", levels: [5] },
 ] as const;
-
-const LEVEL_LABELS: Record<ClinicalLevel, string> = {
-  1: "Suono isolato",
-  2: "Sillaba",
-  3: "Parola",
-  4: "Frase",
-  5: "Racconto",
-};
 
 function freshLevelsForDisplay(): LevelProgress[] {
   return [1, 2, 3, 4, 5].map((level) => ({
