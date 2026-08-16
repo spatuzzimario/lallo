@@ -5,7 +5,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import HomeScreen from "./src/screens/HomeScreen";
 import GiochiScreen from "./src/screens/GiochiScreen";
 import ProgressiScreen from "./src/screens/ProgressiScreen";
 import SessionScreen from "./src/screens/SessionScreen";
@@ -121,14 +120,13 @@ const seedProfile: ChildProfile = {
   ],
 };
 
+// La tab "Oggi" è stata rimossa (agosto 2026): senza un logopedista che assegna un piano
+// giornaliero (modello parent-first), mostrava solo gli stessi 2 esercizi auto-generati
+// dallo screener — già coperti dal nodo "Livello 1" della mappa in Giochi, che ora è la
+// prima tab (saluto/streak/reward giornaliero vivono in testa a quello schermo).
 function MainTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: "#137A6E" }}>
-      <Tab.Screen
-        name="Oggi"
-        component={HomeScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🏠</Text> }}
-      />
       <Tab.Screen
         name="Giochi"
         component={GiochiScreen}

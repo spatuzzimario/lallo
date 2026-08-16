@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
-import { useGamificationStore } from "../store/useGamificationStore";
+import { useGamificationStore, DAILY_REWARD_GEMS } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium, FREE_PHONEMES } from "../constants/wordBank";
 import { ClinicalLevel, LevelProgress, LEVEL_LABELS } from "../types/gamification";
 
 const C = {
   paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC",
-  jade: "#137A6E", coral: "#FF6A4D", sun: "#FFC53D",
+  jade: "#137A6E", jadeDeep: "#0E5C53", coral: "#FF6A4D", sun: "#FFC53D", mist: "#E4EFEA",
 };
 
 // Ogni gioco dichiara a quali livelli clinici si applica (brief §6.3) — usato per filtrare
@@ -31,6 +31,12 @@ function freshLevelsForDisplay(): LevelProgress[] {
   }));
 }
 
+// Diventata la tab di partenza dell'app (agosto 2026): la tab "Oggi" separata non aveva più
+// senso senza un logopedista che assegna un piano giornaliero (modello parent-first, vedi
+// CLAUDE.md) — mostrava solo gli stessi 2 esercizi auto-generati dallo screener, già
+// interamente coperti dal nodo "Livello 1" della mappa qui sotto. Saluto, streak, tasto
+// genitori e reward giornaliero (prima in HomeScreen, ora rimosso) vivono qui in testa.
+//
 // Catalogo di tutti i 25 fonemi (non solo quelli scelti allo screener/dal logopedista):
 // i giochi sono già generici per fonema (pescano da WORD_BANK), mancava solo un modo per
 // sceglierne uno diverso da quello assegnato oggi. I fonemi premium (fuori FREE_PHONEMES)
@@ -55,6 +61,13 @@ export default function GiochiScreen({ navigation }: any) {
   const [expandedLevel, setExpandedLevel] = useState<ClinicalLevel | null>(null);
 
   if (!profile) return null;
+
+  // Reward giornaliero — vedi la stessa logica di lettura già usata in precedenza in
+  // HomeScreen: solo lettura, l'assegnazione vera avviene in recordSession nello store.
+  const claimedCount = profile.dailyRewards.claimedDates.length;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const claimedToday = profile.dailyRewards.claimedDates.includes(todayStr);
+  const cyclePos = claimedToday ? (claimedCount - 1 + 7) % 7 : claimedCount % 7;
 
   function selectPhoneme(key: PhonemeKey) {
     if (isPremium(key) && !subscriptionActive) {
@@ -85,6 +98,35 @@ export default function GiochiScreen({ navigation }: any) {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: 24 }}>
+      <View style={styles.topRow}>
+        <View>
+          <Text style={styles.greeting}>Ciao, {profile.displayName}! 👋</Text>
+          <Text style={styles.subGreeting}>Scegli un suono e continua da dove eri</Text>
+        </View>
+        <View style={styles.topRight}>
+          <Pressable onPress={() => navigation.navigate("AdultGate")} style={styles.parentBtn}>
+            <Text style={styles.parentBtnText}>👪</Text>
+          </Pressable>
+          <View style={styles.streakPill}>
+            <Text style={styles.streakText}>🔥 {profile.streak.currentWeeks || 1} giorni</Text>
+          </View>
+        </View>
+      </View>
+
+      <Text style={styles.sectionLabel}>RICOMPENSA DEL GIORNO</Text>
+      <View style={styles.rewardStrip}>
+        {DAILY_REWARD_GEMS.map((gems, i) => {
+          const done = i < cyclePos || (i === cyclePos && claimedToday);
+          const isToday = i === cyclePos && !claimedToday;
+          return (
+            <View key={i} style={[styles.rewardCell, done && styles.rewardCellDone, isToday && styles.rewardCellToday]}>
+              <Text style={styles.rewardCellEmoji}>{done ? "✅" : "💎"}</Text>
+              <Text style={[styles.rewardCellGems, done && styles.rewardCellGemsDone]}>{gems}</Text>
+            </View>
+          );
+        })}
+      </View>
+
       <Text style={styles.sectionLabel}>SUONO</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
         {PHONEME_ORDER.map((key) => {
@@ -173,6 +215,24 @@ export default function GiochiScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.paper },
+  topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 },
+  greeting: { fontSize: 17, fontWeight: "700", color: C.ink },
+  subGreeting: { fontSize: 12.5, color: C.inkSoft, marginTop: 2 },
+  topRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+  parentBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#fff", borderWidth: 1.5, borderColor: C.line, alignItems: "center", justifyContent: "center" },
+  parentBtnText: { fontSize: 15 },
+  streakPill: { backgroundColor: C.mist, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10 },
+  streakText: { fontSize: 11.5, fontWeight: "600", color: C.jadeDeep },
+  rewardStrip: { flexDirection: "row", gap: 6, marginBottom: 20 },
+  rewardCell: {
+    flex: 1, aspectRatio: 0.8, borderRadius: 12, borderWidth: 1.5, borderColor: C.line,
+    backgroundColor: "#fff", alignItems: "center", justifyContent: "center", gap: 2,
+  },
+  rewardCellDone: { backgroundColor: C.mist, borderColor: C.jade },
+  rewardCellToday: { borderColor: C.sun, borderWidth: 2, backgroundColor: "#FFF8E0" },
+  rewardCellEmoji: { fontSize: 14 },
+  rewardCellGems: { fontSize: 10.5, fontWeight: "700", color: C.inkSoft },
+  rewardCellGemsDone: { color: C.jadeDeep },
   sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.5, color: C.inkSoft, marginBottom: 10 },
   chipRow: { gap: 8, paddingRight: 8 },
   chip: {

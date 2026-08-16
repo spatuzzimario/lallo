@@ -8,7 +8,7 @@ export default function ProgressiScreen() {
   const profile = useGamificationStore((s) => s.profile);
   if (!profile) return null;
 
-  const totalStickers = profile.phonemeGroups.reduce(
+  const totalMastered = profile.phonemeGroups.reduce(
     (sum, g) => sum + g.levels.filter((l) => l.status === "mastered").length,
     0
   );
@@ -37,16 +37,8 @@ export default function ProgressiScreen() {
       )}
 
       <View style={styles.rewardCard}>
-        <View>
-          <Text style={styles.rewardBig}>{totalStickers}</Text>
-          <Text style={styles.rewardLabel}>stickers conquistati</Text>
-        </View>
-        <View style={styles.stickerRow}>
-          <Text style={styles.sticker}>🦜</Text>
-          <Text style={styles.sticker}>⭐</Text>
-          <Text style={styles.sticker}>🏆</Text>
-          <Text style={styles.sticker}>🎈</Text>
-        </View>
+        <Text style={styles.rewardBig}>{totalMastered}</Text>
+        <Text style={styles.rewardLabel}>livelli conquistati</Text>
       </View>
     </ScrollView>
   );
@@ -62,10 +54,8 @@ const styles = StyleSheet.create({
   barTrack: { height: 11, backgroundColor: C.mist, borderRadius: 999, overflow: "hidden" },
   barFill: { height: "100%", backgroundColor: C.jade, borderRadius: 999 },
   rewardCard: {
-    flexDirection: "row", alignItems: "center", backgroundColor: C.sun, borderRadius: 18, padding: 14, marginTop: 18,
+    alignItems: "center", backgroundColor: C.sun, borderRadius: 18, padding: 14, marginTop: 18,
   },
   rewardBig: { fontWeight: "800", fontSize: 26, color: C.ink },
   rewardLabel: { fontSize: 11, color: C.ink },
-  stickerRow: { flexDirection: "row", gap: 5, marginLeft: "auto" },
-  sticker: { fontSize: 19 },
 });
