@@ -22,6 +22,21 @@ const MASTERY_DEFAULT_THRESHOLD = 0.75;
 const SESSIONS_TO_COUNT_WEEK = 3;
 const GRACE_DAYS_PER_MONTH = 2;
 
+// Reward giornaliero (base, non clinico): gemme per posizione nel ciclo di 7 giorni,
+// assegnate alla prima sessione completata della giornata. Esportato così la UI (striscia
+// su Home) mostra gli stessi numeri senza duplicarli.
+export const DAILY_REWARD_GEMS = [1, 1, 2, 2, 3, 3, 5];
+
+function freshLevels(): LevelProgress[] {
+  return [1, 2, 3, 4, 5].map((level) => ({
+    level: level as LevelProgress["level"],
+    status: (level === 1 ? "available" : "locked") as LevelProgress["status"],
+    masteryThreshold: MASTERY_DEFAULT_THRESHOLD,
+    starsEarned: 0,
+    starsPossible: 0,
+  }));
+}
+
 function isSameWeek(a: string, b: string): boolean {
   const dA = new Date(a);
   const dB = new Date(b);
@@ -105,7 +120,24 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       result.attempts.reduce((sum, a) => sum + a.confidenceScore, 0) /
       Math.max(result.attempts.length, 1);
 
-    const updatedGroups = profile.phonemeGroups.map((group) => {
+    // Se il fonema non ha ancora un gruppo (es. il bambino sta esplorando un suono dal
+    // catalogo in Giochi, mai assegnato da screener o logopedista), lo crea al volo —
+    // altrimenti la sessione non avrebbe nessun posto dove salvare i progressi.
+    const hasGroup = profile.phonemeGroups.some((g) => g.id === result.phonemeGroupId);
+    const baseGroups = hasGroup
+      ? profile.phonemeGroups
+      : [
+          ...profile.phonemeGroups,
+          {
+            id: result.phonemeGroupId,
+            name: `Suono ${WORD_BANK[result.phonemeGroupId as PhonemeKey]?.label ?? result.phonemeGroupId}`,
+            islandAsset: "",
+            unlockedByTherapist: false,
+            levels: freshLevels(),
+          },
+        ];
+
+    const updatedGroups = baseGroups.map((group) => {
       if (group.id !== result.phonemeGroupId) return group;
 
       const updatedLevels = group.levels.map((lvl) => {
@@ -118,12 +150,14 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         );
       });
 
-      // Auto-unlock next level's "available" status only if therapist
-      // has enabled progression for this phoneme group — clinical gate,
-      // not a pure algorithmic unlock. See design doc section 4.
+      // Auto-sblocco del livello successivo basato solo sulla soglia di mastery (confidenza
+      // media, non ripetizione) — non più condizionato a unlockedByTherapist: nel modello
+      // parent-first la maggior parte dei bambini non ha un logopedista collegato, quindi il
+      // gate lasciava la mappa bloccata al livello 1 per la maggioranza. Il logopedista resta
+      // l'unico che assegna un fonema NUOVO o un livello di partenza più avanzato — qui si
+      // tratta solo di avanzare dentro un fonema già iniziato.
       const masteredIdx = updatedLevels.findIndex((l) => l.level === result.level);
       if (
-        group.unlockedByTherapist &&
         updatedLevels[masteredIdx].status === "mastered" &&
         masteredIdx + 1 < updatedLevels.length &&
         updatedLevels[masteredIdx + 1].status === "locked"
@@ -145,13 +179,25 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       newStreak.currentWeeks > profile.streak.currentWeeks;
     const gemsAwarded = justHitWeeklyMilestone ? 5 : 0;
 
+    // Ricompensa giornaliera: al massimo una volta al giorno, ciclo di 7 non spezzato da un
+    // giorno saltato (stesso spirito "generoso" dei grace days sopra).
+    const todayStr = result.completedAt.slice(0, 10);
+    const claimedToday = profile.dailyRewards.claimedDates.includes(todayStr);
+    const claimedDates = claimedToday
+      ? profile.dailyRewards.claimedDates
+      : [...profile.dailyRewards.claimedDates, todayStr];
+    const dailyRewardGems = claimedToday
+      ? 0
+      : DAILY_REWARD_GEMS[(claimedDates.length - 1) % DAILY_REWARD_GEMS.length];
+
     set({
       profile: {
         ...profile,
         stars: profile.stars + totalStars,
-        gems: profile.gems + gemsAwarded,
+        gems: profile.gems + gemsAwarded + dailyRewardGems,
         streak: newStreak,
         phonemeGroups: updatedGroups,
+        dailyRewards: { claimedDates },
       },
     });
   },
@@ -218,9 +264,9 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
   // Decisione parent-first (validata luglio 2026): niente più anteprima bloccata — il
   // genitore sceglie i suoni, si parte subito al livello 1 (suono isolato), che è il punto
   // di partenza corretto per QUALSIASI fonema nuovo, indipendentemente dall'età/vocabolario.
-  // unlockedByTherapist resta false: recordSession non farà avanzare automaticamente al
-  // livello successivo dopo la maestria finché un logopedista non lo conferma — l'esercizio
-  // al livello corrente resta comunque giocabile.
+  // unlockedByTherapist resta false, ma da qui in poi (vedi recordSession) non è più quello
+  // a decidere se si avanza al livello successivo — solo la soglia di mastery lo è. Il
+  // logopedista resta l'unico che assegna un fonema nuovo o un livello di partenza avanzato.
   startSelfDirectedPlan: (sounds) => {
     const profile = get().profile;
     if (!profile) return;
@@ -231,13 +277,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       name: `Suono ${WORD_BANK[key].label}`,
       islandAsset: "",
       unlockedByTherapist: false,
-      levels: [1, 2, 3, 4, 5].map((level) => ({
-        level: level as LevelProgress["level"],
-        status: (level === 1 ? "available" : "locked") as LevelProgress["status"],
-        masteryThreshold: 0.75,
-        starsEarned: 0,
-        starsPossible: 0,
-      })),
+      levels: freshLevels(),
     }));
 
     const firstKey = sounds[0];

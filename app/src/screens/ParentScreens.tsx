@@ -172,6 +172,11 @@ export function ParentDashboardScreen({ navigation }: any) {
         <Text style={dashStyles.chevron}>›</Text>
       </Pressable>
 
+      <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("TherapistLink")}>
+        <Text style={dashStyles.privacyRowText}>🩺 Collega il tuo logopedista</Text>
+        <Text style={dashStyles.chevron}>›</Text>
+      </Pressable>
+
       <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("PrivacyConsent")}>
         <Text style={dashStyles.privacyRowText}>🔒 Privacy e registrazioni</Text>
         <Text style={dashStyles.chevron}>›</Text>

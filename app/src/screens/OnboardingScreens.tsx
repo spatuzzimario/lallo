@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
 
 const COLORS = {
   bg: "#FBF6EE", // --paper della demo HTML
@@ -32,16 +32,22 @@ export function TrustScreen({ navigation }: any) {
         così puoi seguire i progressi reali di tuo figlio — non solo il tempo di gioco.
       </Text>
       <View style={{ flex: 1 }} />
-      <ContinueButton onPress={() => navigation.navigate("TherapistLink")} />
+      <ContinueButton onPress={() => navigation.navigate("ChildName")} />
     </View>
   );
 }
 
-// Screen 2 — the branch point Speech Blubs doesn't need. This is the key
-// B2B2C moment: does this family already have a prescribing therapist?
+// "Hai un logopedista?" — spostata fuori dall'onboarding obbligatorio (agosto 2026): nel
+// modello parent-first (vedi CLAUDE.md) è "opzione visibile ma non obbligatoria" (brief
+// §6.1), non un bivio da porre come secondo schermo assoluto prima ancora del nome del
+// bambino. Ora si raggiunge solo da Genitori → "Collega il tuo logopedista", quando il
+// profilo bambino esiste già — niente più "salta e continua l'onboarding" da qui.
 export function TherapistLinkScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text style={styles.back}>←</Text>
+      </Pressable>
       <Text style={styles.title}>Hai un codice del tuo logopedista?</Text>
       <Text style={styles.subtitle}>
         Se il tuo logopedista ti ha dato un codice, collegalo per sbloccare
@@ -60,12 +66,6 @@ export function TherapistLinkScreen({ navigation }: any) {
         <Text style={styles.secondaryOptionSubtitle}>
           Trova un logopedista vicino a te
         </Text>
-      </Pressable>
-      <Pressable
-        onPress={() => navigation.navigate("ChildName")}
-        style={styles.skipLink}
-      >
-        <Text style={styles.skipText}>Non ancora, continua senza codice</Text>
       </Pressable>
     </View>
   );
@@ -96,9 +96,24 @@ export function FindTherapistScreen({ navigation }: any) {
   );
 }
 
-// Screen 2b — code entry, only reached if they said yes above
+// Screen 2b — code entry. Raggiunta solo da Genitori → "Collega il tuo logopedista"
+// (agosto 2026): con l'onboarding che ora passa sempre dallo screener, non c'è più un
+// posto in cui questo schermo debba proseguire verso la creazione del profilo bambino —
+// il profilo esiste già, si torna semplicemente alla dashboard.
 export function TherapistCodeEntryScreen({ navigation }: any) {
   const [code, setCode] = useState("");
+
+  function submit() {
+    // TODO: scrivere il collegamento vero sulla tabella therapist_links (schema pronto in
+    // supabase/schema.sql, non ancora agganciato) — per ora solo conferma lato UI, nessuna
+    // persistenza reale del codice inserito qui.
+    Alert.alert(
+      "Codice registrato",
+      "Collegheremo la terapia del tuo logopedista al profilo appena possibile."
+    );
+    navigation.pop(2);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Inserisci il codice</Text>
@@ -111,10 +126,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
         style={styles.input}
       />
       <View style={{ flex: 1 }} />
-      <ContinueButton
-        disabled={code.length < 4}
-        onPress={() => navigation.navigate("ChildName", { therapistCode: code })}
-      />
+      <ContinueButton disabled={code.length < 4} onPress={submit} />
     </View>
   );
 }
@@ -122,7 +134,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
 // Screen 3 — name entry, direct port of the Speech Blubs pattern (illustration,
 // input, Skip in the top right). Their affirmative-nickname framing works well
 // for a sensitive context like speech delay, kept as-is.
-export function ChildNameScreen({ navigation, route }: any) {
+export function ChildNameScreen({ navigation }: any) {
   const [name, setName] = useState("");
   return (
     <View style={styles.container}>
@@ -147,12 +159,7 @@ export function ChildNameScreen({ navigation, route }: any) {
       <View style={{ flex: 1 }} />
       <ContinueButton
         disabled={name.length === 0}
-        onPress={() =>
-          navigation.navigate("ChildBirthdate", {
-            name,
-            therapistCode: route?.params?.therapistCode,
-          })
-        }
+        onPress={() => navigation.navigate("ChildBirthdate", { name })}
       />
     </View>
   );
@@ -167,7 +174,6 @@ export function ChildNameScreen({ navigation, route }: any) {
 // senza dipendenze in più.
 export function ChildBirthdateScreen({ navigation, route }: any) {
   const name = route?.params?.name || "il tuo bambino";
-  const hasTherapistCode = !!route?.params?.therapistCode;
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
@@ -191,9 +197,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
     const birthdate = isValid
       ? `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`
       : null;
-    const params = { ...route?.params, name, birthdate };
-    if (hasTherapistCode) navigation.navigate("Auth", params);
-    else navigation.navigate("WordCount", params);
+    navigation.navigate("WordCount", { ...route?.params, name, birthdate });
   }
 
   return (

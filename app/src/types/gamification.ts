@@ -51,6 +51,10 @@ export interface ChildProfile {
   // registrazione audio — ed eventualmente video in futuro — durante esercizi come il
   // Registratore. Finché è false, quegli esercizi non devono registrare nulla.
   audioRecordingConsent: boolean;
+  // Ricompensa giornaliera (reward base, non clinica): date ISO (YYYY-MM-DD) in cui è
+  // già stata assegnata. Ciclo di 7 giorni non spezzato da un giorno saltato — stesso
+  // spirito "generoso" dei grace days dello streak, non è un contatore di fila rigido.
+  dailyRewards: { claimedDates: string[] };
 }
 
 export interface StreakState {

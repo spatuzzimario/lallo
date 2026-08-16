@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
-import { useGamificationStore } from "../store/useGamificationStore";
+import { useGamificationStore, DAILY_REWARD_GEMS } from "../store/useGamificationStore";
 import { WORD_BANK } from "../constants/wordBank";
 
 // Colori esatti del brand, presi dalla demo HTML (lallo-landing/index.html),
@@ -44,6 +44,14 @@ export default function HomeScreen({ navigation }: any) {
   const todayPhonemeKey = profile.assignedToday[0]?.phonemeGroupId;
   const todayLabel = todayPhonemeKey ? WORD_BANK[todayPhonemeKey as keyof typeof WORD_BANK]?.label : "—";
 
+  // Reward giornaliero (base, non clinico): posizione nel ciclo di 7 giorni calcolata dal
+  // numero di giorni in cui è già stata reclamata (vedi recordSession nello store — qui è
+  // solo lettura per disegnare la striscia, nessuna logica di assegnazione duplicata).
+  const claimedCount = profile.dailyRewards.claimedDates.length;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const claimedToday = profile.dailyRewards.claimedDates.includes(todayStr);
+  const cyclePos = claimedToday ? (claimedCount - 1 + 7) % 7 : claimedCount % 7;
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: 24 }}>
       <View style={styles.topRow}>
@@ -71,6 +79,20 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.sticker}>🦜</Text>
           <Text style={styles.sticker}>🎖️</Text>
         </View>
+      </View>
+
+      <Text style={styles.sectionLabel}>RICOMPENSA DEL GIORNO</Text>
+      <View style={styles.rewardStrip}>
+        {DAILY_REWARD_GEMS.map((gems, i) => {
+          const done = i < cyclePos || (i === cyclePos && claimedToday);
+          const isToday = i === cyclePos && !claimedToday;
+          return (
+            <View key={i} style={[styles.rewardCell, done && styles.rewardCellDone, isToday && styles.rewardCellToday]}>
+              <Text style={styles.rewardCellEmoji}>{done ? "✅" : "💎"}</Text>
+              <Text style={[styles.rewardCellGems, done && styles.rewardCellGemsDone]}>{gems}</Text>
+            </View>
+          );
+        })}
       </View>
 
       <Text style={styles.sectionLabel}>DA FARE OGGI</Text>
@@ -129,6 +151,16 @@ const styles = StyleSheet.create({
   stickerRow: { flexDirection: "row", gap: 5, marginLeft: "auto" },
   sticker: { fontSize: 19 },
   sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.5, color: C.inkSoft, marginBottom: 10 },
+  rewardStrip: { flexDirection: "row", gap: 6, marginBottom: 20 },
+  rewardCell: {
+    flex: 1, aspectRatio: 0.8, borderRadius: 12, borderWidth: 1.5, borderColor: C.line,
+    backgroundColor: "#fff", alignItems: "center", justifyContent: "center", gap: 2,
+  },
+  rewardCellDone: { backgroundColor: C.mist, borderColor: C.jade },
+  rewardCellToday: { borderColor: C.sun, borderWidth: 2, backgroundColor: "#FFF8E0" },
+  rewardCellEmoji: { fontSize: 14 },
+  rewardCellGems: { fontSize: 10.5, fontWeight: "700", color: C.inkSoft },
+  rewardCellGemsDone: { color: C.jadeDeep },
   card: {
     flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#fff", borderWidth: 1.5, borderColor: C.line,
     borderRadius: 18, padding: 13, marginBottom: 11,
