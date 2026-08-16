@@ -17,6 +17,7 @@ import {
   pickRandom,
   distractorPool,
   MINIMAL_PAIRS,
+  isPremium,
 } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult } from "../types/gamification";
@@ -49,7 +50,16 @@ export default function SessionScreen({ navigation, route }: any) {
   const position = params.position ?? "iniziale";
   const exerciseType = params.exerciseType ?? "caccia";
   const recordSession = useGamificationStore((s) => s.recordSession);
+  const subscriptionActive = useGamificationStore((s) => !!s.profile?.subscriptionActive);
   const meta = WORD_BANK[phonemeKey];
+
+  // Gate centrale: qualunque schermata mandi qui un fonema premium senza abbonamento
+  // attivo viene rimbalzata al Paywall — un solo punto di applicazione invece di
+  // ripetere il controllo in ogni schermata che avvia una sessione (Oggi, Giochi, ecc.).
+  const locked = isPremium(phonemeKey) && !subscriptionActive;
+  useEffect(() => {
+    if (locked) navigation.replace("Paywall");
+  }, [locked]);
 
   const [attempts, setAttempts] = useState<AttemptResult[]>([]);
 
@@ -78,7 +88,7 @@ export default function SessionScreen({ navigation, route }: any) {
     ]);
   }
 
-  if (!meta) return null;
+  if (!meta || locked) return null;
 
   return (
     <View style={styles.container}>

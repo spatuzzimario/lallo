@@ -14,18 +14,28 @@ const PLANS = [
   { id: "monthly", label: "Mensile", price: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null },
 ];
 
-export default function PaywallScreen({ navigation }: any) {
+export default function PaywallScreen({ navigation, route }: any) {
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const setProfile = useGamificationStore((s) => s.setProfile);
   const profile = useGamificationStore((s) => s.profile);
 
+  // Il Paywall si apre da due punti diversi: subito dopo l'onboarding (nessun posto dove
+  // tornare indietro, si prosegue verso MainTabs) oppure da Genitori → Abbonamento (si torna
+  // alla dashboard). fromParentDashboard distingue i due casi.
+  const fromParentDashboard = !!route?.params?.fromParentDashboard;
+
+  function afterDecision() {
+    if (fromParentDashboard) navigation.goBack();
+    else navigation.navigate("MainTabs");
+  }
+
   function subscribe() {
     // Segnaposto: in produzione qui parte il flusso RevenueCat reale (trial 7 giorni).
     if (profile) setProfile({ ...profile, subscriptionActive: true });
-    navigation.navigate("MainTabs");
+    afterDecision();
   }
   function continueFree() {
-    navigation.navigate("MainTabs");
+    afterDecision();
   }
 
   const premiumCount = PHONEME_ORDER.length - FREE_PHONEMES.length;

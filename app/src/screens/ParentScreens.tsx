@@ -162,6 +162,16 @@ export function ParentDashboardScreen({ navigation }: any) {
         </Text>
       </View>
 
+      <Pressable
+        style={dashStyles.privacyRow}
+        onPress={() => navigation.navigate("Paywall", { fromParentDashboard: true })}
+      >
+        <Text style={dashStyles.privacyRowText}>
+          {profile.subscriptionActive ? "⭐ Abbonamento attivo" : "🔓 Sblocca tutti i suoni"}
+        </Text>
+        <Text style={dashStyles.chevron}>›</Text>
+      </Pressable>
+
       <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("PrivacyConsent")}>
         <Text style={dashStyles.privacyRowText}>🔒 Privacy e registrazioni</Text>
         <Text style={dashStyles.chevron}>›</Text>

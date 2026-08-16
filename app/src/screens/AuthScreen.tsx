@@ -71,7 +71,7 @@ export default function AuthScreen({ navigation, route }: any) {
       return;
     }
     if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
-    navigation.navigate("MainTabs");
+    navigation.navigate("Paywall");
   }
 
   if (!isSupabaseConfigured) {
@@ -87,7 +87,7 @@ export default function AuthScreen({ navigation, route }: any) {
         <ContinueButton
           onPress={() => {
             if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
-            navigation.navigate("MainTabs");
+            navigation.navigate("Paywall");
           }}
         />
       </View>
