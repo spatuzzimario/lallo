@@ -24,6 +24,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Lallo usa il microfono per registrare la voce del bambino negli esercizi di pronuncia (Registratore, Ripeti con Lallo), solo dopo il consenso del genitore."
+        }
+      ]
+    ]
   }
 }
