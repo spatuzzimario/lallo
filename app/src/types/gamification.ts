@@ -38,6 +38,10 @@ export interface AssignedExercise {
 
 export interface ChildProfile {
   id: string;
+  // Id della riga `children` su Supabase — serve per qualunque scrittura reale collegata al
+  // bambino (therapist_links, in futuro targets/sessions). Assente finché isSupabaseConfigured
+  // è false o l'onboarding non ha ancora completato la creazione su Supabase.
+  supabaseChildId?: string;
   displayName: string;
   avatarId: string;
   stars: number;

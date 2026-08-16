@@ -16,6 +16,7 @@ interface GamificationStore {
   setParentReportedConcerns: (concerns: string[]) => void;
   setAudioRecordingConsent: (consent: boolean) => void;
   startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
+  setSupabaseChildId: (id: string) => void;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -258,6 +259,12 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, audioRecordingConsent: consent } });
+  },
+
+  setSupabaseChildId: (id) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, supabaseChildId: id } });
   },
 
   // Avvia il piano self-directed (nessun logopedista collegato) al termine dello screener.

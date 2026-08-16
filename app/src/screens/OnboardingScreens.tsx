@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
+import { isSupabaseConfigured } from "../api/supabase";
+import { useGamificationStore } from "../store/useGamificationStore";
 
 const COLORS = {
   bg: "#FBF6EE", // --paper della demo HTML
@@ -33,6 +36,82 @@ export function TrustScreen({ navigation }: any) {
       </Text>
       <View style={{ flex: 1 }} />
       <ContinueButton onPress={() => navigation.navigate("ChildName")} />
+      {/* Link secondario, non in competizione visiva con il flusso genitore (parent-first) —
+          un logopedista che apre l'app per la prima volta deve comunque poterlo trovare. */}
+      <Pressable onPress={() => navigation.navigate("TherapistOnboarding")} style={styles.skipLink}>
+        <Text style={styles.skipText}>Sei un logopedista? Registrati qui</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+// Registrazione logopedista (agosto 2026): percorso separato dal flusso genitore, non
+// annidato dentro l'onboarding del bambino — raccoglie nome/cognome/numero Albo, poi passa
+// da Auth (stesso meccanismo email+OTP, ma crea profiles.role='therapist' + una riga
+// therapists invece di un profilo genitore). albo_verified resta false alla creazione:
+// verifica manuale in fase fondatori (brief §6.6) — il codice invito esiste comunque da
+// subito e non sblocca contenuto premium per le famiglie collegate.
+export function TherapistOnboardingScreen({ navigation }: any) {
+  const [fullName, setFullName] = useState("");
+  const [alboNumber, setAlboNumber] = useState("");
+  const canContinue = fullName.trim().length > 1 && alboNumber.trim().length > 1;
+
+  return (
+    <View style={styles.container}>
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text style={styles.back}>←</Text>
+      </Pressable>
+      <Text style={styles.title}>Registrati come logopedista</Text>
+      <Text style={styles.subtitle}>
+        Ti diamo un codice da condividere con le famiglie che segui, per collegare Lallo alla tua terapia. La verifica
+        del numero di iscrizione all'Albo avviene manualmente da parte nostra dopo la registrazione.
+      </Text>
+      <TextInput
+        value={fullName}
+        onChangeText={setFullName}
+        placeholder="Nome e cognome"
+        style={styles.input}
+      />
+      <TextInput
+        value={alboNumber}
+        onChangeText={setAlboNumber}
+        placeholder="Numero di iscrizione all'Albo dei Logopedisti"
+        style={styles.input}
+      />
+      <View style={{ flex: 1 }} />
+      <ContinueButton
+        disabled={!canContinue}
+        onPress={() =>
+          navigation.navigate("Auth", { role: "therapist", fullName: fullName.trim(), alboNumber: alboNumber.trim() })
+        }
+      />
+    </View>
+  );
+}
+
+// Ultimo passo della registrazione logopedista: mostra il codice invito generato — niente
+// copia automatica negli appunti (nessuna dipendenza nuova, expo-clipboard non è nel
+// progetto), il logopedista lo scrive o lo detta alle famiglie.
+export function TherapistCodeReadyScreen({ navigation, route }: any) {
+  const inviteCode: string = route.params?.inviteCode || "—";
+  const fullName: string = route.params?.fullName || "";
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Sei registrato, {fullName.split(" ")[0]}!</Text>
+      <Text style={styles.subtitle}>
+        Condividi questo codice con le famiglie che segui — lo inseriranno nell'app, nell'area Genitori, per
+        collegare Lallo alla tua terapia.
+      </Text>
+      <View style={styles.codeBox}>
+        <Text style={styles.codeText}>{inviteCode}</Text>
+      </View>
+      <Text style={styles.subtitle}>
+        La verifica del tuo numero di iscrizione all'Albo è manuale da parte nostra — ti contatteremo appena
+        completata.
+      </Text>
+      <View style={{ flex: 1 }} />
+      <ContinueButton label="Ho capito" onPress={() => navigation.navigate("Trust")} />
     </View>
   );
 }
@@ -99,18 +178,37 @@ export function FindTherapistScreen({ navigation }: any) {
 // Screen 2b — code entry. Raggiunta solo da Genitori → "Collega il tuo logopedista"
 // (agosto 2026): con l'onboarding che ora passa sempre dallo screener, non c'è più un
 // posto in cui questo schermo debba proseguire verso la creazione del profilo bambino —
-// il profilo esiste già, si torna semplicemente alla dashboard.
+// il profilo esiste già, si torna semplicemente alla dashboard. Scrive davvero su
+// therapist_links (vedi api/therapists.ts) — non è più un placeholder.
 export function TherapistCodeEntryScreen({ navigation }: any) {
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const supabaseChildId = useGamificationStore((s) => s.profile?.supabaseChildId);
 
-  function submit() {
-    // TODO: scrivere il collegamento vero sulla tabella therapist_links (schema pronto in
-    // supabase/schema.sql, non ancora agganciato) — per ora solo conferma lato UI, nessuna
-    // persistenza reale del codice inserito qui.
-    Alert.alert(
-      "Codice registrato",
-      "Collegheremo la terapia del tuo logopedista al profilo appena possibile."
-    );
+  async function submit() {
+    if (!isSupabaseConfigured) {
+      setErrorMsg("Il backend non è collegato in questo ambiente — impossibile collegare un logopedista.");
+      return;
+    }
+    if (!supabaseChildId) {
+      setErrorMsg("Non troviamo il profilo del bambino salvato. Riprova più tardi.");
+      return;
+    }
+    setLoading(true);
+    setErrorMsg(null);
+    const { data: therapist, error: findError } = await findTherapistByCode(code);
+    if (findError || !therapist) {
+      setLoading(false);
+      setErrorMsg("Codice non trovato. Controlla di averlo digitato correttamente.");
+      return;
+    }
+    const { error: linkError } = await linkChildToTherapist(supabaseChildId, therapist.id);
+    setLoading(false);
+    if (linkError) {
+      setErrorMsg("Non siamo riusciti a collegare il logopedista. Riprova.");
+      return;
+    }
     navigation.pop(2);
   }
 
@@ -121,12 +219,13 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
       <TextInput
         value={code}
         onChangeText={setCode}
-        placeholder="Es. LOGO-2024-XXXX"
+        placeholder="Es. 7K4P9M"
         autoCapitalize="characters"
         style={styles.input}
       />
+      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
       <View style={{ flex: 1 }} />
-      <ContinueButton disabled={code.length < 4} onPress={submit} />
+      {loading ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={code.length < 4} onPress={submit} />}
     </View>
   );
 }
@@ -271,6 +370,12 @@ const styles = StyleSheet.create({
   dateRow: { flexDirection: "row", gap: 12, marginTop: 24 },
   dateInputSmall: { width: 70, textAlign: "center", marginTop: 0 },
   dateInputLarge: { width: 100, textAlign: "center", marginTop: 0 },
+  codeBox: {
+    marginTop: 24, borderWidth: 2, borderColor: COLORS.jade, borderRadius: 16,
+    paddingVertical: 24, alignItems: "center", backgroundColor: "#E9F5F1",
+  },
+  codeText: { fontSize: 36, fontWeight: "800", letterSpacing: 6, color: COLORS.jade },
+  errorText: { color: COLORS.primary, fontSize: 13.5, marginTop: 16 },
   cta: {
     backgroundColor: COLORS.primary,
     borderRadius: 14,

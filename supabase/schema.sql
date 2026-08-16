@@ -87,7 +87,11 @@ create table if not exists therapists (
   full_name text not null,
   albo_number text not null,
   albo_verified boolean not null default false,
-  verified_at timestamptz
+  verified_at timestamptz,
+  -- Codice breve che il logopedista condivide con le famiglie per il collegamento — gli
+  -- UUID di `id` non sono digitabili da un genitore. Aggiunta agosto 2026, generata
+  -- lato client (api/therapists.ts) con retry sul conflitto UNIQUE.
+  invite_code text unique
 );
 
 create table if not exists therapist_links (
@@ -203,6 +207,14 @@ drop policy if exists "therapists: self read/write" on therapists;
 create policy "therapists: self read/write" on therapists
   for all using (profile_id = auth.uid()) with check (profile_id = auth.uid());
 
+-- Serve a un genitore per risolvere un invite_code in un therapist_id quando collega il
+-- logopedista (api/therapists.ts findTherapistByCode) — senza questa policy nessun utente
+-- diverso dal logopedista stesso potrebbe leggere la tabella. Espone full_name/albo_number,
+-- informazioni professionali non sensibili, non l'email/profilo Auth del logopedista.
+drop policy if exists "therapists: any authenticated user can look up" on therapists;
+create policy "therapists: any authenticated user can look up" on therapists
+  for select using (auth.role() = 'authenticated');
+
 drop policy if exists "therapist_links: therapist can see own links" on therapist_links;
 create policy "therapist_links: therapist can see own links" on therapist_links
   for select using (
@@ -212,6 +224,14 @@ create policy "therapist_links: therapist can see own links" on therapist_links
 drop policy if exists "therapist_links: parent can see links for own children" on therapist_links;
 create policy "therapist_links: parent can see links for own children" on therapist_links
   for select using (
+    exists (select 1 from children c where c.id = therapist_links.child_id and c.owner_id = auth.uid())
+  );
+
+-- Mancava una policy di insert: senza, RLS blocca qualunque scrittura (anche del genitore
+-- proprietario del bambino) — necessaria per redimere un codice invito lato client.
+drop policy if exists "therapist_links: parent can create link for own children" on therapist_links;
+create policy "therapist_links: parent can create link for own children" on therapist_links
+  for insert with check (
     exists (select 1 from children c where c.id = therapist_links.child_id and c.owner_id = auth.uid())
   );
 

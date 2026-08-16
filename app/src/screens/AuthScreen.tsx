@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 
 import { requestOtpCode, verifyOtpCode } from "../api/auth";
 import { ensureParentProfile } from "../api/profiles";
 import { createChild } from "../api/children";
+import { ensureTherapistProfile, registerTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PhonemeKey } from "../constants/wordBank";
@@ -23,9 +24,12 @@ const C = {
 // codice OTP: niente password, coerente con "scarica e inizia da solo". La lunghezza del
 // codice non è fissata lato app — dipende dal template email configurato in Supabase.
 export default function AuthScreen({ navigation, route }: any) {
+  const role: "parent" | "therapist" = route.params?.role === "therapist" ? "therapist" : "parent";
   const name: string = route.params?.name || "il bambino";
   const sounds: PhonemeKey[] | undefined = route.params?.strugglingSounds;
   const birthdate: string | null = route.params?.birthdate ?? null;
+  const therapistFullName: string = route.params?.fullName || "";
+  const therapistAlboNumber: string = route.params?.alboNumber || "";
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -34,6 +38,7 @@ export default function AuthScreen({ navigation, route }: any) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
+  const setSupabaseChildId = useGamificationStore((s) => s.setSupabaseChildId);
 
   async function sendCode() {
     if (!email.includes("@")) return;
@@ -58,25 +63,63 @@ export default function AuthScreen({ navigation, route }: any) {
       setErrorMsg("Codice non valido o scaduto. Richiedine uno nuovo.");
       return;
     }
+
+    if (role === "therapist") {
+      const { error: profileError } = await ensureTherapistProfile();
+      if (profileError) {
+        setLoading(false);
+        setErrorMsg("Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.");
+        return;
+      }
+      const { data: therapist, error: registerError } = await registerTherapist({
+        fullName: therapistFullName,
+        alboNumber: therapistAlboNumber,
+      });
+      setLoading(false);
+      if (registerError || !therapist) {
+        setErrorMsg("Accesso riuscito, ma non siamo riusciti a registrarti come logopedista. Riprova.");
+        return;
+      }
+      navigation.navigate("TherapistCodeReady", { inviteCode: therapist.invite_code, fullName: therapist.full_name });
+      return;
+    }
+
     const { error: profileError } = await ensureParentProfile();
     if (profileError) {
       setLoading(false);
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.");
       return;
     }
-    const { error: childError } = await createChild({ name, birthdate });
+    const { data: child, error: childError } = await createChild({ name, birthdate });
     setLoading(false);
     if (childError) {
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a salvare il profilo di " + name + ". Riprova.");
       return;
     }
+    if (child) setSupabaseChildId(child.id);
     if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
     navigation.navigate("Paywall");
   }
 
   if (!isSupabaseConfigured) {
     // Nessuna EXPO_PUBLIC_SUPABASE_ANON_KEY impostata: non blocchiamo lo sviluppo/i test
-    // locali, si prosegue come prima (solo store locale, nessuna persistenza reale).
+    // locali, si prosegue come prima (solo store locale, nessuna persistenza reale). Per il
+    // logopedista non ha senso un percorso "locale": il codice invito deve essere vero e
+    // persistito, quindi qui si ferma con un messaggio invece di fingere una registrazione.
+    if (role === "therapist") {
+      return (
+        <View style={styles.container}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text style={styles.back}>←</Text>
+          </Pressable>
+          <Text style={styles.title}>Backend non collegato</Text>
+          <Text style={styles.subtitle}>
+            La registrazione come logopedista richiede il backend collegato — non è disponibile in questo ambiente di
+            test.
+          </Text>
+        </View>
+      );
+    }
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Accesso non ancora configurato</Text>
@@ -104,7 +147,9 @@ export default function AuthScreen({ navigation, route }: any) {
         <>
           <Text style={styles.title}>La tua email</Text>
           <Text style={styles.subtitle}>
-            Ti mandiamo un codice per accedere — niente password. Serve per salvare i progressi di {name}.
+            {role === "therapist"
+              ? "Ti mandiamo un codice per accedere — niente password. Serve per creare il tuo profilo logopedista."
+              : `Ti mandiamo un codice per accedere — niente password. Serve per salvare i progressi di ${name}.`}
           </Text>
           <TextInput
             value={email}

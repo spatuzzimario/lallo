@@ -12,6 +12,8 @@ import {
   TrustScreen,
   TherapistLinkScreen,
   TherapistCodeEntryScreen,
+  TherapistOnboardingScreen,
+  TherapistCodeReadyScreen,
   FindTherapistScreen,
   ChildNameScreen,
   ChildBirthdateScreen,
@@ -155,6 +157,8 @@ export default function App() {
           <Stack.Screen name="Trust" component={TrustScreen} />
           <Stack.Screen name="TherapistLink" component={TherapistLinkScreen} />
           <Stack.Screen name="TherapistCodeEntry" component={TherapistCodeEntryScreen} />
+          <Stack.Screen name="TherapistOnboarding" component={TherapistOnboardingScreen} />
+          <Stack.Screen name="TherapistCodeReady" component={TherapistCodeReadyScreen} />
           <Stack.Screen name="FindTherapist" component={FindTherapistScreen} />
           <Stack.Screen name="ChildName" component={ChildNameScreen} />
           <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />

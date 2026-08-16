@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, Switch, Alert } from "react-native";
 import { useGamificationStore } from "../store/useGamificationStore";
+import { getLinkedTherapist } from "../api/therapists";
+import { isSupabaseConfigured } from "../api/supabase";
 
 const COLORS = {
   bg: "#FFF8EE",
@@ -88,6 +90,20 @@ const gateStyles = StyleSheet.create({
    posizionamento B2B2C, diversa dal modello puro B2C di Speech Blubs. */
 export function ParentDashboardScreen({ navigation }: any) {
   const profile = useGamificationStore((s) => s.profile);
+  const supabaseChildId = profile?.supabaseChildId;
+
+  // Stato del collegamento al logopedista — letto da therapist_links (vedi api/therapists.ts).
+  // null = non ancora caricato/nessun collegamento; il caricamento è silenzioso, non blocca
+  // il resto della dashboard.
+  const [linkedTherapist, setLinkedTherapist] = useState<{ name: string; verified: boolean } | null>(null);
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabaseChildId) return;
+    getLinkedTherapist(supabaseChildId).then(({ data }) => {
+      if (data?.therapists) {
+        setLinkedTherapist({ name: data.therapists.full_name, verified: data.therapists.albo_verified });
+      }
+    });
+  }, [supabaseChildId]);
 
   const focusSuggestion = useMemo<{ groupName: string; level: number; progress: number } | null>(() => {
     if (!profile) return null;
@@ -155,12 +171,21 @@ export function ParentDashboardScreen({ navigation }: any) {
         </View>
       ))}
 
-      <View style={dashStyles.therapistNote}>
-        <Text style={dashStyles.therapistNoteText}>
-          Per cambiare fonema, posizione o livello assegnato, parlane con il logopedista di{" "}
-          {profile.displayName} alla prossima seduta — questa vista serve a tenervi allineati, non sostituisce il piano clinico.
-        </Text>
-      </View>
+      {linkedTherapist ? (
+        <View style={dashStyles.therapistNote}>
+          <Text style={dashStyles.therapistNoteText}>
+            {linkedTherapist.name} segue {profile.displayName}. Per cambiare fonema, posizione o livello, parlane con
+            lui/lei alla prossima seduta — questa vista serve a tenervi allineati, non sostituisce il piano clinico.
+          </Text>
+        </View>
+      ) : (
+        <View style={dashStyles.therapistNote}>
+          <Text style={dashStyles.therapistNoteText}>
+            Nessun logopedista collegato — {profile.displayName} segue il piano scelto in autonomia. Puoi collegarne
+            uno in qualsiasi momento qui sotto.
+          </Text>
+        </View>
+      )}
 
       <Pressable
         style={dashStyles.privacyRow}
@@ -172,10 +197,18 @@ export function ParentDashboardScreen({ navigation }: any) {
         <Text style={dashStyles.chevron}>›</Text>
       </Pressable>
 
-      <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("TherapistLink")}>
-        <Text style={dashStyles.privacyRowText}>🩺 Collega il tuo logopedista</Text>
-        <Text style={dashStyles.chevron}>›</Text>
-      </Pressable>
+      {linkedTherapist ? (
+        <View style={dashStyles.privacyRow}>
+          <Text style={dashStyles.privacyRowText}>
+            🩺 {linkedTherapist.name} {linkedTherapist.verified ? "· verificato" : "· verifica in corso"}
+          </Text>
+        </View>
+      ) : (
+        <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("TherapistLink")}>
+          <Text style={dashStyles.privacyRowText}>🩺 Collega il tuo logopedista</Text>
+          <Text style={dashStyles.chevron}>›</Text>
+        </Pressable>
+      )}
 
       <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("PrivacyConsent")}>
         <Text style={dashStyles.privacyRowText}>🔒 Privacy e registrazioni</Text>
