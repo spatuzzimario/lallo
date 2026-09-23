@@ -113,7 +113,12 @@ export default function LalloScreen() {
         {LALLO_FOODS.map((food) => {
           const img = getWordImage(food);
           return (
-            <Pressable key={food} onPress={() => feed(food)} style={[styles.foodTile, justFed === food && styles.foodTileFed]}>
+            <Pressable
+              key={food}
+              onPress={() => feed(food)}
+              accessibilityLabel={`Dai da mangiare: ${food}`}
+              style={[styles.foodTile, justFed === food && styles.foodTileFed]}
+            >
               {img ? (
                 <Image source={img} style={styles.foodImage} resizeMode="contain" />
               ) : (
