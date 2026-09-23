@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
+import { View, Text, Image, Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PHONEME_ORDER, WORD_BANK, PhonemeKey } from "../constants/wordBank";
 
@@ -207,6 +207,9 @@ export function TrustStatScreen({ navigation, route }: any) {
           Con esercizi mirati e pratica regolare, molte difficoltà di articolazione migliorano nel tempo — prima si
           inizia, più la pratica quotidiana aiuta.
         </Text>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Image source={require("../../assets/onboarding-truststat.png")} style={styles.heroImage} resizeMode="contain" />
+        </View>
       </View>
       <View style={{ padding: 24 }}>
         <ContinueBtn onPress={() => navigation.navigate("Results", route.params)} />
@@ -256,6 +259,9 @@ export function ResultsScreen({ navigation, route }: any) {
             </View>
           ))}
         </View>
+        <View style={{ alignItems: "center", marginVertical: 12 }}>
+          <Image source={require("../../assets/onboarding-results.png")} style={styles.resultsHeroImage} resizeMode="contain" />
+        </View>
         <Text style={styles.disclaimerText}>
           Non è una diagnosi. Se {route.params?.name || "tuo figlio"} non ha ancora un logopedista, ti consigliamo di
           farlo valutare — l'app resta uno strumento di pratica, non uno strumento clinico.
@@ -280,6 +286,8 @@ export function ResultsScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   centerAll: { alignItems: "center", justifyContent: "center" },
+  heroImage: { width: 200, height: 200 },
+  resultsHeroImage: { width: 130, height: 130 },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 26 },
   back: { fontSize: 22, color: C.jade },
   progressTrack: { flex: 1, height: 6, backgroundColor: "#E4EFEA", borderRadius: 999 },

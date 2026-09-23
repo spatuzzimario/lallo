@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, Image, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
@@ -36,7 +36,9 @@ export function TrustScreen({ navigation }: any) {
         Ogni esercizio è strutturato sui 5 livelli di sviluppo fonetico,
         così puoi seguire i progressi reali di tuo figlio — non solo il tempo di gioco.
       </Text>
-      <View style={{ flex: 1 }} />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Image source={require("../../assets/onboarding-trust.png")} style={styles.heroImage} resizeMode="contain" />
+      </View>
       <ContinueButton onPress={() => navigation.navigate("ChildName")} />
       {/* Link secondario, non in competizione visiva con il flusso genitore (parent-first) —
           un logopedista che apre l'app per la prima volta deve comunque poterlo trovare. */}
@@ -263,7 +265,9 @@ export function ChildNameScreen({ navigation }: any) {
         placeholder="Nome"
         style={styles.input}
       />
-      <View style={{ flex: 1 }} />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Image source={require("../../assets/lallo-splash.png")} style={styles.heroImage} resizeMode="contain" />
+      </View>
       <ContinueButton
         disabled={name.length === 0}
         onPress={() => navigation.navigate("ChildGender", { name })}
@@ -401,6 +405,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
+  heroImage: { width: 200, height: 200 },
   topRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
   back: { fontSize: 24, color: COLORS.jade },
   skip: { fontSize: 16, color: COLORS.jade, fontWeight: "700" },
