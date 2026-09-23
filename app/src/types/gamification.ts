@@ -66,7 +66,9 @@ export interface ChildProfile {
   unlockedCosmetics: string[];
   phonemeGroups: PhonemeGroup[];
   preferredTopics: string[]; // es. ["spazio","animali","cibo"] — scelti in onboarding, usati per orientare i contenuti futuri
-  subscriptionActive?: boolean; // segnaposto UI paywall — l'integrazione IAP reale (RevenueCat) va ancora agganciata
+  // Sincronizzato con l'entitlement RevenueCat reale (vedi api/purchases.ts e
+  // setSubscriptionActive nello store) — non un valore che si tocca da un tap locale.
+  subscriptionActive?: boolean;
   // Piano di oggi. In produzione arriva dal backend condiviso con l'app
   // separata del logopedista (non ancora costruita) — qui è seed/demo.
   assignedToday: AssignedExercise[];

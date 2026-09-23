@@ -47,11 +47,15 @@ import { AdultGateScreen, ParentDashboardScreen, PrivacyConsentScreen } from "./
 // non più B2B2C con gate clinico. Il vecchio PlanPreviewScreen (piano bloccato in attesa di
 // un logopedista) è stato rimosso — ResultsScreen ora sblocca il piano subito, si parte dal
 // livello 1. PaywallScreen resta instradato ma non ancora ricollegato al flusso onboarding:
-// il brief prevede un trial di 7 giorni prima del paywall (§7), da agganciare nel prossimo
-// giro insieme a RevenueCat.
+// il brief prevede un trial di 7 giorni prima del paywall (§7).
+//
+// AGGIORNAMENTO (settembre 2026): RevenueCat agganciato per davvero — vedi
+// src/api/purchases.ts e PAYWALL_SETUP.md alla radice del repo per la checklist di setup
+// (creazione abbonamenti su App Store Connect/Play Console, progetto RevenueCat).
 
 import { useGamificationStore } from "./src/store/useGamificationStore";
 import { ChildProfile } from "./src/types/gamification";
+import { configurePurchases, getCustomerInfo, hasPremiumEntitlement, addCustomerInfoListener } from "./src/api/purchases";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -163,10 +167,27 @@ function MainTabs() {
 
 export default function App() {
   const setProfile = useGamificationStore((s) => s.setProfile);
+  const setSubscriptionActive = useGamificationStore((s) => s.setSubscriptionActive);
   const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     setProfile(seedProfile);
+  }, []);
+
+  // Configura RevenueCat all'avvio e sincronizza subscriptionActive con l'abbonamento
+  // reale — non più un valore che si tocca da un tap locale (vedi PaywallScreen). Su web o
+  // in Expo Go (nessun modulo nativo custom) configurePurchases esce subito e l'app resta
+  // in modalità locale, come oggi.
+  useEffect(() => {
+    (async () => {
+      await configurePurchases();
+      const info = await getCustomerInfo();
+      if (info) setSubscriptionActive(hasPremiumEntitlement(info));
+    })();
+    const unsubscribe = addCustomerInfoListener((info) => {
+      setSubscriptionActive(hasPremiumEntitlement(info));
+    });
+    return unsubscribe;
   }, []);
 
   return (

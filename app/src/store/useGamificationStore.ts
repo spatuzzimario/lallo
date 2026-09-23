@@ -9,6 +9,7 @@ import {
 } from "../types/gamification";
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
 import { getHunger } from "../constants/lalloPet";
+import { linkPurchasesToChild } from "../api/purchases";
 
 interface GamificationStore {
   profile: ChildProfile | null;
@@ -18,6 +19,7 @@ interface GamificationStore {
   setParentReportedConcerns: (concerns: string[]) => void;
   setAudioRecordingConsent: (consent: boolean) => void;
   setCameraConsent: (consent: boolean) => void;
+  setSubscriptionActive: (active: boolean) => void;
   addPhotoCatch: (word: string, uri: string) => void;
   removePhotoCatch: (id: string) => void;
   startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
@@ -290,6 +292,16 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     set({ profile: { ...profile, cameraConsent: consent } });
   },
 
+  // Fonte di verità: RevenueCat (vedi api/purchases.ts), mai un tap dell'utente. Chiamata
+  // dopo un acquisto/ripristino andato a buon fine e dal listener di aggiornamento — legge
+  // il profilo aggiornato con get() invece di catturarlo in una closure, per restare
+  // corretta anche quando chiamata da un effect/listener asincrono.
+  setSubscriptionActive: (active) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, subscriptionActive: active } });
+  },
+
   addPhotoCatch: (word, uri) => {
     const profile = get().profile;
     if (!profile) return;
@@ -309,6 +321,9 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, supabaseChildId: id } });
+    // Collega l'utente anonimo di RevenueCat all'account reale, così gli acquisti restano
+    // ritrovabili da un altro dispositivo con lo stesso account (vedi api/purchases.ts).
+    linkPurchasesToChild(id);
   },
 
   // Scrive nel profilo nome e sesso raccolti in onboarding (ChildNameScreen/

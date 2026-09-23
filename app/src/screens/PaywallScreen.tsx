@@ -1,25 +1,59 @@
-import React, { useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { FREE_PHONEMES, PHONEME_ORDER, WORD_BANK } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
+import { getCurrentOffering, purchase, restore, hasPremiumEntitlement, isPurchasesConfigured } from "../api/purchases";
 
 const C = { bg: "#FBF6EE", primary: "#FF6A4D", primaryDeep: "#E84B30", jade: "#137A6E", text: "#1F2E2B", subtext: "#4A5A56", line: "#D9CEBC", sun: "#FFC53D" };
 
-// Prezzi allineati al brief (§7, stile Speech Blubs — prezzi di test per il mercato
-// italiano, ancora da validare): annuale spinto con framing per-mese, 7 giorni di prova
-// gratuita, mensile come alternativa flessibile. RevenueCat resta lo strumento scelto per
-// l'IAP reale — qui c'è solo il flusso UI, nessuna integrazione pagamenti vera.
-const PLANS = [
+// Prezzi di fallback (§7, stile Speech Blubs — prezzi di test per il mercato italiano,
+// ancora da validare): mostrati SOLO quando RevenueCat non è disponibile (web, Expo Go,
+// offerte non ancora configurate) — vedi PAYWALL_SETUP.md. Quando è disponibile, i prezzi
+// veri arrivano dall'offerta RevenueCat/store (localizzati, sempre aggiornati).
+const FALLBACK_PLANS = [
   { id: "annual", label: "Annuale", price: "3,99 €", sub: "/mese · 47,88 €/anno · 7 giorni gratis", badge: "Risparmia ~50%" },
-  { id: "monthly", label: "Mensile", price: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null },
+  { id: "monthly", label: "Mensile", price: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null as string | null },
 ];
+
+// L'offerta RevenueCat va costruita con i due package standard "Annuale"/"Mensile" (vedi
+// PAYWALL_SETUP.md) — qui li mappiamo sulla stessa forma di FALLBACK_PLANS per riusare la
+// UI esistente senza duplicarla.
+function planFromPackage(pkg: PurchasesPackage) {
+  const isAnnual = pkg.packageType === "ANNUAL";
+  const p = pkg.product;
+  const perMonth = isAnnual && p.pricePerMonthString ? p.pricePerMonthString : p.priceString;
+  return {
+    id: pkg.identifier,
+    label: isAnnual ? "Annuale" : "Mensile",
+    price: perMonth,
+    sub: isAnnual ? `/mese · ${p.priceString}/anno · 7 giorni gratis` : "/mese · disdici quando vuoi",
+    badge: isAnnual ? "Risparmia" : null,
+    pkg,
+  };
+}
 
 export default function PaywallScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
-  const [selectedPlan, setSelectedPlan] = useState("annual");
-  const setProfile = useGamificationStore((s) => s.setProfile);
-  const profile = useGamificationStore((s) => s.profile);
+  const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [loadingOffering, setLoadingOffering] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const setSubscriptionActive = useGamificationStore((s) => s.setSubscriptionActive);
+
+  useEffect(() => {
+    getCurrentOffering()
+      .then(setOffering)
+      .finally(() => setLoadingOffering(false));
+  }, []);
+
+  const plans = offering?.availablePackages.length
+    ? offering.availablePackages.map(planFromPackage)
+    : FALLBACK_PLANS.map((p) => ({ ...p, pkg: null as PurchasesPackage | null }));
+
+  const [selectedPlanId, setSelectedPlanId] = useState<string>("annual");
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0];
 
   // Il Paywall si apre da due punti diversi: subito dopo l'onboarding (nessun posto dove
   // tornare indietro, si prosegue verso MainTabs) oppure da Genitori → Abbonamento (si torna
@@ -31,11 +65,44 @@ export default function PaywallScreen({ navigation, route }: any) {
     else navigation.navigate("MainTabs");
   }
 
-  function subscribe() {
-    // Segnaposto: in produzione qui parte il flusso RevenueCat reale (trial 7 giorni).
-    if (profile) setProfile({ ...profile, subscriptionActive: true });
+  async function subscribe() {
+    if (!selectedPlan?.pkg) {
+      // Nessuna offerta RevenueCat disponibile in questo ambiente (web, Expo Go, o offerte
+      // non ancora configurate) — non si può acquistare davvero, lo segnaliamo invece di
+      // fingere un acquisto riuscito.
+      setErrorMsg(
+        isPurchasesConfigured()
+          ? "Offerta non disponibile al momento. Riprova più tardi."
+          : "Gli acquisti non sono disponibili in questa modalità di anteprima — servono una build reale e le offerte configurate (vedi PAYWALL_SETUP.md)."
+      );
+      return;
+    }
+    setPurchasing(true);
+    setErrorMsg(null);
+    const result = await purchase(selectedPlan.pkg);
+    setPurchasing(false);
+    if (result.userCancelled) return;
+    if (!result.success) {
+      setErrorMsg("Non siamo riusciti a completare l'acquisto. Riprova.");
+      return;
+    }
+    setSubscriptionActive(true);
     afterDecision();
   }
+
+  async function restorePurchase() {
+    setPurchasing(true);
+    setErrorMsg(null);
+    const info = await restore();
+    setPurchasing(false);
+    if (info && hasPremiumEntitlement(info)) {
+      setSubscriptionActive(true);
+      afterDecision();
+      return;
+    }
+    setErrorMsg("Nessun acquisto da ripristinare per questo account.");
+  }
+
   function continueFree() {
     afterDecision();
   }
@@ -50,35 +117,44 @@ export default function PaywallScreen({ navigation, route }: any) {
         L'abbonamento sblocca gli altri {premiumCount}, inclusi gruppi consonantici e digrammi. 7 giorni di prova gratuita.
       </Text>
 
-      <View style={styles.plansWrap}>
-        {PLANS.map((p) => {
-          const on = selectedPlan === p.id;
-          return (
-            <Pressable key={p.id} onPress={() => setSelectedPlan(p.id)} style={[styles.planRow, on && styles.planRowOn]}>
-              <View>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <Text style={[styles.planLabel, on && styles.planLabelOn]}>{p.label}</Text>
-                  {p.badge && (
-                    <View style={styles.planBadge}>
-                      <Text style={styles.planBadgeText}>{p.badge}</Text>
-                    </View>
-                  )}
+      {loadingOffering ? (
+        <ActivityIndicator color={C.primary} style={{ marginTop: 28 }} />
+      ) : (
+        <View style={styles.plansWrap}>
+          {plans.map((p) => {
+            const on = selectedPlan?.id === p.id;
+            return (
+              <Pressable key={p.id} onPress={() => setSelectedPlanId(p.id)} style={[styles.planRow, on && styles.planRowOn]}>
+                <View>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Text style={[styles.planLabel, on && styles.planLabelOn]}>{p.label}</Text>
+                    {p.badge && (
+                      <View style={styles.planBadge}>
+                        <Text style={styles.planBadgeText}>{p.badge}</Text>
+                      </View>
+                    )}
+                  </View>
+                  {p.sub && <Text style={[styles.planSub, on && styles.planSubOn]}>{p.sub}</Text>}
                 </View>
-                {p.sub && <Text style={[styles.planSub, on && styles.planSubOn]}>{p.sub}</Text>}
-              </View>
-              <Text style={[styles.planPrice, on && styles.planLabelOn]}>{p.price}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                <Text style={[styles.planPrice, on && styles.planLabelOn]}>{p.price}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
 
-      <Pressable style={styles.subscribeBtn} onPress={subscribe}>
-        <Text style={styles.subscribeBtnText}>Inizia la prova gratuita</Text>
+      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+
+      <Pressable style={[styles.subscribeBtn, purchasing && { opacity: 0.6 }]} onPress={subscribe} disabled={purchasing}>
+        {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.subscribeBtnText}>Inizia la prova gratuita</Text>}
       </Pressable>
       <Text style={styles.legalNote}>Annullabile in qualsiasi momento. Nessun addebito prima della fine dei 7 giorni di prova.</Text>
 
       <Pressable onPress={continueFree} style={{ marginTop: 18 }}>
         <Text style={styles.freeLink}>Continua con il piano gratuito ({FREE_PHONEMES.length} suoni)</Text>
+      </Pressable>
+      <Pressable onPress={restorePurchase} style={{ marginTop: 10 }} disabled={purchasing}>
+        <Text style={styles.restoreLink}>Ripristina acquisti</Text>
       </Pressable>
     </ScrollView>
   );
@@ -105,4 +181,6 @@ const styles = StyleSheet.create({
   subscribeBtnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
   legalNote: { fontSize: 11, color: C.subtext, textAlign: "center", marginTop: 10 },
   freeLink: { textAlign: "center", color: C.jade, textDecorationLine: "underline", fontSize: 13.5 },
+  restoreLink: { textAlign: "center", color: C.subtext, textDecorationLine: "underline", fontSize: 12 },
+  errorText: { color: C.primaryDeep, fontSize: 12.5, textAlign: "center", marginTop: 14 },
 });
