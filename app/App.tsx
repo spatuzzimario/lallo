@@ -16,6 +16,7 @@ import {
   TherapistCodeReadyScreen,
   FindTherapistScreen,
   ChildNameScreen,
+  ChildGenderScreen,
   ChildBirthdateScreen,
 } from "./src/screens/OnboardingScreens";
 import {
@@ -162,6 +163,7 @@ export default function App() {
           <Stack.Screen name="TherapistCodeReady" component={TherapistCodeReadyScreen} />
           <Stack.Screen name="FindTherapist" component={FindTherapistScreen} />
           <Stack.Screen name="ChildName" component={ChildNameScreen} />
+          <Stack.Screen name="ChildGender" component={ChildGenderScreen} />
           <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
           <Stack.Screen name="WordCount" component={WordCountScreen} />
           <Stack.Screen name="EvaluatedByTherapist" component={EvaluatedByTherapistScreen} />

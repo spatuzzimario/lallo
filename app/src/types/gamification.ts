@@ -58,6 +58,7 @@ export interface ChildProfile {
   // è false o l'onboarding non ha ancora completato la creazione su Supabase.
   supabaseChildId?: string;
   displayName: string;
+  gender?: "maschio" | "femmina" | "preferisco_non_dire";
   avatarId: string;
   stars: number;
   gems: number;

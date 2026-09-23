@@ -249,7 +249,7 @@ export function ChildNameScreen({ navigation }: any) {
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>←</Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate("ChildBirthdate", { name: "" })}>
+        <Pressable onPress={() => navigation.navigate("ChildGender", { name: "" })}>
           <Text style={styles.skip}>Salta</Text>
         </Pressable>
       </View>
@@ -266,11 +266,60 @@ export function ChildNameScreen({ navigation }: any) {
       <View style={{ flex: 1 }} />
       <ContinueButton
         disabled={name.length === 0}
-        onPress={() => navigation.navigate("ChildBirthdate", { name })}
+        onPress={() => navigation.navigate("ChildGender", { name })}
       />
     </KeyboardAvoidingView>
   );
 }
+
+// Sesso del bambino: usato per la grammatica italiana nei testi personalizzati (es. "è
+// nato"/"è nata") — vedi ChildBirthdateScreen e ResultsScreen. Facoltativo e saltabile come
+// il nome: non è un dato clinico, solo un dettaglio di personalizzazione del linguaggio.
+export function ChildGenderScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
+  const name = route?.params?.name || "tuo figlio";
+
+  function pick(gender: "maschio" | "femmina" | "preferisco_non_dire") {
+    navigation.navigate("ChildBirthdate", { ...route?.params, gender });
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+      <View style={styles.topRow}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+        <Pressable onPress={() => pick("preferisco_non_dire")}>
+          <Text style={styles.skip}>Salta</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.title}>{name} è un bambino o una bambina?</Text>
+      <Text style={styles.subtitle}>
+        Ci aiuta a usare le parole giuste quando parliamo di {name} nell'app.
+      </Text>
+      <View style={{ flex: 1 }} />
+      <Pressable style={genderStyles.option} onPress={() => pick("maschio")}>
+        <Text style={genderStyles.optionText}>Un bambino</Text>
+      </Pressable>
+      <Pressable style={genderStyles.option} onPress={() => pick("femmina")}>
+        <Text style={genderStyles.optionText}>Una bambina</Text>
+      </Pressable>
+      <Pressable style={genderStyles.optionGhost} onPress={() => pick("preferisco_non_dire")}>
+        <Text style={genderStyles.optionGhostText}>Preferisco non dirlo</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const genderStyles = StyleSheet.create({
+  option: {
+    borderWidth: 2, borderColor: COLORS.primary, borderRadius: 14, paddingVertical: 16,
+    alignItems: "center", marginTop: 12,
+  },
+  optionText: { color: COLORS.primary, fontWeight: "700", fontSize: 16 },
+  optionGhost: { alignItems: "center", marginTop: 16 },
+  optionGhostText: { color: COLORS.subtext, textDecorationLine: "underline", fontSize: 13.5 },
+});
 
 // reference screenshots do ("When was Luigi born?"). Age drives which
 // phoneme levels are age-appropriate to surface first.
@@ -282,6 +331,7 @@ export function ChildNameScreen({ navigation }: any) {
 export function ChildBirthdateScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const name = route?.params?.name || "il tuo bambino";
+  const bornWord = route?.params?.gender === "femmina" ? "nata" : "nato";
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
@@ -313,7 +363,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
-      <Text style={styles.title}>Quando è nato {name}?</Text>
+      <Text style={styles.title}>Quando è {bornWord} {name}?</Text>
       <Text style={styles.subtitle}>
         Ci serve la data di nascita per proporre esercizi adatti alla sua età.
       </Text>

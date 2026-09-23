@@ -28,6 +28,7 @@ export default function AuthScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const role: "parent" | "therapist" = route.params?.role === "therapist" ? "therapist" : "parent";
   const name: string = route.params?.name || "il bambino";
+  const gender: "maschio" | "femmina" | "preferisco_non_dire" | undefined = route.params?.gender;
   const sounds: PhonemeKey[] | undefined = route.params?.strugglingSounds;
   const birthdate: string | null = route.params?.birthdate ?? null;
   const therapistFullName: string = route.params?.fullName || "";
@@ -41,6 +42,7 @@ export default function AuthScreen({ navigation, route }: any) {
 
   const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
   const setSupabaseChildId = useGamificationStore((s) => s.setSupabaseChildId);
+  const setChildInfo = useGamificationStore((s) => s.setChildInfo);
 
   async function sendCode() {
     if (!email.includes("@")) return;
@@ -99,6 +101,7 @@ export default function AuthScreen({ navigation, route }: any) {
       return;
     }
     if (child) setSupabaseChildId(child.id);
+    setChildInfo({ displayName: name, gender });
     if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
     navigation.navigate("Paywall");
   }
@@ -131,6 +134,7 @@ export default function AuthScreen({ navigation, route }: any) {
         <View style={{ flex: 1 }} />
         <ContinueButton
           onPress={() => {
+            setChildInfo({ displayName: name, gender });
             if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
             navigation.navigate("Paywall");
           }}

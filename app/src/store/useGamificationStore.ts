@@ -18,6 +18,7 @@ interface GamificationStore {
   setAudioRecordingConsent: (consent: boolean) => void;
   startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
   setSupabaseChildId: (id: string) => void;
+  setChildInfo: (info: { displayName?: string; gender?: ChildProfile["gender"] }) => void;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -280,6 +281,15 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, supabaseChildId: id } });
+  },
+
+  // Scrive nel profilo nome e sesso raccolti in onboarding (ChildNameScreen/
+  // ChildGenderScreen) — prima il nome restava quello del profilo seed ("Marco") perché
+  // veniva solo passato come route param fino ad Auth, mai salvato davvero.
+  setChildInfo: (info) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, ...info } });
   },
 
   // Avvia il piano self-directed (nessun logopedista collegato) al termine dello screener.
