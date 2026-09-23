@@ -3,6 +3,7 @@ import {
   AssignedExercise,
   ChildProfile,
   SessionResult,
+  SessionLogEntry,
   StreakState,
   LevelProgress,
 } from "../types/gamification";
@@ -191,6 +192,19 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       ? 0
       : DAILY_REWARD_GEMS[(claimedDates.length - 1) % DAILY_REWARD_GEMS.length];
 
+    const logEntry: SessionLogEntry = {
+      date: todayStr,
+      completedAt: result.completedAt,
+      phonemeGroupId: result.phonemeGroupId,
+      phonemeLabel: WORD_BANK[result.phonemeGroupId as PhonemeKey]?.label ?? result.phonemeGroupId,
+      level: result.level,
+      exerciseType: result.exerciseType,
+      starsEarned: totalStars,
+      starsPossible: result.attempts.length * 3,
+      avgConfidence,
+      durationSeconds: result.durationSeconds,
+    };
+
     set({
       profile: {
         ...profile,
@@ -199,6 +213,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         streak: newStreak,
         phonemeGroups: updatedGroups,
         dailyRewards: { claimedDates },
+        sessionLog: [...profile.sessionLog, logEntry],
       },
     });
   },

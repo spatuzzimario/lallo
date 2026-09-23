@@ -73,6 +73,7 @@ const seedProfile: ChildProfile = {
   parentReportedConcerns: [],
   audioRecordingConsent: false,
   dailyRewards: { claimedDates: [] },
+  sessionLog: [],
   phonemeGroups: [
     {
       id: "r",

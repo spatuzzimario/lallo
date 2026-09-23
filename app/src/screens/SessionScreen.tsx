@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet, StyleProp, TextStyle } from "react-native";
 import * as Speech from "expo-speech";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -71,6 +71,10 @@ export default function SessionScreen({ navigation, route }: any) {
   }, [locked]);
 
   const [attempts, setAttempts] = useState<AttemptResult[]>([]);
+  // Per stimare la durata della sessione, mostrata poi nella dashboard genitore — solo il
+  // tempo dentro questo esercizio, dall'apertura al "Fatto" (non un vero time-on-task
+  // articolatorio, solo un'approssimazione ragionevole per l'uso settimanale).
+  const startedAtRef = useRef(Date.now());
   // Livello appena sbloccato da festeggiare prima di tornare a MainTabs — un overlay
   // custom invece di Alert.alert(), che su React Native Web è un no-op totale (nessuna UI,
   // nessuna callback): usarlo per il proseguimento della navigazione avrebbe bloccato
@@ -98,8 +102,10 @@ export default function SessionScreen({ navigation, route }: any) {
     const result: SessionResult = {
       phonemeGroupId: params.phonemeGroupId,
       level: params.level,
+      exerciseType,
       attempts,
       completedAt: new Date().toISOString(),
+      durationSeconds: Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000)),
     };
     recordSession(result);
 

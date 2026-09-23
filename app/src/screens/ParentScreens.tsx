@@ -123,10 +123,71 @@ export function ParentDashboardScreen({ navigation }: any) {
     return lowest;
   }, [profile]);
 
+  // "Quanto sta usando l'app" (ultimi 7 giorni, finestra mobile — diversa dallo streak sopra
+  // che è allineato alla settimana di gioco): minuti totali + sessioni per giorno, dal log
+  // sessionLog scritto da recordSession. Ancora poco significativo nei primissimi giorni di
+  // un profilo nuovo, ma cresce naturalmente con l'uso.
+  const weeklyUsage = useMemo(() => {
+    if (!profile) return null;
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, idx) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (6 - idx));
+      const date = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString("it-IT", { weekday: "short" }).slice(0, 3);
+      const count = profile.sessionLog.filter((e) => e.date === date).length;
+      return { date, label, count };
+    });
+    const windowStart = days[0].date;
+    const entries = profile.sessionLog.filter((e) => e.date >= windowStart);
+    const totalMinutes = Math.round(entries.reduce((sum, e) => sum + e.durationSeconds, 0) / 60);
+    const maxCount = Math.max(1, ...days.map((d) => d.count));
+    return { days, totalMinutes, totalSessions: entries.length, maxCount };
+  }, [profile]);
+
+  // Andamento per fonema, settimana corrente (ultimi 7 giorni) vs precedente (giorni 8-14) —
+  // "quanto è migliorato": confidenza media delle sessioni giocate in ciascuna finestra.
+  const phonemeTrend = useMemo(() => {
+    if (!profile) return [];
+    const dayOffset = (offset: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() - offset);
+      return d.toISOString().slice(0, 10);
+    };
+    const thisWeekStart = dayOffset(6);
+    const lastWeekStart = dayOffset(13);
+    const lastWeekEnd = dayOffset(7);
+
+    const byPhoneme = new Map<string, { label: string; thisWeek: number[]; lastWeek: number[] }>();
+    profile.sessionLog.forEach((e) => {
+      if (e.date < lastWeekStart) return;
+      if (!byPhoneme.has(e.phonemeGroupId)) {
+        byPhoneme.set(e.phonemeGroupId, { label: e.phonemeLabel, thisWeek: [], lastWeek: [] });
+      }
+      const bucket = byPhoneme.get(e.phonemeGroupId)!;
+      if (e.date >= thisWeekStart) bucket.thisWeek.push(e.avgConfidence);
+      else if (e.date <= lastWeekEnd) bucket.lastWeek.push(e.avgConfidence);
+    });
+    const avg = (arr: number[]) => (arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : null);
+
+    return Array.from(byPhoneme.entries())
+      .map(([id, data]) => ({
+        id,
+        label: data.label,
+        thisWeekPct: avg(data.thisWeek),
+        lastWeekPct: avg(data.lastWeek),
+      }))
+      .filter((r) => r.thisWeekPct !== null)
+      .sort((a, b) => (b.thisWeekPct ?? 0) - (a.thisWeekPct ?? 0));
+  }, [profile]);
+
   if (!profile) return null;
 
   return (
-    <View style={[dashStyles.container, { paddingTop: insets.top + 16 }]}>
+    <ScrollView
+      style={dashStyles.container}
+      contentContainerStyle={{ padding: 16, paddingTop: insets.top + 16, paddingBottom: 40 }}
+    >
       <View style={dashStyles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={dashStyles.back}>‹</Text>
@@ -144,6 +205,64 @@ export function ParentDashboardScreen({ navigation }: any) {
           <Text style={dashStyles.summaryLabel}>sessioni questa settimana</Text>
         </View>
       </View>
+
+      {weeklyUsage && (
+        <View style={dashStyles.usageCard}>
+          <Text style={dashStyles.sectionLabel}>Uso nell'app · ultimi 7 giorni</Text>
+          <View style={dashStyles.usageStatsRow}>
+            <View>
+              <Text style={dashStyles.usageStatNum}>{weeklyUsage.totalMinutes}</Text>
+              <Text style={dashStyles.usageStatLabel}>minuti totali</Text>
+            </View>
+            <View>
+              <Text style={dashStyles.usageStatNum}>{weeklyUsage.totalSessions}</Text>
+              <Text style={dashStyles.usageStatLabel}>sessioni</Text>
+            </View>
+          </View>
+          <View style={dashStyles.usageChartRow}>
+            {weeklyUsage.days.map((d) => (
+              <View key={d.date} style={dashStyles.usageBarCol}>
+                <View style={dashStyles.usageBarTrack}>
+                  <View
+                    style={[
+                      dashStyles.usageBarFill,
+                      { height: `${Math.max(6, (d.count / weeklyUsage.maxCount) * 100)}%` },
+                      d.count === 0 && dashStyles.usageBarFillEmpty,
+                    ]}
+                  />
+                </View>
+                <Text style={dashStyles.usageBarLabel}>{d.label}</Text>
+              </View>
+            ))}
+          </View>
+          {weeklyUsage.totalSessions === 0 && (
+            <Text style={dashStyles.usageEmptyNote}>
+              Ancora nessuna sessione negli ultimi 7 giorni — qui vedrai quanto gioca {profile.displayName}.
+            </Text>
+          )}
+        </View>
+      )}
+
+      {phonemeTrend.length > 0 && (
+        <View style={dashStyles.usageCard}>
+          <Text style={dashStyles.sectionLabel}>Andamento per suono · questa settimana vs scorsa</Text>
+          {phonemeTrend.map((t) => (
+            <View key={t.id} style={dashStyles.trendRow}>
+              <Text style={dashStyles.trendLabel}>{t.label}</Text>
+              <Text style={dashStyles.trendValue}>
+                {t.lastWeekPct !== null ? `${Math.round(t.lastWeekPct * 100)}% → ` : ""}
+                {Math.round((t.thisWeekPct ?? 0) * 100)}%
+                {t.lastWeekPct === null && "  (nuovo questa settimana)"}
+                {t.lastWeekPct !== null && t.thisWeekPct !== null && (
+                  <Text style={t.thisWeekPct >= t.lastWeekPct ? dashStyles.trendUp : dashStyles.trendDown}>
+                    {t.thisWeekPct >= t.lastWeekPct ? "  ↑" : "  ↓"}
+                  </Text>
+                )}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       {focusSuggestion && (
         <View style={dashStyles.focusCard}>
@@ -217,12 +336,12 @@ export function ParentDashboardScreen({ navigation }: any) {
         <Text style={dashStyles.privacyRowText}>🔒 Privacy e registrazioni</Text>
         <Text style={dashStyles.chevron}>›</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const dashStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: 16 },
+  container: { flex: 1, backgroundColor: COLORS.bg },
   header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 },
   back: { fontSize: 26, color: COLORS.primary },
   title: { fontSize: 20, fontWeight: "800", color: COLORS.text },
@@ -234,6 +353,25 @@ const dashStyles = StyleSheet.create({
   focusLabel: { fontWeight: "700", marginBottom: 4 },
   focusText: { fontSize: 13, color: COLORS.text, lineHeight: 18 },
   sectionLabel: { fontSize: 13, fontWeight: "700", color: COLORS.subtext, marginBottom: 8, textTransform: "uppercase" },
+  usageCard: { backgroundColor: "#fff", borderRadius: 16, padding: 14, marginBottom: 16 },
+  usageStatsRow: { flexDirection: "row", gap: 28, marginBottom: 14 },
+  usageStatNum: { fontSize: 22, fontWeight: "800", color: COLORS.jade },
+  usageStatLabel: { fontSize: 11, color: COLORS.subtext, marginTop: 1 },
+  usageChartRow: { flexDirection: "row", justifyContent: "space-between", height: 70, alignItems: "flex-end" },
+  usageBarCol: { alignItems: "center", width: 28 },
+  usageBarTrack: { width: 14, height: 52, justifyContent: "flex-end" },
+  usageBarFill: { width: 14, borderRadius: 7, backgroundColor: COLORS.jade, minHeight: 4 },
+  usageBarFillEmpty: { backgroundColor: "#E4DFD3" },
+  usageBarLabel: { fontSize: 10, color: COLORS.subtext, marginTop: 4, textTransform: "capitalize" },
+  usageEmptyNote: { fontSize: 11.5, color: COLORS.subtext, marginTop: 10, fontStyle: "italic" },
+  trendRow: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#F0EBE0",
+  },
+  trendLabel: { fontSize: 13.5, fontWeight: "700", color: COLORS.text },
+  trendValue: { fontSize: 13, color: COLORS.text },
+  trendUp: { color: COLORS.jade, fontWeight: "800" },
+  trendDown: { color: "#B0402B", fontWeight: "800" },
   groupCard: { backgroundColor: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 },
   groupName: { fontWeight: "800", fontSize: 15, marginBottom: 8 },
   levelRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },

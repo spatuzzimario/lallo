@@ -82,6 +82,9 @@ export interface ChildProfile {
   // già stata assegnata. Ciclo di 7 giorni non spezzato da un giorno saltato — stesso
   // spirito "generoso" dei grace days dello streak, non è un contatore di fila rigido.
   dailyRewards: { claimedDates: string[] };
+  // Storico delle sessioni completate — per la dashboard genitore (§6.5: uso nel tempo,
+  // ultimi 7 giorni, andamento per fonema). Vedi SessionLogEntry.
+  sessionLog: SessionLogEntry[];
 }
 
 export interface StreakState {
@@ -94,8 +97,27 @@ export interface StreakState {
 export interface SessionResult {
   phonemeGroupId: string;
   level: ClinicalLevel;
+  exerciseType: string;
   attempts: AttemptResult[];
   completedAt: string;
+  durationSeconds: number;
+}
+
+// Una riga per sessione completata, per la dashboard genitore (uso nel tempo, ultimi 7
+// giorni, andamento per fonema) — profile.stars/phonemeGroups restano gli aggregati usati
+// dal resto dell'app, questo log serve solo alla vista genitore. Vive solo in memoria come
+// il resto del profilo (nessuna persistenza reale finché Supabase non è collegato).
+export interface SessionLogEntry {
+  date: string;         // YYYY-MM-DD, per raggruppare per giorno
+  completedAt: string;  // timestamp ISO completo
+  phonemeGroupId: string;
+  phonemeLabel: string;
+  level: ClinicalLevel;
+  exerciseType: string;
+  starsEarned: number;
+  starsPossible: number;
+  avgConfidence: number; // 0-1
+  durationSeconds: number;
 }
 
 export interface AttemptResult {
