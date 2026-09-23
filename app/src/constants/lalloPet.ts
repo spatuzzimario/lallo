@@ -25,4 +25,6 @@ export const LALLO_MOOD_COPY: Record<LalloMood, { title: string; sub: string }> 
 
 // Cibi disponibili: parole del word bank che hanno già un'illustrazione reale generata —
 // niente nuove immagini per questo, riusa quelle già fatte per gli esercizi.
-export const LALLO_FOODS = ["banana", "arancia", "pera", "carota", "riso", "salame", "sugo"];
+// Solo frutta, verdura e cereali — niente carne né pesce: Lallo è un pappagallo, non un
+// onnivoro (salame e sugo tolti dopo il feedback: biologicamente sbagliati per l'animale).
+export const LALLO_FOODS = ["banana", "arancia", "pera", "carota", "riso", "ananas", "pisello"];
