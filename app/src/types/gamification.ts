@@ -42,7 +42,7 @@ export interface LevelProgress {
 
 export interface AssignedExercise {
   id: string;
-  exerciseType: "caccia" | "registratore" | "memory" | "coppie" | "oca" | "sequenze" | "pappagallo" | "frase" | "racconto";
+  exerciseType: "caccia" | "registratore" | "memory" | "coppie" | "oca" | "sequenze" | "ripeti" | "ascolta" | "frase" | "racconto";
   exerciseLabel: string; // es. "Caccia al suono"
   phonemeGroupId: string;
   phonemeLabel: string; // es. "R"

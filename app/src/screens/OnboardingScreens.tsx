@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
 import { useGamificationStore } from "../store/useGamificationStore";
@@ -27,8 +28,9 @@ function ContinueButton({ label = "Continua", onPress, disabled = false }: any) 
 // Screen 1 — Trust/process screen, replaces Speech Blubs' unsourced stat bars.
 // Framed around the clinical scale rather than an outcome % we can't back yet.
 export function TrustScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <Text style={styles.title}>Lallo segue la scala clinica{"\n"}usata dai logopedisti</Text>
       <Text style={styles.subtitle}>
         Ogni esercizio è strutturato sui 5 livelli di sviluppo fonetico,
@@ -52,12 +54,13 @@ export function TrustScreen({ navigation }: any) {
 // verifica manuale in fase fondatori (brief §6.6) — il codice invito esiste comunque da
 // subito e non sblocca contenuto premium per le famiglie collegate.
 export function TherapistOnboardingScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const [fullName, setFullName] = useState("");
   const [alboNumber, setAlboNumber] = useState("");
   const canContinue = fullName.trim().length > 1 && alboNumber.trim().length > 1;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -93,11 +96,12 @@ export function TherapistOnboardingScreen({ navigation }: any) {
 // copia automatica negli appunti (nessuna dipendenza nuova, expo-clipboard non è nel
 // progetto), il logopedista lo scrive o lo detta alle famiglie.
 export function TherapistCodeReadyScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const inviteCode: string = route.params?.inviteCode || "—";
   const fullName: string = route.params?.fullName || "";
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <Text style={styles.title}>Sei registrato, {fullName.split(" ")[0]}!</Text>
       <Text style={styles.subtitle}>
         Condividi questo codice con le famiglie che segui — lo inseriranno nell'app, nell'area Genitori, per
@@ -122,8 +126,9 @@ export function TherapistCodeReadyScreen({ navigation, route }: any) {
 // bambino. Ora si raggiunge solo da Genitori → "Collega il tuo logopedista", quando il
 // profilo bambino esiste già — niente più "salta e continua l'onboarding" da qui.
 export function TherapistLinkScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -157,8 +162,9 @@ export function TherapistLinkScreen({ navigation }: any) {
 // è a roadmap ma non ancora costruita: questo schermo comunica lo stato reale, senza
 // promettere una rete di professionisti che non esiste ancora.
 export function FindTherapistScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -181,6 +187,7 @@ export function FindTherapistScreen({ navigation }: any) {
 // il profilo esiste già, si torna semplicemente alla dashboard. Scrive davvero su
 // therapist_links (vedi api/therapists.ts) — non è più un placeholder.
 export function TherapistCodeEntryScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -213,7 +220,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Text style={styles.title}>Inserisci il codice</Text>
       <Text style={styles.subtitle}>Te lo ha fornito il tuo logopedista.</Text>
       <TextInput
@@ -234,9 +241,10 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
 // input, Skip in the top right). Their affirmative-nickname framing works well
 // for a sensitive context like speech delay, kept as-is.
 export function ChildNameScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.topRow}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>←</Text>
@@ -272,6 +280,7 @@ export function ChildNameScreen({ navigation }: any) {
 // validare su Expo Go/SDK57/web — tre TextInput funzionano identici su iOS/Android/Expo Web
 // senza dipendenze in più.
 export function ChildBirthdateScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const name = route?.params?.name || "il tuo bambino";
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
@@ -300,7 +309,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -341,7 +350,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
   topRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
   back: { fontSize: 24, color: COLORS.jade },
   skip: { fontSize: 16, color: COLORS.jade, fontWeight: "700" },

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGamificationStore, DAILY_REWARD_GEMS } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium, FREE_PHONEMES } from "../constants/wordBank";
 import { ClinicalLevel, LevelProgress, LEVEL_LABELS } from "../types/gamification";
@@ -47,6 +48,7 @@ function freshLevelsForDisplay(): LevelProgress[] {
 // piatto: ogni nodo è un livello clinico, lo stato (locked/available/mastered) viene da
 // PhonemeGroup.levels, già tracciato dallo store — qui è solo nuova UI su dati esistenti.
 export default function GiochiScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const subscriptionActive = !!profile?.subscriptionActive;
   const defaultPlan = profile?.assignedToday[0];
@@ -87,7 +89,6 @@ export default function GiochiScreen({ navigation }: any) {
   // il livello 1 come punto di partenza — il gruppo vero viene creato al primo Fatto (vedi
   // recordSession in useGamificationStore).
   const levels = group?.levels ?? freshLevelsForDisplay();
-  const firstPlayableLevel = levels.find((l) => l.status !== "locked")?.level ?? 1;
 
   function openGame(exerciseType: string, level: ClinicalLevel) {
     navigation.navigate("Session", { phonemeGroupId: selectedPhoneme, level, position, exerciseType });
@@ -99,7 +100,7 @@ export default function GiochiScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: 24 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: insets.top + 12 }}>
       <View style={styles.topRow}>
         <View>
           <Text style={styles.greeting}>Ciao, {profile.displayName}! 👋</Text>
@@ -147,21 +148,15 @@ export default function GiochiScreen({ navigation }: any) {
         })}
       </ScrollView>
 
-      <Pressable
-        style={[styles.card, styles.cardFeatured, { marginTop: 20 }]}
-        onPress={() => openGame("pappagallo", firstPlayableLevel)}
-      >
-        <View style={[styles.iconBox, { backgroundColor: "#fff" }]}>
-          <Text style={styles.iconEmoji}>🦜</Text>
+      <View style={styles.pathHeader}>
+        <View style={styles.pathBadge}>
+          <Text style={styles.pathBadgeText}>{meta.label}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.cardTitle}>Ripeti con Lallo</Text>
-          <Text style={[styles.cardMeta, styles.cardMetaFeatured]}>Novità · il pappagallo ti ripete!</Text>
+          <Text style={styles.pathHeaderTitle}>Giochi per il suono {meta.label}</Text>
+          <Text style={styles.pathHeaderSub}>Tutti i giochi di questo percorso allenano questo suono</Text>
         </View>
-        <Text style={styles.chevron}>›</Text>
-      </Pressable>
-
-      <Text style={[styles.sectionLabel, { marginTop: 20 }]}>PERCORSO · {meta.label}</Text>
+      </View>
       <View style={styles.map}>
         {levels.map((lvl, idx) => {
           const locked = lvl.status === "locked";
@@ -200,7 +195,7 @@ export default function GiochiScreen({ navigation }: any) {
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.gameCardTitle}>{g.label}</Text>
-                        <Text style={styles.gameCardMeta}>{g.meta}</Text>
+                        <Text style={styles.gameCardMeta}>{g.meta} · suono {meta.label}</Text>
                       </View>
                       <Text style={styles.chevron}>›</Text>
                     </Pressable>
@@ -246,17 +241,18 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: "700", color: C.ink },
   chipTextOn: { color: C.jade },
   chipLock: { fontSize: 11 },
-  card: {
-    flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#fff", borderWidth: 1.5, borderColor: C.line,
-    borderRadius: 18, padding: 13,
-  },
-  cardFeatured: { borderWidth: 2, borderColor: "#FF6A4D", backgroundColor: "#FDECE7" },
-  iconBox: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  iconEmoji: { fontSize: 20 },
-  cardTitle: { fontSize: 14.5, fontWeight: "700", color: C.ink },
-  cardMeta: { fontSize: 11.5, color: C.inkSoft, marginTop: 2 },
-  cardMetaFeatured: { color: "#E84B30", fontWeight: "700" },
   chevron: { fontSize: 18, color: C.line },
+  pathHeader: {
+    flexDirection: "row", alignItems: "center", gap: 12, marginTop: 20, marginBottom: 12,
+    backgroundColor: C.mist, borderRadius: 16, padding: 12,
+  },
+  pathBadge: {
+    width: 44, height: 44, borderRadius: 14, backgroundColor: C.jade,
+    alignItems: "center", justifyContent: "center",
+  },
+  pathBadgeText: { color: "#fff", fontSize: 17, fontWeight: "800" },
+  pathHeaderTitle: { fontSize: 14.5, fontWeight: "800", color: C.jadeDeep },
+  pathHeaderSub: { fontSize: 11.5, color: C.inkSoft, marginTop: 2 },
   map: { marginTop: 4 },
   nodeRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 },
   node: {

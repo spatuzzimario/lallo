@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PHONEME_ORDER, WORD_BANK, PhonemeKey } from "../constants/wordBank";
 
 const C = {
@@ -40,10 +41,11 @@ const TOTAL_STEPS = 6;
 
 /* 1 — quante parole dice */
 export function WordCountScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const name = route.params?.name || "il bambino";
   const options = ["0 parole", "1–5 parole", "6–10 parole", "11–50 parole", "50+ parole"];
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 24, paddingTop: 50 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 24, paddingTop: insets.top + 16 }}>
       <Header onBack={() => navigation.goBack()} step={1} total={TOTAL_STEPS} />
       <Text style={styles.title}>All'incirca quante parole dice {name}?</Text>
       {options.map((opt) => (
@@ -67,13 +69,14 @@ export function WordCountScreen({ navigation, route }: any) {
    in questo testo. La valutazione arriva da un neuropsichiatra infantile, un'équipe
    multidisciplinare, o un invio ad accertamenti dal pediatra. */
 export function EvaluatedByTherapistScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const name = route.params?.name || "il bambino";
   function next(evaluated: boolean) {
     navigation.navigate("DiagnosedConditions", { ...route.params, evaluated });
   }
   return (
     <View style={styles.screen}>
-      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
+      <View style={{ padding: 24, paddingTop: insets.top + 16, flex: 1 }}>
         <Header onBack={() => navigation.goBack()} step={2} total={TOTAL_STEPS} />
         <Text style={styles.title}>
           {name} è mai stato valutato da uno specialista (neuropsichiatra infantile, équipe
@@ -103,6 +106,7 @@ const CONDITIONS = [
   "Disturbi fonetico-fonologici",
 ];
 export function DiagnosedConditionsScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const wasEvaluated = route.params?.evaluated === true;
   const [selected, setSelected] = useState<string[]>([]);
   const [other, setOther] = useState("");
@@ -119,7 +123,7 @@ export function DiagnosedConditionsScreen({ navigation, route }: any) {
 
   return (
     <View style={styles.screen}>
-      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
+      <View style={{ padding: 24, paddingTop: insets.top + 16, flex: 1 }}>
         <Header onBack={() => navigation.goBack()} step={3} total={TOTAL_STEPS} />
         <Text style={styles.title}>{title}</Text>
         {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
@@ -160,11 +164,12 @@ export function DiagnosedConditionsScreen({ navigation, route }: any) {
    dei contenuti per le famiglie senza logopedista (sostituisce l'assegnazione
    clinica finché non ne agganciano una). */
 export function StrugglingSoundsScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<PhonemeKey[]>([]);
   const toggle = (k: PhonemeKey) => setSelected((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
   return (
     <View style={styles.screen}>
-      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
+      <View style={{ padding: 24, paddingTop: insets.top + 16, flex: 1 }}>
         <Header onBack={() => navigation.goBack()} step={4} total={TOTAL_STEPS} />
         <Text style={styles.title}>Quali suoni fa fatica a pronunciare?</Text>
         <Text style={styles.subtitle}>Scegli quelli che riconosci — ti aiutiamo a costruire il punto di partenza.</Text>
@@ -192,9 +197,10 @@ export function StrugglingSoundsScreen({ navigation, route }: any) {
 
 /* 5 — schermata di fiducia con dati reali, NIENTE testimonianze inventate */
 export function TrustStatScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.screen}>
-      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
+      <View style={{ padding: 24, paddingTop: insets.top + 16, flex: 1 }}>
         <Header onBack={() => navigation.goBack()} step={5} total={TOTAL_STEPS} />
         <Text style={styles.title}>Quasi 1 bambino su 10 in età prescolare mostra una difficoltà di linguaggio</Text>
         <Text style={styles.subtitle}>
@@ -219,6 +225,7 @@ export function TrustStatScreen({ navigation, route }: any) {
    confermare) E, contemporaneamente, il piano attivo del bambino — le due cose insieme,
    non in alternativa, ora che l'accesso non è più bloccato. */
 export function ResultsScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const [calculating, setCalculating] = useState(true);
   useEffect(() => {
     const t = setTimeout(() => setCalculating(false), 1400);
@@ -236,7 +243,7 @@ export function ResultsScreen({ navigation, route }: any) {
   const sounds: PhonemeKey[] = route.params?.strugglingSounds?.length ? route.params.strugglingSounds : ["r"];
   return (
     <View style={styles.screen}>
-      <View style={{ padding: 24, paddingTop: 50, flex: 1 }}>
+      <View style={{ padding: 24, paddingTop: insets.top + 16, flex: 1 }}>
         <Text style={styles.title}>Ecco da dove iniziamo</Text>
         <Text style={styles.subtitle}>
           In base a quello che ci hai detto, il piano di {route.params?.name || "tuo figlio"} parte da questi suoni,

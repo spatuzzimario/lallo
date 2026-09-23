@@ -1,10 +1,12 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGamificationStore } from "../store/useGamificationStore";
 
 const C = { paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", jade: "#137A6E", mist: "#E4EFEA", sun: "#FFC53D", line: "#D9CEBC" };
 
 export default function ProgressiScreen() {
+  const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   if (!profile) return null;
 
@@ -14,7 +16,7 @@ export default function ProgressiScreen() {
   );
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: 24 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: insets.top + 12 }}>
       <Text style={styles.sectionLabel}>I PROGRESSI DI {profile.displayName?.toUpperCase()}</Text>
 
       {profile.phonemeGroups.map((group) =>

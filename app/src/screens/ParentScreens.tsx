@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, Switch, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { getLinkedTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
@@ -33,6 +34,7 @@ function randomProblem() {
 }
 
 export function AdultGateScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const [problem] = useState(randomProblem);
   const [wrong, setWrong] = useState(false);
 
@@ -46,8 +48,8 @@ export function AdultGateScreen({ navigation }: any) {
   }
 
   return (
-    <View style={gateStyles.container}>
-      <Pressable onPress={() => navigation.goBack()} style={gateStyles.close}>
+    <View style={[gateStyles.container, { paddingTop: insets.top + 16 }]}>
+      <Pressable onPress={() => navigation.goBack()} style={[gateStyles.close, { top: insets.top + 10 }]}>
         <Text style={gateStyles.closeText}>✕</Text>
       </Pressable>
       <Text style={gateStyles.lock}>🔒</Text>
@@ -70,7 +72,7 @@ export function AdultGateScreen({ navigation }: any) {
 }
 
 const gateStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, alignItems: "center", padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: COLORS.bg, alignItems: "center", padding: 24 },
   close: { position: "absolute", top: 50, right: 20, width: 36, height: 36, borderRadius: 18, backgroundColor: "#EEE", alignItems: "center", justifyContent: "center" },
   closeText: { fontSize: 16, color: COLORS.primary, fontWeight: "700" },
   lock: { fontSize: 50, marginTop: 40 },
@@ -89,6 +91,7 @@ const gateStyles = StyleSheet.create({
    Quella responsabilità resta al logopedista — è la scelta di
    posizionamento B2B2C, diversa dal modello puro B2C di Speech Blubs. */
 export function ParentDashboardScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const supabaseChildId = profile?.supabaseChildId;
 
@@ -123,7 +126,7 @@ export function ParentDashboardScreen({ navigation }: any) {
   if (!profile) return null;
 
   return (
-    <View style={dashStyles.container}>
+    <View style={[dashStyles.container, { paddingTop: insets.top + 16 }]}>
       <View style={dashStyles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={dashStyles.back}>‹</Text>
@@ -219,7 +222,7 @@ export function ParentDashboardScreen({ navigation }: any) {
 }
 
 const dashStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: 16, paddingTop: 56 },
+  container: { flex: 1, backgroundColor: COLORS.bg, padding: 16 },
   header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 },
   back: { fontSize: 26, color: COLORS.primary },
   title: { fontSize: 20, fontWeight: "800", color: COLORS.text },
@@ -255,6 +258,7 @@ const dashStyles = StyleSheet.create({
    SessionScreen.tsx). Link a Privacy Policy/Cookie Policy: strutturati qui ma i documenti
    legali veri non esistono ancora — vedi TODO sotto, non inventarne il contenuto. */
 export function PrivacyConsentScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const setAudioRecordingConsent = useGamificationStore((s) => s.setAudioRecordingConsent);
 
@@ -268,7 +272,7 @@ export function PrivacyConsentScreen({ navigation }: any) {
   if (!profile) return null;
 
   return (
-    <ScrollView style={privacyStyles.container} contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 40 }}>
+    <ScrollView style={privacyStyles.container} contentContainerStyle={{ padding: 16, paddingTop: insets.top + 16, paddingBottom: 40 }}>
       <View style={privacyStyles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={privacyStyles.back}>‹</Text>

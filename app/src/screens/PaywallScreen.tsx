@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FREE_PHONEMES, PHONEME_ORDER, WORD_BANK } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
 
@@ -15,6 +16,7 @@ const PLANS = [
 ];
 
 export default function PaywallScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const setProfile = useGamificationStore((s) => s.setProfile);
   const profile = useGamificationStore((s) => s.profile);
@@ -41,7 +43,7 @@ export default function PaywallScreen({ navigation, route }: any) {
   const premiumCount = PHONEME_ORDER.length - FREE_PHONEMES.length;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 22, paddingTop: 50 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 22, paddingTop: insets.top + 16 }}>
       <Text style={styles.title}>Sblocca tutti i {PHONEME_ORDER.length} fonemi</Text>
       <Text style={styles.subtitle}>
         Con il piano gratuito hai accesso a {FREE_PHONEMES.length} suoni comuni ({FREE_PHONEMES.map((k) => WORD_BANK[k].label).join(", ")}).

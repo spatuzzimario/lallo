@@ -1,14 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet, StyleProp, TextStyle } from "react-native";
 import * as Speech from "expo-speech";
-import {
-  useAudioRecorder,
-  useAudioRecorderState,
-  useAudioPlayer,
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-} from "expo-audio";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   PhonemeKey,
   WORD_BANK,
@@ -25,7 +18,7 @@ import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS } from "../types/gamification";
 
 type ExerciseType =
-  | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze" | "pappagallo"
+  | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
   | "ripeti" | "ascolta";
 
 // Illustrazione reale della parola quando disponibile (vedi assets/illustrations/parole/),
@@ -60,6 +53,7 @@ function say(text: string) {
 }
 
 export default function SessionScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const params: SessionParams = route.params;
   const phonemeKey = params.phonemeGroupId as PhonemeKey;
   const position = params.position ?? "iniziale";
@@ -134,7 +128,7 @@ export default function SessionScreen({ navigation, route }: any) {
   if (!meta || locked) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>‹</Text>
@@ -147,7 +141,6 @@ export default function SessionScreen({ navigation, route }: any) {
             {exerciseType === "coppie" && "Coppie minime"}
             {exerciseType === "oca" && "Gioco dell'oca"}
             {exerciseType === "sequenze" && "Sequenze illustrate"}
-            {exerciseType === "pappagallo" && "Ripeti con Lallo"}
             {exerciseType === "ripeti" && "Ripeti"}
             {exerciseType === "ascolta" && "Ascolta e scegli"}
           </Text>
@@ -175,9 +168,6 @@ export default function SessionScreen({ navigation, route }: any) {
         <GiocoDellOca phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "sequenze" && <SequenzeIllustrate onDone={finishSession} />}
-      {exerciseType === "pappagallo" && (
-        <RipetiConLallo phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
-      )}
       {exerciseType === "ripeti" && (
         <Ripeti phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
@@ -392,136 +382,6 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
         >
           <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : recording ? "⏸" : "🎤"}</Text>
         </Pressable>
-      </View>
-    </View>
-  );
-}
-
-/* ---------------- Ripeti con Lallo ----------------
-   Feature virale (brief §6.4): il bambino dice una parola, Lallo la ripete con voce da
-   pappagallo. Registra davvero la voce (expo-audio, richiede lo stesso consenso del
-   Registratore) e la riproduce con l'"effetto scoiattolo/pappagallo": aumentare la
-   velocità di riproduzione con shouldCorrectPitch=false alza anche il pitch, senza bisogno
-   di un modulo DSP nativo — approccio MVP proposto, da affinare più avanti se serve un
-   effetto più realistico. Salvare/condividere la clip resta una scelta del genitore (mai
-   automatica) — qui "salva" è ancora un placeholder, non c'è ancora persistenza reale. */
-// A differenza degli altri esercizi, qui NON auto-avanziamo dopo la prima risposta: il
-// punto della feature è proprio poter far ripetere a Lallo la stessa parola più volte per
-// gioco (brief §6.4) — auto-avanzare dopo un solo tap toglierebbe quella parte divertente.
-// Resta un avanzamento manuale, ma con etichetta ed indicatore di round più chiari.
-function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
-  onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
-}) {
-  const meta = WORD_BANK[phonemeKey];
-  const [round, setRound] = useState(0);
-  const word = useMemo(() => pickRandom(wordsFor(phonemeKey, position), 1)[0], [phonemeKey, position, round]);
-  const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
-  const [recordedUri, setRecordedUri] = useState<string | null>(null);
-  const [repeats, setRepeats] = useState(0);
-  const [permissionDenied, setPermissionDenied] = useState(false);
-
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const recorderState = useAudioRecorderState(recorder);
-  const player = useAudioPlayer(recordedUri);
-
-  async function startRecording() {
-    if (!hasConsent) return;
-    const perm = await requestRecordingPermissionsAsync();
-    if (!perm.granted) {
-      setPermissionDenied(true);
-      return;
-    }
-    setPermissionDenied(false);
-    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-    setRecordedUri(null);
-    await recorder.prepareToRecordAsync();
-    recorder.record();
-  }
-
-  async function stopRecording() {
-    await recorder.stop();
-    setRecordedUri(recorder.uri);
-  }
-
-  function repeatAsParrot() {
-    if (!recordedUri) return;
-    player.shouldCorrectPitch = false; // "effetto pappagallo": la velocità alza anche il pitch
-    player.setPlaybackRate(1.6);
-    player.seekTo(0);
-    player.play();
-    setRepeats((r) => r + 1);
-    onAttempt(word.parola, true);
-  }
-
-  return (
-    <View style={{ flex: 1, alignItems: "center" }}>
-      <Text style={styles.question}>Dì la parola… e senti come la ripete Lallo! 🦜</Text>
-      <WordVisual parola={word.parola} emoji={word.emoji} size={150} textStyle={styles.recEmoji} imageMarginTop={20} />
-      <Text style={styles.recWord}>{word.parola}</Text>
-      <Text style={styles.recMeta}>
-        {meta.label} · {position} · parola {round + 1} di {PRODUCTION_ROUNDS}
-      </Text>
-      {!hasConsent && (
-        <Text style={styles.warnNote}>
-          Serve il consenso di un genitore per registrare la voce. Vai su Genitori → Privacy
-          e registrazioni per attivarlo.
-        </Text>
-      )}
-      {permissionDenied && (
-        <Text style={styles.warnNote}>
-          Il microfono non è autorizzato per Lallo nelle impostazioni del telefono.
-        </Text>
-      )}
-      <View style={styles.recRow}>
-        <Pressable
-          style={[styles.recMicBtn, recorderState.isRecording && styles.recMicBtnActive, !hasConsent && styles.recMicBtnLocked]}
-          onPress={recorderState.isRecording ? stopRecording : startRecording}
-          disabled={!hasConsent}
-        >
-          <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : recorderState.isRecording ? "⏸" : "🎤"}</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.recListenBtn, !recordedUri && { opacity: 0.35 }]}
-          onPress={repeatAsParrot}
-          disabled={!recordedUri}
-        >
-          <Text style={styles.recBtnText}>🦜</Text>
-        </Pressable>
-      </View>
-      <Text style={styles.recCap}>
-        {!hasConsent
-          ? " "
-          : recorderState.isRecording
-          ? "Sto registrando… tocca di nuovo per fermare"
-          : recordedUri
-          ? "Tocca il pappagallo per sentirlo ripetere!"
-          : "Tocca il microfono e dì la parola"}
-      </Text>
-      <View style={styles.actionRow}>
-        {recordedUri && (
-          <Pressable style={styles.secondaryBtn} onPress={() => onAttempt(word.parola, true)}>
-            <Text style={styles.secondaryBtnText}>🎬 Salva la clip</Text>
-          </Pressable>
-        )}
-        {repeats > 0 && (
-          <Pressable
-            style={styles.primaryBtn}
-            onPress={() => {
-              if (round + 1 < PRODUCTION_ROUNDS) {
-                setRecordedUri(null);
-                setRepeats(0);
-                setRound((r) => r + 1);
-              } else {
-                onDone();
-              }
-            }}
-          >
-            <Text style={styles.primaryBtnText}>
-              {round + 1 < PRODUCTION_ROUNDS ? "Prossima parola →" : "Fatto ✓"}
-            </Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );
@@ -818,7 +678,7 @@ function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF8EE", padding: 16, paddingTop: 56 },
+  container: { flex: 1, backgroundColor: "#FFF8EE", padding: 16 },
   header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 },
   back: { fontSize: 26, color: "#137A6E" },
   title: { fontSize: 20, fontWeight: "800" },

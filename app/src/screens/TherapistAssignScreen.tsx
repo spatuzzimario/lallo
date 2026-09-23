@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WORD_BANK, PHONEME_ORDER, PhonemeKey } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { ClinicalLevel } from "../types/gamification";
@@ -13,6 +14,7 @@ import { ClinicalLevel } from "../types/gamification";
 const COLORS = { bg: "#FFF8EE", primary: "#2A20E0", text: "#1A1A1A", subtext: "#666", jade: "#137A6E" };
 
 export default function TherapistAssignScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const assignPlan = useGamificationStore((s) => s.assignPlan);
   const [phoneme, setPhoneme] = useState<PhonemeKey>("r");
@@ -42,7 +44,7 @@ export default function TherapistAssignScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 40 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingTop: insets.top + 16, paddingBottom: 40 }}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>‹</Text>

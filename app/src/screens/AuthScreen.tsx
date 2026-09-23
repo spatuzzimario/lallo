@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { requestOtpCode, verifyOtpCode } from "../api/auth";
 import { ensureParentProfile } from "../api/profiles";
 import { createChild } from "../api/children";
@@ -24,6 +25,7 @@ const C = {
 // codice OTP: niente password, coerente con "scarica e inizia da solo". La lunghezza del
 // codice non è fissata lato app — dipende dal template email configurato in Supabase.
 export default function AuthScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const role: "parent" | "therapist" = route.params?.role === "therapist" ? "therapist" : "parent";
   const name: string = route.params?.name || "il bambino";
   const sounds: PhonemeKey[] | undefined = route.params?.strugglingSounds;
@@ -108,7 +110,7 @@ export default function AuthScreen({ navigation, route }: any) {
     // persistito, quindi qui si ferma con un messaggio invece di fingere una registrazione.
     if (role === "therapist") {
       return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
           <Pressable onPress={() => navigation.goBack()}>
             <Text style={styles.back}>←</Text>
           </Pressable>
@@ -121,7 +123,7 @@ export default function AuthScreen({ navigation, route }: any) {
       );
     }
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.title}>Accesso non ancora configurato</Text>
         <Text style={styles.subtitle}>
           Il backend non è collegato in questo ambiente — continuiamo senza salvare i dati.
@@ -138,7 +140,7 @@ export default function AuthScreen({ navigation, route }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -207,7 +209,7 @@ function ContinueButton({ label = "Continua", onPress, disabled = false }: any) 
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: C.bg, padding: 24 },
   back: { fontSize: 24, color: C.jade, marginBottom: 20 },
   title: { fontSize: 26, fontWeight: "800", color: C.text, marginBottom: 12 },
   subtitle: { fontSize: 16, color: C.subtext, lineHeight: 22 },
