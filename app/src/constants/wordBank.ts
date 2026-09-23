@@ -170,3 +170,64 @@ export function distractorPool(excludeKey: PhonemeKey, n: number): WordEntry[] {
   }
   return pickRandom(pool, n);
 }
+
+// ---------- Livello 1 (Suono isolato) — sillabe consonante+vocale ----------
+// Introdotto con la scala a 7 livelli (settembre 2026, validata): far sentire/produrre il
+// suono in tutte le combinazioni sillabiche prima di passare alla parola. Ortografia
+// italiana verificabile a tavolino (dura/dolce, digrammi) — non serve una logopedista per
+// questo pezzo, a differenza delle frasi/racconti più sotto.
+// 4 categorie composite (cons_r, r_cons, s_cons, mnl_cons) restano vuote di proposito:
+// raggruppano più cluster consonantici diversi sotto un'unica chiave (es. cons_r copre
+// TR/DR/FR/GR/PR/BR), quindi non esiste un'unica "sillaba isolata" onesta da proporre —
+// il fallback in SessionScreen salta questi gruppi direttamente al livello 2.
+export const SYLLABLES: Record<PhonemeKey, string[]> = {
+  b: ["BA", "BE", "BI", "BO", "BU"],
+  c: ["CA", "CO", "CU", "CHE", "CHI"],
+  ci: ["CE", "CI", "CIA", "CIO", "CIU"],
+  d: ["DA", "DE", "DI", "DO", "DU"],
+  f: ["FA", "FE", "FI", "FO", "FU"],
+  g: ["GA", "GO", "GU", "GHE", "GHI"],
+  gi: ["GE", "GI", "GIA", "GIO", "GIU"],
+  gli: ["GLIA", "GLIE", "GLI", "GLIO", "GLIU"],
+  gn: ["GNA", "GNE", "GNI", "GNO", "GNU"],
+  l: ["LA", "LE", "LI", "LO", "LU"],
+  m: ["MA", "ME", "MI", "MO", "MU"],
+  mnl_cons: [],
+  n: ["NA", "NE", "NI", "NO", "NU"],
+  p: ["PA", "PE", "PI", "PO", "PU"],
+  r: ["RA", "RE", "RI", "RO", "RU"],
+  cons_r: [],
+  r_cons: [],
+  s: ["SA", "SE", "SI", "SO", "SU"],
+  s_cons: [],
+  sci_sce: ["SCIA", "SCE", "SCI", "SCIO", "SCIU"],
+  t: ["TA", "TE", "TI", "TO", "TU"],
+  v: ["VA", "VE", "VI", "VO", "VU"],
+  // L'ortografia italiana non distingue Z sonora/sorda (zaino e zucchero si scrivono
+  // entrambi con "za") — la differenza è solo fonetica, quindi le 3 categorie Z condividono
+  // le stesse sillabe scritte.
+  z_dz: ["ZA", "ZE", "ZI", "ZO", "ZU"],
+  zeta: ["ZA", "ZE", "ZI", "ZO", "ZU"],
+  z_ts: ["ZA", "ZE", "ZI", "ZO", "ZU"],
+};
+
+// Le sillabe non hanno un significato da illustrare (a differenza delle parole, dove vale
+// sempre "ogni parola ha un'immagine", vedi CLAUDE.md §2.6) — l'audio è il segnale
+// primario, l'emoji è solo un'ancora visiva generica, non una parola-immagine.
+export function syllableEntries(key: PhonemeKey): WordEntry[] {
+  return (SYLLABLES[key] ?? []).map((syl) => w(syl, "🔊"));
+}
+
+export function distractorSyllables(excludeKey: PhonemeKey, n: number): WordEntry[] {
+  const others = PHONEME_ORDER.filter((k) => k !== excludeKey && SYLLABLES[k]?.length > 0);
+  let pool: WordEntry[] = [];
+  pickRandom(others, Math.min(6, others.length)).forEach((k) => {
+    pool = pool.concat(syllableEntries(k));
+  });
+  return pickRandom(pool, n);
+}
+
+// Parole/frasi/racconti per i livelli 2-7 (Parola/Frase iniziale-mediana, Racconto) sono
+// in revisione col founder (spreadsheet Excel, settembre 2026) prima di entrare qui — vedi
+// conversazione. Non aggiungere contenuto per questi livelli finché non arrivano le
+// correzioni.

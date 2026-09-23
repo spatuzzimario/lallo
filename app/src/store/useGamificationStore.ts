@@ -29,7 +29,7 @@ const GRACE_DAYS_PER_MONTH = 2;
 export const DAILY_REWARD_GEMS = [1, 1, 2, 2, 3, 3, 5];
 
 function freshLevels(): LevelProgress[] {
-  return [1, 2, 3, 4, 5].map((level) => ({
+  return [1, 2, 3, 4, 5, 6, 7].map((level) => ({
     level: level as LevelProgress["level"],
     status: (level === 1 ? "available" : "locked") as LevelProgress["status"],
     masteryThreshold: MASTERY_DEFAULT_THRESHOLD,
@@ -230,7 +230,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         name: groupName,
         islandAsset: "",
         unlockedByTherapist: true,
-        levels: [1, 2, 3, 4, 5].map((l) => ({
+        levels: [1, 2, 3, 4, 5, 6, 7].map((l) => ({
           level: l as LevelProgress["level"],
           status: (l === level ? "available" : "locked") as LevelProgress["status"],
           masteryThreshold: 0.75,

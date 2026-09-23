@@ -1,12 +1,27 @@
-// Clinical scale: 5 levels, matches logopedista's phoneme progression
-export type ClinicalLevel = 1 | 2 | 3 | 4 | 5;
+// Scala clinica a 7 livelli (validata, settembre 2026 — sostituisce la precedente a 5
+// livelli): separa posizione (iniziale/mediana) e complessità (parola/frase) invece di
+// unirle in un'unica scala lineare. Il logopedista continua ad assegnare fonema e livello
+// di partenza; qui cambia solo la granularità dei livelli stessi.
+export type ClinicalLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export const LEVEL_LABELS: Record<ClinicalLevel, string> = {
   1: "Suono isolato",
-  2: "Sillaba",
-  3: "Parola",
-  4: "Frase",
-  5: "Racconto",
+  2: "Parola iniziale",
+  3: "Frase iniziale",
+  4: "Parola mediana",
+  5: "Frase mediana",
+  6: "Racconto",
+  7: "Racconto in rima",
+};
+
+// Posizione implicita nel livello stesso (prima era una scelta indipendente dal livello,
+// applicata a tutta la mappa di un fonema) — i livelli 1/6/7 non hanno una posizione
+// singola (1 = sillaba isolata, 6/7 = racconto che combina entrambe le posizioni).
+export const LEVEL_POSITION: Partial<Record<ClinicalLevel, "iniziale" | "mediana">> = {
+  2: "iniziale",
+  3: "iniziale",
+  4: "mediana",
+  5: "mediana",
 };
 
 export interface PhonemeGroup {
@@ -27,7 +42,7 @@ export interface LevelProgress {
 
 export interface AssignedExercise {
   id: string;
-  exerciseType: "caccia" | "registratore" | "memory" | "coppie" | "oca" | "sequenze" | "pappagallo";
+  exerciseType: "caccia" | "registratore" | "memory" | "coppie" | "oca" | "sequenze" | "pappagallo" | "frase" | "racconto";
   exerciseLabel: string; // es. "Caccia al suono"
   phonemeGroupId: string;
   phonemeLabel: string; // es. "R"
