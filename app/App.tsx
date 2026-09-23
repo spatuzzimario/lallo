@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import IntroSplashScreen from "./src/screens/IntroSplashScreen";
 import GiochiScreen from "./src/screens/GiochiScreen";
+import LalloScreen from "./src/screens/LalloScreen";
 import ProgressiScreen from "./src/screens/ProgressiScreen";
 import SessionScreen from "./src/screens/SessionScreen";
 import {
@@ -76,6 +77,7 @@ const seedProfile: ChildProfile = {
   audioRecordingConsent: false,
   dailyRewards: { claimedDates: [] },
   sessionLog: [],
+  lalloPet: { lastFedAt: null, lastInteractionAt: null },
   phonemeGroups: [
     {
       id: "r",
@@ -136,6 +138,11 @@ function MainTabs() {
         name="Giochi"
         component={GiochiScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🎮</Text> }}
+      />
+      <Tab.Screen
+        name="Lallo"
+        component={LalloScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🦜</Text> }}
       />
       <Tab.Screen
         name="Progressi"

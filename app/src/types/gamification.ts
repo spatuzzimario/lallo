@@ -86,6 +86,10 @@ export interface ChildProfile {
   // Storico delle sessioni completate — per la dashboard genitore (§6.5: uso nel tempo,
   // ultimi 7 giorni, andamento per fonema). Vedi SessionLogEntry.
   sessionLog: SessionLogEntry[];
+  // Stato del Tamagotchi di Lallo (feature virale/retention) — la fame si calcola al volo
+  // dal tempo trascorso da lastFedAt (vedi constants/lalloPet.ts), non è un numero salvato
+  // che va "tickato": niente job in background, solo un calcolo quando l'app è aperta.
+  lalloPet: { lastFedAt: string | null; lastInteractionAt: string | null };
 }
 
 export interface StreakState {

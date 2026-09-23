@@ -8,6 +8,7 @@ import {
   LevelProgress,
 } from "../types/gamification";
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
+import { getHunger } from "../constants/lalloPet";
 
 interface GamificationStore {
   profile: ChildProfile | null;
@@ -19,11 +20,14 @@ interface GamificationStore {
   startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
   setSupabaseChildId: (id: string) => void;
   setChildInfo: (info: { displayName?: string; gender?: ChildProfile["gender"] }) => void;
+  feedLallo: () => void;
+  talkToLallo: () => void;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
 const SESSIONS_TO_COUNT_WEEK = 3;
 const GRACE_DAYS_PER_MONTH = 2;
+const LALLO_SNACK_BOOST = 15; // punti sazietà per un'interazione "Parla con Lallo"
 
 // Reward giornaliero (base, non clinico): gemme per posizione nel ciclo di 7 giorni,
 // assegnate alla prima sessione completata della giornata. Esportato così la UI (striscia
@@ -290,6 +294,36 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, ...info } });
+  },
+
+  // Dare da mangiare resetta la sazietà al massimo (un pasto "dura" fino a farlo scendere
+  // di nuovo con il tempo, vedi constants/lalloPet.ts) — un tocco su un cibo = pasto fatto.
+  feedLallo: () => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, lalloPet: { ...profile.lalloPet, lastFedAt: new Date().toISOString() } } });
+  },
+
+  // Parlare con Lallo (Ripeti/pappagallo) conta come interazione e dà anche un piccolo
+  // "spuntino" — non sazia come un pasto vero, ma premia comunque il bambino che torna a
+  // giocare con lui invece di limitarsi a nutrirlo meccanicamente.
+  talkToLallo: () => {
+    const profile = get().profile;
+    if (!profile) return;
+    const boostedHunger = Math.min(100, getHunger(profile.lalloPet.lastFedAt) + LALLO_SNACK_BOOST);
+    // Ricava un lastFedAt "virtuale" corrispondente alla sazietà appena aumentata, così la
+    // stessa formula di decadimento (getHunger) resta l'unica fonte di verità.
+    const hoursAgo = ((100 - boostedHunger) / 100) * 24;
+    const newLastFedAt = new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();
+    set({
+      profile: {
+        ...profile,
+        lalloPet: {
+          lastFedAt: newLastFedAt,
+          lastInteractionAt: new Date().toISOString(),
+        },
+      },
+    });
   },
 
   // Avvia il piano self-directed (nessun logopedista collegato) al termine dello screener.
