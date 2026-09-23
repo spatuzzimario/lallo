@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import IntroSplashScreen from "./src/screens/IntroSplashScreen";
 import GiochiScreen from "./src/screens/GiochiScreen";
 import ProgressiScreen from "./src/screens/ProgressiScreen";
 import SessionScreen from "./src/screens/SessionScreen";
@@ -147,6 +148,7 @@ function MainTabs() {
 
 export default function App() {
   const setProfile = useGamificationStore((s) => s.setProfile);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     setProfile(seedProfile);
@@ -180,6 +182,7 @@ export default function App() {
           <Stack.Screen name="PrivacyConsent" component={PrivacyConsentScreen} />
         </Stack.Navigator>
       </NavigationContainer>
+      {showIntro && <IntroSplashScreen onDone={() => setShowIntro(false)} />}
     </SafeAreaProvider>
   );
 }
