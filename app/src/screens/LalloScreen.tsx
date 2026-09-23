@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   useAudioRecorder,
   useAudioRecorderState,
@@ -45,6 +46,16 @@ export default function LalloScreen() {
   const hunger = useMemo(() => getHunger(profile?.lalloPet.lastFedAt ?? null), [profile?.lalloPet.lastFedAt, now]);
   const mood = getMood(hunger);
   const moodCopy = LALLO_MOOD_COPY[mood];
+
+  // Istruzione vocale ogni volta che il bambino apre questa tab (non solo la prima volta,
+  // vedi stesso ragionamento in GiochiScreen) — usa lo stato d'animo attuale di Lallo,
+  // così il bambino sa subito se deve dargli da mangiare.
+  useFocusEffect(
+    useCallback(() => {
+      if (mood === "affamato") say("Lallo ha fame! Dagli qualcosa da mangiare");
+      else say("Dai da mangiare a Lallo o parla con lui!");
+    }, [mood])
+  );
 
   const [justFed, setJustFed] = useState<string | null>(null);
   function feed(food: string) {

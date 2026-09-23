@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { View, Text, Image, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
+import * as Speech from "expo-speech";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { WORD_ILLUSTRATIONS } from "../constants/illustrations";
 import { currentTitle, nextTitle } from "../constants/album";
@@ -43,6 +45,17 @@ export default function AlbumScreen() {
   const distinctCaught = catchesByWord.size;
   const title = currentTitle(distinctCaught);
   const upcoming = nextTitle(distinctCaught);
+
+  // Istruzione vocale ogni volta che il bambino apre questa tab (non solo la prima volta,
+  // stesso ragionamento in GiochiScreen/LalloScreen).
+  useFocusEffect(
+    useCallback(() => {
+      Speech.stop();
+      Speech.speak("Scegli una parola e fotografala per aggiungerla al tuo album!", {
+        language: "it-IT", pitch: 1.05, rate: 0.92,
+      });
+    }, [])
+  );
 
   async function hunt(word: string) {
     if (!hasConsent) return;

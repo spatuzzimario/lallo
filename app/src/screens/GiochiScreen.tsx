@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Speech from "expo-speech";
 import { useGamificationStore, DAILY_REWARD_GEMS } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium, FREE_PHONEMES } from "../constants/wordBank";
 import { ClinicalLevel, LevelProgress, LEVEL_LABELS } from "../types/gamification";
@@ -13,12 +15,22 @@ const C = {
 // Ogni gioco dichiara a quali livelli clinici si applica (brief §6.3) — usato per filtrare
 // cosa mostrare quando si apre un nodo della mappa. "Ripeti con Lallo" resta fuori: è una
 // feature virale/motivazionale, non un asse clinico con un livello proprio.
+//
+// Livello 1 non è più qui (settembre 2026): niente più 2 giochi a scelta, ora è lo schermo
+// dedicato alle sillabe isolate (vedi SillabeIsolate in SessionScreen) — un solo percorso
+// obbligato, non una lista di esercizi tra cui scegliere.
+//
+// Ordine dell'array = ordine di difficoltà crescente mostrato nella mappa (dal più semplice
+// al più difficile): Ripeti (ascolta e ripeti, nessuna scelta da sbagliare) → Ascolta e
+// scegli → Memory → Caccia al suono (il più difficile: serve aver già capito bene il
+// suono). I giochi di produzione più avanzati (Registratore, Coppie minime, Gioco dell'oca,
+// Sequenze) restano dopo, nel loro ordine originale.
 const GAMES = [
-  { type: "caccia", label: "Caccia al suono", meta: "Discriminazione", bg: "#FDECE7", emoji: "🔎", levels: [1, 2, 3] },
-  { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", emoji: "🔁", levels: [1, 2, 3] },
-  { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", emoji: "🎤", levels: [3, 4, 5] },
-  { type: "memory", label: "Memory", meta: "Discriminazione", bg: "#FFF3D6", emoji: "🧩", levels: [2, 3] },
+  { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", emoji: "🔁", levels: [2, 3] },
   { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", emoji: "👂", levels: [2, 3] },
+  { type: "memory", label: "Memory", meta: "Discriminazione", bg: "#FFF3D6", emoji: "🧩", levels: [2, 3] },
+  { type: "caccia", label: "Caccia al suono", meta: "Discriminazione", bg: "#FDECE7", emoji: "🔎", levels: [2, 3] },
+  { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", emoji: "🎤", levels: [3, 4, 5] },
   { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", emoji: "👯", levels: [3] },
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", emoji: "🎲", levels: [3, 4] },
   { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", emoji: "📖", levels: [5] },
@@ -64,6 +76,20 @@ export default function GiochiScreen({ navigation }: any) {
   const [selectedPhoneme, setSelectedPhoneme] = useState<PhonemeKey>(initialPhoneme);
   const [expandedLevel, setExpandedLevel] = useState<ClinicalLevel | null>(null);
 
+  // Istruzione vocale ogni volta che il bambino apre questa tab (non solo la prima volta):
+  // non sa leggere, quindi il "cosa fare qui" deve passare dall'audio — useFocusEffect
+  // invece di un semplice useEffect perché le tab restano montate, un useEffect normale
+  // parlerebbe solo al primissimo avvio dell'app.
+  useFocusEffect(
+    useCallback(() => {
+      if (!profile) return;
+      Speech.stop();
+      Speech.speak(`Ciao ${profile.displayName}! Scegli un suono per iniziare a giocare`, {
+        language: "it-IT", pitch: 1.05, rate: 0.92,
+      });
+    }, [profile?.displayName])
+  );
+
   if (!profile) return null;
 
   // Reward giornaliero — vedi la stessa logica di lettura già usata in precedenza in
@@ -96,6 +122,12 @@ export default function GiochiScreen({ navigation }: any) {
 
   function tapNode(lvl: LevelProgress) {
     if (lvl.status === "locked") return;
+    // Livello 1 non ha una lista di giochi tra cui scegliere: un solo percorso, le sillabe
+    // isolate — tap diretto invece di espandere un elenco con un'unica voce.
+    if (lvl.level === 1) {
+      openGame("sillabe", 1);
+      return;
+    }
     setExpandedLevel((cur) => (cur === lvl.level ? null : lvl.level));
   }
 
@@ -182,7 +214,9 @@ export default function GiochiScreen({ navigation }: any) {
                     </Text>
                   )}
                 </View>
-                {!locked && <Text style={styles.chevron}>{expandedLevel === lvl.level ? "︿" : "›"}</Text>}
+                {!locked && (
+                  <Text style={styles.chevron}>{lvl.level !== 1 && expandedLevel === lvl.level ? "︿" : "›"}</Text>
+                )}
               </Pressable>
               {idx < levels.length - 1 && <View style={styles.connector} />}
 

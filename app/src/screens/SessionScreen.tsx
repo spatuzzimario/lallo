@@ -8,6 +8,7 @@ import {
   WordEntry,
   wordsFor,
   allWordsFor,
+  syllableEntries,
   pickRandom,
   distractorPool,
   MINIMAL_PAIRS,
@@ -19,7 +20,7 @@ import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS } from "../ty
 
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
-  | "ripeti" | "ascolta";
+  | "ripeti" | "ascolta" | "sillabe";
 
 // Illustrazione reale della parola quando disponibile (vedi assets/illustrations/parole/),
 // altrimenti l'emoji placeholder del word bank — copertura ancora parziale, generazione
@@ -35,7 +36,10 @@ function WordVisual({ parola, emoji, size, textStyle, imageMarginTop }: {
 // TODO (nice-to-have, priorità bassa): video dimostrativi della posizione linguale/labiale
 // per fonema, integrati in-app e scaricabili on-demand per singolo pacchetto-fonema (non
 // tutta la libreria insieme, non link esterni a YouTube) — promemoria per il bambino, non
-// sostituto della spiegazione del logopedista in seduta. Non ancora implementato.
+// sostituto della spiegazione del logopedista in seduta. Non ancora implementato. Casa
+// naturale per questo: dentro SillabeIsolate (Livello 1), accanto alle 5 sillabe — è lì che
+// il genitore/founder ha in mente un bambino che fa vedere il labiale delle 5 varianti
+// vocaliche del suono, come rinforzo visivo prima di passare alla parola intera.
 
 interface SessionParams {
   phonemeGroupId: string; // deve combaciare con una PhonemeKey del word bank
@@ -149,6 +153,7 @@ export default function SessionScreen({ navigation, route }: any) {
             {exerciseType === "sequenze" && "Sequenze illustrate"}
             {exerciseType === "ripeti" && "Ripeti"}
             {exerciseType === "ascolta" && "Ascolta e scegli"}
+            {exerciseType === "sillabe" && "Suono isolato"}
           </Text>
           {/* Rende visibile la difficoltà scelta: suono + livello clinico + posizione —
               prima non c'era modo di sapere, dentro l'esercizio, cosa si stava giocando. */}
@@ -179,6 +184,9 @@ export default function SessionScreen({ navigation, route }: any) {
       )}
       {exerciseType === "ascolta" && (
         <AscoltaEScegli phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "sillabe" && (
+        <SillabeIsolate phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
 
       {celebration && (
@@ -262,6 +270,84 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
+/* ---------------- Sillabe isolate (Livello 1) ----------------
+   Sostituisce i 2 giochi che c'erano prima al livello 1: qui non si sceglie tra esercizi,
+   si sentono/ripetono le 5 combinazioni sillabiche del suono (es. LA LE LI LO LU per la
+   L) prima ancora di arrivare alla parola intera — il livello clinico "Suono isolato" del
+   brief (§5). Ogni sillaba si pronuncia al tocco; quando sono state ascoltate tutte e 5 si
+   passa in automatico. 4 categorie composite (cons_r, r_cons, s_cons, mnl_cons) non hanno
+   una sillaba isolata onesta da proporre (raggruppano più cluster diversi, es. TR/DR/FR/
+   GR/PR/BR) — per queste il livello 1 si completa da solo e si passa dritti al livello 2
+   (vedi commento su SYLLABLES in wordBank.ts). */
+function SillabeIsolate({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const meta = WORD_BANK[phonemeKey];
+  const syllables = useMemo(() => syllableEntries(phonemeKey), [phonemeKey]);
+  const [tapped, setTapped] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (syllables.length === 0) {
+      say("Per questo suono si parte direttamente dal livello 2!");
+      onAttempt(phonemeKey, true);
+      setTimeout(onDone, 1400);
+      return;
+    }
+    say(`Tocca ogni sillaba e ripetila ad alta voce`);
+  }, []);
+
+  function tapSyllable(syl: WordEntry) {
+    say(syl.parola);
+    onAttempt(syl.parola, true);
+    setTapped((prev) => {
+      if (prev.has(syl.parola)) return prev;
+      const next = new Set(prev).add(syl.parola);
+      if (next.size === syllables.length) setTimeout(onDone, 900);
+      return next;
+    });
+  }
+
+  if (syllables.length === 0) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Text style={styles.question}>Si passa al livello 2… 🦜</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.question}>Tocca ogni sillaba con il suono {meta.label} e ripetila ad alta voce 🦜</Text>
+      <View style={syllableStyles.grid}>
+        {syllables.map((syl) => {
+          const done = tapped.has(syl.parola);
+          return (
+            <Pressable
+              key={syl.parola}
+              onPress={() => tapSyllable(syl)}
+              style={[syllableStyles.tile, done && syllableStyles.tileDone]}
+            >
+              <Text style={[syllableStyles.tileText, done && syllableStyles.tileTextDone]}>{syl.parola}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={styles.recCap}>{tapped.size}/{syllables.length} sillabe ascoltate</Text>
+    </View>
+  );
+}
+
+const syllableStyles = StyleSheet.create({
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 12, marginTop: 10 },
+  tile: {
+    width: "28%", aspectRatio: 1, borderWidth: 2, borderColor: "#D9CEBC", borderRadius: 18,
+    alignItems: "center", justifyContent: "center", backgroundColor: "#fff",
+  },
+  tileDone: { borderColor: "#137A6E", backgroundColor: "#E9F5F1" },
+  tileText: { fontSize: 26, fontWeight: "800", color: "#1F2E2B" },
+  tileTextDone: { color: "#0E5C53" },
+});
+
 /* ---------------- Memory ---------------- */
 function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
@@ -278,6 +364,10 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
   const [firstUid, setFirstUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    say(`Trova le coppie con il suono ${meta.label}`);
+  }, []);
 
   function handleFlip(card: typeof cards[number]) {
     if (flipped.includes(card.uid) || matched.includes(card.parola)) return;
@@ -341,6 +431,10 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   const [recording, setRecording] = useState(false);
   const [justDone, setJustDone] = useState(false);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+
+  useEffect(() => {
+    say(word.parola);
+  }, [word.parola]);
 
   function playModel() { say(word.parola); }
 
@@ -408,7 +502,13 @@ function Ripeti({ phonemeKey, onAttempt, onDone }: {
   const word = words[idx];
 
   useEffect(() => {
-    if (word) say(word.parola);
+    if (!word) return;
+    if (idx === 0) {
+      say("Ascolta e ripeti ad alta voce");
+      setTimeout(() => say(word.parola), 1500);
+    } else {
+      say(word.parola);
+    }
   }, [idx, phonemeKey]);
 
   function next() {
@@ -473,7 +573,12 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
   }, [phonemeKey, position, round]);
 
   useEffect(() => {
-    say(roundData.target.parola);
+    if (round === 0) {
+      say("Ripeti quello che hai sentito e tocca l'immagine giusta");
+      setTimeout(() => say(roundData.target.parola), 1600);
+    } else {
+      say(roundData.target.parola);
+    }
   }, [round]);
 
   function pick(w: WordEntry) {
@@ -536,7 +641,12 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   function playTarget() { say(target.parola); }
 
   useEffect(() => {
-    playTarget();
+    if (round === 0) {
+      say("Ascolta, poi tocca la parola che hai sentito");
+      setTimeout(playTarget, 1600);
+    } else {
+      playTarget();
+    }
   }, [round]);
 
   function pick(word: WordEntry) {
@@ -601,6 +711,11 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   const [pos, setPos] = useState(0);
   const current = words[pos];
 
+  useEffect(() => {
+    say("Dì la parola per far avanzare il pappagallo!");
+    if (current) setTimeout(() => say(current.parola), 900);
+  }, []);
+
   function advance() {
     onAttempt(current.parola, true);
     say(current.parola);
@@ -643,6 +758,10 @@ function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
   const [next, setNext] = useState(1);
   const [story, setStory] = useState("Tocca l'immagine giusta per iniziare…");
   const [wrongOrder, setWrongOrder] = useState<number | null>(null);
+
+  useEffect(() => {
+    say("Tocca le immagini in ordine per raccontare la storia");
+  }, []);
 
   function tap(step: typeof steps[number]) {
     if (step.order < next) return;
