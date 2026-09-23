@@ -77,8 +77,11 @@ export const WORD_BANK: Record<PhonemeKey, PhonemeEntry> = {
                     w("scimmia","🐒"),w("cammello","🐫"),w("pomodoro","🍅"),w("famiglia","👪")] },
   n: { label: "N", iniziale: [w("naso","👃"),w("nave","🚢"),w("nido","🪺"),w("neve","❄️"),w("nonna","👵"),w("noce","🌰"),w("numero","🔢"),w("nuvola","☁️"),
                     w("nano","🧙"),w("nastro","🎀"),w("notte","🌙"),w("nuoto","🏊"),w("nocciolina","🥜")],
-                    mediana: [w("banana","🍌"),w("luna","🌙"),w("tenda","⛺"),w("penna","🖊️"),w("farina","🌾"),w("gonna","👗"),w("ananas","🍍"),w("cannuccia","🥤"),
-                    w("cena","🍽️"),w("zaino","🎒"),w("fontana","⛲"),w("pinguino","🐧"),w("panino","🥪")] },
+                    // tenda/fontana/pinguino rimosse (settembre 2026): stesso problema di
+                    // farfalla/forno per R — N incollata a un'altra consonante (te-n-d-,
+                    // fo-n-t-, pi-n-gu-) invece che chiara tra due vocali.
+                    mediana: [w("banana","🍌"),w("luna","🌙"),w("penna","🖊️"),w("farina","🌾"),w("gonna","👗"),w("ananas","🍍"),w("cannuccia","🥤"),
+                    w("cena","🍽️"),w("zaino","🎒"),w("panino","🥪"),w("moneta","🪙"),w("canarino","🐤"),w("vaniglia","🍦")] },
   mnl_cons: { label: "M/N/L + cons.", iniziale: [],
                     mediana: [w("campo","🏕️"),w("ponte","🌉"),w("dolce","🍰"),w("elmo","⛑️"),w("salto","🤸"),w("angolo","📐"),w("mondo","🌍"),w("tempo","⏰"),
                     w("ombra","🌑"),w("gamba","🦵"),w("banco","🪑"),w("monte","⛰️"),w("vento","💨"),w("dente","🦷"),w("elefante","🐘")] },
