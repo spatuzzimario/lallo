@@ -131,6 +131,42 @@ alter table therapists enable row level security;
 alter table therapist_links enable row level security;
 alter table waitlist enable row level security;
 
+-- Le policy di children e therapist_links si controllano a vicenda (children legge
+-- therapist_links per sapere se un logopedista è collegato; therapist_links legge children
+-- per sapere se il genitore è il proprietario) — se scritte come subquery dirette, Postgres
+-- rientra nella valutazione RLS dell'altra tabella e va in ricorsione infinita
+-- (42P17, scoperto in produzione settembre 2026 al primo insert reale su children).
+-- SECURITY DEFINER rompe il ciclo: la funzione gira con i privilegi di chi l'ha creata,
+-- quindi la query al suo interno non rivaluta le policy RLS della tabella che legge.
+create or replace function public.owns_child(p_child_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from children c
+    where c.id = p_child_id and c.owner_id = auth.uid()
+  );
+$$;
+
+create or replace function public.is_linked_active_therapist(p_child_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from therapist_links tl
+    join therapists t on t.id = tl.therapist_id
+    where tl.child_id = p_child_id
+      and tl.status = 'active'
+      and t.profile_id = auth.uid()
+  );
+$$;
+
 drop policy if exists "profiles: self read/write" on profiles;
 create policy "profiles: self read/write" on profiles
   for all using (id = auth.uid()) with check (id = auth.uid());
@@ -141,15 +177,7 @@ create policy "children: owner full access" on children
 
 drop policy if exists "children: linked active therapist can read" on children;
 create policy "children: linked active therapist can read" on children
-  for select using (
-    exists (
-      select 1 from therapist_links tl
-      join therapists t on t.id = tl.therapist_id
-      where tl.child_id = children.id
-        and tl.status = 'active'
-        and t.profile_id = auth.uid()
-    )
-  );
+  for select using (public.is_linked_active_therapist(children.id));
 
 drop policy if exists "targets: owner full access" on targets;
 create policy "targets: owner full access" on targets
@@ -223,17 +251,13 @@ create policy "therapist_links: therapist can see own links" on therapist_links
 
 drop policy if exists "therapist_links: parent can see links for own children" on therapist_links;
 create policy "therapist_links: parent can see links for own children" on therapist_links
-  for select using (
-    exists (select 1 from children c where c.id = therapist_links.child_id and c.owner_id = auth.uid())
-  );
+  for select using (public.owns_child(therapist_links.child_id));
 
 -- Mancava una policy di insert: senza, RLS blocca qualunque scrittura (anche del genitore
 -- proprietario del bambino) — necessaria per redimere un codice invito lato client.
 drop policy if exists "therapist_links: parent can create link for own children" on therapist_links;
 create policy "therapist_links: parent can create link for own children" on therapist_links
-  for insert with check (
-    exists (select 1 from children c where c.id = therapist_links.child_id and c.owner_id = auth.uid())
-  );
+  for insert with check (public.owns_child(therapist_links.child_id));
 
 -- anon key: solo insert su waitlist (già il comportamento della landing page). Se la tua
 -- tabella esistente ha già una policy equivalente con un altro nome, questa si aggiunge
