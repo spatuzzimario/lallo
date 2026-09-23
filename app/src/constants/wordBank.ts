@@ -88,8 +88,13 @@ export const WORD_BANK: Record<PhonemeKey, PhonemeEntry> = {
                     w("lupo","🐺"),w("zuppa","🍲"),w("lampo","⚡")] },
   r: { label: "R", iniziale: [w("rana","🐸"),w("razzo","🚀"),w("riso","🍚"),w("rosa","🌹"),w("ruota","🛞"),w("radio","📻"),w("robot","🤖"),w("riccio","🦔"),
                     w("rete","🥅"),w("remo","🚣"),w("riga","📏"),w("rondine","🐦"),w("rospo","🐸"),w("ramo","🌿"),w("re","👑"),w("roccia","🪨"),w("ragno","🕷️"),w("raggio","☀️"),w("rinoceronte","🦏"),w("renna","🦌")],
-                    mediana: [w("farfalla","🦋"),w("corona","👑"),w("sirena","🧜‍♀️"),w("faro","🗼"),w("forno","🔥"),w("carota","🥕"),w("cereali","🥣"),w("arancia","🍊"),
-                    w("pera","🍐"),w("corallo","🪸"),w("moneta","🪙"),w("torre","🏰"),w("pirata","🏴‍☠️"),w("muro","🧱"),w("toro","🐂")] },
+                    // farfalla/forno/moneta rimosse (settembre 2026): R in posizione di coda
+                    // seguita da un'altra consonante (far-f-, for-n-, e "moneta" non ha
+                    // nemmeno la R) non è un buon esempio di "R mediana" — serve R chiara,
+                    // tra due vocali, come in corona/faro/torre.
+                    mediana: [w("corona","👑"),w("sirena","🧜‍♀️"),w("faro","🗼"),w("carota","🥕"),w("cereali","🥣"),w("arancia","🍊"),
+                    w("pera","🍐"),w("corallo","🪸"),w("torre","🏰"),w("pirata","🏴‍☠️"),w("muro","🧱"),w("toro","🐂"),
+                    w("aroma","🌸"),w("oro","🥇"),w("cuore","❤️"),w("canguro","🦘"),w("tesoro","💰")] },
   cons_r: { label: "cons. + R", iniziale: [w("treno","🚂"),w("drago","🐉"),w("fragola","🍓"),w("granchio","🦀"),w("prato","🌾"),w("trattore","🚜"),w("principe","🤴"),w("bruco","🐛"),
                     w("grillo","🦗"),w("brontosauro","🦕"),w("trota","🐟"),w("grano","🌾"),w("prosciutto","🍖"),w("tromba","🎺"),w("principessa","👸")],
                     mediana: [w("sopra","⬆️"),w("aprile","📅"),w("vetro","🪟"),w("cetriolo","🥒"),w("fabbro","🔨"),w("quadro","🖼️"),w("ombra","🌑"),w("libro","📖"),
@@ -99,8 +104,13 @@ export const WORD_BANK: Record<PhonemeKey, PhonemeEntry> = {
                     w("inverno","❄️"),w("verme","🪱"),w("forbici","✂️"),w("sorpresa","🎁"),w("scarpa","👟")] },
   s: { label: "S", iniziale: [w("sole","☀️"),w("sasso","🪨"),w("serpente","🐍"),w("sedia","🪑"),w("salame","🥓"),w("sette","7️⃣"),w("sacco","🎒"),w("settimana","📅"),
                     w("sirena","🧜‍♀️"),w("salto","🤸"),w("sapone","🧼"),w("sabbia","🏖️"),w("secchio","🪣")],
-                    mediana: [w("cassa","📦"),w("tosse","🤧"),w("pasta","🍝"),w("vespa","🐝"),w("castello","🏰"),w("salsiccia","🌭"),w("riposo","😴"),w("musica","🎵"),
-                    w("casa","🏠"),w("rosa","🌹"),w("naso","👃"),w("rosso","🔴")] },
+                    // pasta/vespa/castello/salsiccia rimosse (settembre 2026): S incollata a
+                    // un'altra consonante (pa-st-, ve-sp-, ca-st-, sal-s-) non è un buon
+                    // esempio di "S mediana" — serve S chiara, tra due vocali, come in
+                    // casa/naso/rosa.
+                    mediana: [w("cassa","📦"),w("tosse","🤧"),w("riposo","😴"),w("musica","🎵"),
+                    w("casa","🏠"),w("rosa","🌹"),w("naso","👃"),w("rosso","🔴"),
+                    w("viso","😊"),w("museo","🏛️"),w("isola","🏝️"),w("asilo","🏫")] },
   s_cons: { label: "S + cons.", iniziale: [w("spada","⚔️"),w("stella","⭐"),w("scala","🪜"),w("spazzolino","🪥"),w("stivale","👢"),w("spinaci","🥬"),w("sveglia","⏰"),w("sfera","🔮"),
                     w("scarpa","👟"),w("scoiattolo","🐿️"),w("spugna","🧽"),w("scatola","📦"),w("scuola","🏫"),w("strega","🧙‍♀️")],
                     mediana: [w("finestra","🪟"),w("orchestra","🎻"),w("minestra","🍲"),w("castello","🏰"),w("pastore","🐑"),w("canestro","🏀"),w("mostro","👹"),w("vestito","👗"),
