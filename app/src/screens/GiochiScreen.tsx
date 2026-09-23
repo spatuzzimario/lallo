@@ -14,8 +14,10 @@ const C = {
 // feature virale/motivazionale, non un asse clinico con un livello proprio.
 const GAMES = [
   { type: "caccia", label: "Caccia al suono", meta: "Discriminazione", bg: "#FDECE7", emoji: "🔎", levels: [1, 2, 3] },
+  { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", emoji: "🔁", levels: [1, 2, 3] },
   { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", emoji: "🎤", levels: [3, 4, 5] },
   { type: "memory", label: "Memory", meta: "Discriminazione", bg: "#FFF3D6", emoji: "🧩", levels: [2, 3] },
+  { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", emoji: "👂", levels: [2, 3] },
   { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", emoji: "👯", levels: [3] },
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", emoji: "🎲", levels: [3, 4] },
   { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", emoji: "📖", levels: [5] },

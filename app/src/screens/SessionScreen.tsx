@@ -14,6 +14,7 @@ import {
   WORD_BANK,
   WordEntry,
   wordsFor,
+  allWordsFor,
   pickRandom,
   distractorPool,
   MINIMAL_PAIRS,
@@ -23,7 +24,9 @@ import { getWordImage } from "../constants/wordImage";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS } from "../types/gamification";
 
-type ExerciseType = "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze" | "pappagallo";
+type ExerciseType =
+  | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze" | "pappagallo"
+  | "ripeti" | "ascolta";
 
 // Illustrazione reale della parola quando disponibile (vedi assets/illustrations/parole/),
 // altrimenti l'emoji placeholder del word bank — copertura ancora parziale, generazione
@@ -145,6 +148,8 @@ export default function SessionScreen({ navigation, route }: any) {
             {exerciseType === "oca" && "Gioco dell'oca"}
             {exerciseType === "sequenze" && "Sequenze illustrate"}
             {exerciseType === "pappagallo" && "Ripeti con Lallo"}
+            {exerciseType === "ripeti" && "Ripeti"}
+            {exerciseType === "ascolta" && "Ascolta e scegli"}
           </Text>
           {/* Rende visibile la difficoltà scelta: suono + livello clinico + posizione —
               prima non c'era modo di sapere, dentro l'esercizio, cosa si stava giocando. */}
@@ -172,6 +177,12 @@ export default function SessionScreen({ navigation, route }: any) {
       {exerciseType === "sequenze" && <SequenzeIllustrate onDone={finishSession} />}
       {exerciseType === "pappagallo" && (
         <RipetiConLallo phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "ripeti" && (
+        <Ripeti phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "ascolta" && (
+        <AscoltaEScegli phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
 
       {celebration && (
@@ -511,6 +522,133 @@ function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
             </Text>
           </Pressable>
         )}
+      </View>
+    </View>
+  );
+}
+
+/* ---------------- Ripeti ----------------
+   Sfoglia TUTTE le parole del fonema (iniziale + mediana insieme, brief: farle vedere
+   tutte) una alla volta: immagine grande, il modello audio parte da solo, il bambino
+   ripete ad alta voce. Avanzamento sempre manuale (freccia) — niente registrazione né
+   valutazione automatica della pronuncia: l'app non può "capire" se il bambino ha
+   ripetuto bene (vedi CLAUDE.md §10, nessun ASR/scoring automatico sul bambino). */
+function Ripeti({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const meta = WORD_BANK[phonemeKey];
+  const words = useMemo(() => allWordsFor(phonemeKey), [phonemeKey]);
+  const [idx, setIdx] = useState(0);
+  const word = words[idx];
+
+  useEffect(() => {
+    if (word) say(word.parola);
+  }, [idx, phonemeKey]);
+
+  function next() {
+    if (!word) return;
+    onAttempt(word.parola, true);
+    if (idx + 1 < words.length) setIdx((i) => i + 1);
+    else onDone();
+  }
+
+  if (!word) return null;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>Ascolta e ripeti ad alta voce 🦜</Text>
+      <WordVisual parola={word.parola} emoji={word.emoji} size={170} textStyle={styles.recEmoji} imageMarginTop={10} />
+      <Text style={styles.recWord}>{word.parola}</Text>
+      <Text style={styles.recMeta}>
+        {meta.label} · parola {idx + 1} di {words.length}
+      </Text>
+      <View style={styles.recRow}>
+        <Pressable style={styles.recListenBtn} onPress={() => say(word.parola)}>
+          <Text style={styles.recBtnText}>▶</Text>
+        </Pressable>
+        <Pressable style={styles.recMicBtn} onPress={next}>
+          <Text style={styles.recBtnText}>→</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.recCap}>Tocca la freccia quando hai ripetuto la parola</Text>
+    </View>
+  );
+}
+
+/* ---------------- Ascolta e scegli ----------------
+   Discriminazione ricettiva: parte l'audio di UNA parola precisa (non "trova quelle col
+   suono X" come Caccia al suono), il bambino la ripete ad alta voce e tocca l'immagine
+   giusta tra 6 — stesso principio di Coppie minime ma con più distrattori invece di 2
+   sole opzioni. */
+const ASCOLTA_ROUNDS = 4;
+function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
+  onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const [round, setRound] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+
+  const roundData = useMemo(() => {
+    const pool = wordsFor(phonemeKey, position);
+    const target = pickRandom(pool, 1)[0];
+    const sameGroupOthers = pool.filter((w) => w.parola !== target.parola);
+    const distractors = pickRandom(sameGroupOthers, Math.min(5, sameGroupOthers.length));
+    if (distractors.length < 5) {
+      const seen = new Set(distractors.map((w) => w.parola));
+      for (const w of distractorPool(phonemeKey, 5 - distractors.length + 3)) {
+        if (distractors.length >= 5) break;
+        if (seen.has(w.parola) || w.parola === target.parola) continue;
+        distractors.push(w);
+        seen.add(w.parola);
+      }
+    }
+    const options = pickRandom([target, ...distractors.slice(0, 5)], Math.min(6, distractors.length + 1));
+    return { target, options };
+  }, [phonemeKey, position, round]);
+
+  useEffect(() => {
+    say(roundData.target.parola);
+  }, [round]);
+
+  function pick(w: WordEntry) {
+    if (picked) return;
+    setPicked(w.parola);
+    const correct = w.parola === roundData.target.parola;
+    onAttempt(w.parola, correct);
+    setTimeout(() => {
+      setPicked(null);
+      if (round + 1 < ASCOLTA_ROUNDS) setRound((r) => r + 1);
+      else onDone();
+    }, correct ? 900 : 1100);
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.question}>
+        Ripeti quello che hai sentito e tocca l'immagine giusta · {round + 1} di {ASCOLTA_ROUNDS}
+      </Text>
+      <Pressable style={styles.playBtn} onPress={() => say(roundData.target.parola)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <View style={styles.grid}>
+        {roundData.options.map((w) => {
+          const isTarget = w.parola === roundData.target.parola;
+          const wasPicked = picked === w.parola;
+          return (
+            <Pressable
+              key={w.parola}
+              onPress={() => pick(w)}
+              style={[
+                styles.tile,
+                picked !== null && isTarget && styles.tileCorrect,
+                wasPicked && !isTarget && styles.tileWrong,
+              ]}
+            >
+              <WordVisual parola={w.parola} emoji={w.emoji} size={90} textStyle={styles.tileEmoji} />
+              <Text style={styles.tileWord}>{w.parola}</Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );

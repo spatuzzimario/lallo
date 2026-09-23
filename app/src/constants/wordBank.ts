@@ -158,6 +158,13 @@ export function wordsFor(key: PhonemeKey, position: "iniziale" | "mediana"): Wor
   return entry.iniziale.length ? entry.iniziale : entry.mediana;
 }
 
+// Tutte le parole del fonema, iniziale + mediana insieme — usato dal gioco "Ripeti"
+// (brief: far vedere tutte le parole disponibili per il suono, entrambe le posizioni).
+export function allWordsFor(key: PhonemeKey): WordEntry[] {
+  const entry = WORD_BANK[key];
+  return [...entry.iniziale, ...entry.mediana];
+}
+
 export function pickRandom<T>(arr: T[], n: number): T[] {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i--) {
