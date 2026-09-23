@@ -81,8 +81,13 @@ export default function AlbumScreen() {
       if (after && after.threshold !== before?.threshold) {
         setNewTitleBanner(`${after.emoji} Nuovo titolo: ${after.name}!`);
         setTimeout(() => setNewTitleBanner(null), 2500);
+        Speech.stop();
+        Speech.speak(`Bravo! Hai un nuovo titolo: ${after.name}!`, { language: "it-IT", pitch: 1.05, rate: 0.92 });
+        return;
       }
     }
+    Speech.stop();
+    Speech.speak("Foto aggiunta al tuo album, bravo!", { language: "it-IT", pitch: 1.05, rate: 0.92 });
   }
 
   if (!profile) return null;
