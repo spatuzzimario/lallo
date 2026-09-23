@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
 import { useGamificationStore } from "../store/useGamificationStore";
@@ -57,7 +57,7 @@ export function TherapistOnboardingScreen({ navigation }: any) {
   const canContinue = fullName.trim().length > 1 && alboNumber.trim().length > 1;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -85,7 +85,7 @@ export function TherapistOnboardingScreen({ navigation }: any) {
           navigation.navigate("Auth", { role: "therapist", fullName: fullName.trim(), alboNumber: alboNumber.trim() })
         }
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -213,7 +213,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Text style={styles.title}>Inserisci il codice</Text>
       <Text style={styles.subtitle}>Te lo ha fornito il tuo logopedista.</Text>
       <TextInput
@@ -226,7 +226,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
       {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
       <View style={{ flex: 1 }} />
       {loading ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={code.length < 4} onPress={submit} />}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -236,7 +236,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
 export function ChildNameScreen({ navigation }: any) {
   const [name, setName] = useState("");
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.topRow}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>←</Text>
@@ -260,7 +260,7 @@ export function ChildNameScreen({ navigation }: any) {
         disabled={name.length === 0}
         onPress={() => navigation.navigate("ChildBirthdate", { name })}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -300,7 +300,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -336,7 +336,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
       </View>
       <View style={{ flex: 1 }} />
       <ContinueButton disabled={!isValid} onPress={next} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

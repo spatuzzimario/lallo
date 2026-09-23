@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { requestOtpCode, verifyOtpCode } from "../api/auth";
 import { ensureParentProfile } from "../api/profiles";
 import { createChild } from "../api/children";
@@ -138,7 +138,7 @@ export default function AuthScreen({ navigation, route }: any) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Pressable onPress={() => navigation.goBack()}>
         <Text style={styles.back}>←</Text>
       </Pressable>
@@ -194,7 +194,7 @@ export default function AuthScreen({ navigation, route }: any) {
           )}
         </>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
