@@ -399,6 +399,7 @@ export function PrivacyConsentScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const setAudioRecordingConsent = useGamificationStore((s) => s.setAudioRecordingConsent);
+  const setCameraConsent = useGamificationStore((s) => s.setCameraConsent);
 
   function openLegalDoc(name: string) {
     // TODO: collegare l'URL vero della Privacy Policy / Cookie Policy (probabilmente
@@ -436,6 +437,26 @@ export function PrivacyConsentScreen({ navigation }: any) {
           <Switch
             value={profile.audioRecordingConsent}
             onValueChange={setAudioRecordingConsent}
+            trackColor={{ false: "#D9CEBC", true: COLORS.jade }}
+          />
+        </View>
+      </View>
+
+      <View style={privacyStyles.card}>
+        <Text style={privacyStyles.cardTitle}>Fotocamera per l'Album</Text>
+        <Text style={privacyStyles.cardText}>
+          L'Album lascia {profile.displayName} fotografare oggetti reali che corrispondono
+          alle parole che sta imparando. Le foto restano solo su questo dispositivo — non
+          vengono mai caricate su internet o condivise. Puoi rivedere ed eliminare ogni foto
+          in qualsiasi momento dall'Album.
+        </Text>
+        <View style={privacyStyles.consentRow}>
+          <Text style={privacyStyles.consentLabel}>
+            Acconsento all'uso della fotocamera per l'Album di {profile.displayName}
+          </Text>
+          <Switch
+            value={profile.cameraConsent}
+            onValueChange={setCameraConsent}
             trackColor={{ false: "#D9CEBC", true: COLORS.jade }}
           />
         </View>

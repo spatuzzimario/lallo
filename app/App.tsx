@@ -8,6 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import IntroSplashScreen from "./src/screens/IntroSplashScreen";
 import GiochiScreen from "./src/screens/GiochiScreen";
 import LalloScreen from "./src/screens/LalloScreen";
+import AlbumScreen from "./src/screens/AlbumScreen";
 import ProgressiScreen from "./src/screens/ProgressiScreen";
 import SessionScreen from "./src/screens/SessionScreen";
 import {
@@ -75,9 +76,11 @@ const seedProfile: ChildProfile = {
   preferredTopics: [],
   parentReportedConcerns: [],
   audioRecordingConsent: false,
+  cameraConsent: false,
   dailyRewards: { claimedDates: [] },
   sessionLog: [],
   lalloPet: { lastFedAt: null, lastInteractionAt: null },
+  photoCatches: [],
   phonemeGroups: [
     {
       id: "r",
@@ -148,6 +151,11 @@ function MainTabs() {
         name="Progressi"
         component={ProgressiScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📈</Text> }}
+      />
+      <Tab.Screen
+        name="Album"
+        component={AlbumScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📸</Text> }}
       />
     </Tab.Navigator>
   );

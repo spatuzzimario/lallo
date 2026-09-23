@@ -79,6 +79,10 @@ export interface ChildProfile {
   // registrazione audio — ed eventualmente video in futuro — durante esercizi come il
   // Registratore. Finché è false, quegli esercizi non devono registrare nulla.
   audioRecordingConsent: boolean;
+  // Stesso principio del consenso audio, ma per l'uso della fotocamera nell'Album (vedi
+  // AlbumScreen). Finché è false la fotocamera non si apre. Le foto restano solo sul
+  // dispositivo (expo-file-system), non vengono mai caricate su Supabase Storage.
+  cameraConsent: boolean;
   // Ricompensa giornaliera (reward base, non clinica): date ISO (YYYY-MM-DD) in cui è
   // già stata assegnata. Ciclo di 7 giorni non spezzato da un giorno saltato — stesso
   // spirito "generoso" dei grace days dello streak, non è un contatore di fila rigido.
@@ -90,6 +94,19 @@ export interface ChildProfile {
   // dal tempo trascorso da lastFedAt (vedi constants/lalloPet.ts), non è un numero salvato
   // che va "tickato": niente job in background, solo un calcolo quando l'app è aperta.
   lalloPet: { lastFedAt: string | null; lastInteractionAt: string | null };
+  // Album fotografico delle parole (feature virale/retention, brief conversazione
+  // settembre 2026): il bambino sceglie una parola dalla lista e la fotografa nel mondo
+  // reale — nessun riconoscimento automatico dell'immagine (vedi CLAUDE.md §10, stesso
+  // principio del niente-ASR: l'app non "capisce" le foto, è il bambino a scegliere cosa
+  // sta fotografando). Ogni tot foto sblocca un titolo, vedi constants/album.ts.
+  photoCatches: PhotoCatchEntry[];
+}
+
+export interface PhotoCatchEntry {
+  id: string;
+  word: string;   // slug della parola (stessa chiave di getWordImage)
+  uri: string;    // percorso locale del file, mai caricato su un server
+  takenAt: string;
 }
 
 export interface StreakState {

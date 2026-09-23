@@ -17,6 +17,9 @@ interface GamificationStore {
   assignPlan: (phonemeGroupId: string, groupName: string, level: LevelProgress["level"]) => void;
   setParentReportedConcerns: (concerns: string[]) => void;
   setAudioRecordingConsent: (consent: boolean) => void;
+  setCameraConsent: (consent: boolean) => void;
+  addPhotoCatch: (word: string, uri: string) => void;
+  removePhotoCatch: (id: string) => void;
   startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
   setSupabaseChildId: (id: string) => void;
   setChildInfo: (info: { displayName?: string; gender?: ChildProfile["gender"] }) => void;
@@ -279,6 +282,27 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, audioRecordingConsent: consent } });
+  },
+
+  setCameraConsent: (consent) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, cameraConsent: consent } });
+  },
+
+  addPhotoCatch: (word, uri) => {
+    const profile = get().profile;
+    if (!profile) return;
+    const entry = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, word, uri, takenAt: new Date().toISOString() };
+    set({ profile: { ...profile, photoCatches: [...profile.photoCatches, entry] } });
+  },
+
+  // Il genitore può sempre eliminare una foto dalla sezione Privacy/Album — le foto sono
+  // dati sensibili di un minore, deve restare facile rimuoverle.
+  removePhotoCatch: (id) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, photoCatches: profile.photoCatches.filter((p) => p.id !== id) } });
   },
 
   setSupabaseChildId: (id) => {
