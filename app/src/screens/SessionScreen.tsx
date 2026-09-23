@@ -245,7 +245,7 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
                 state === false && styles.tileWrong,
               ]}
             >
-              <WordVisual parola={t.parola} emoji={t.emoji} size={56} textStyle={styles.tileEmoji} />
+              <WordVisual parola={t.parola} emoji={t.emoji} size={112} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{t.parola}</Text>
             </Pressable>
           );
@@ -301,7 +301,7 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
           return (
             <Pressable key={c.uid} onPress={() => handleFlip(c)} style={[styles.memCard, shown && styles.memCardFlipped]}>
               {shown ? (
-                <WordVisual parola={c.parola} emoji={c.emoji} size={44} textStyle={styles.memCardText} />
+                <WordVisual parola={c.parola} emoji={c.emoji} size={80} textStyle={styles.memCardText} />
               ) : (
                 <Text style={styles.memCardText}>?</Text>
               )}
@@ -359,7 +359,7 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
       <Text style={styles.question}>{justDone ? "Bravo! 🎉" : "Ascolta, poi prova tu"}</Text>
-      <WordVisual parola={word.parola} emoji={word.emoji} size={100} textStyle={styles.recEmoji} imageMarginTop={20} />
+      <WordVisual parola={word.parola} emoji={word.emoji} size={150} textStyle={styles.recEmoji} imageMarginTop={20} />
       <Text style={styles.recWord}>{word.parola}</Text>
       <Text style={styles.recMeta}>
         {meta.label} · {position} · parola {round + 1} di {PRODUCTION_ROUNDS}
@@ -446,7 +446,7 @@ function RipetiConLallo({ phonemeKey, position, onAttempt, onDone }: {
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
       <Text style={styles.question}>Dì la parola… e senti come la ripete Lallo! 🦜</Text>
-      <WordVisual parola={word.parola} emoji={word.emoji} size={100} textStyle={styles.recEmoji} imageMarginTop={20} />
+      <WordVisual parola={word.parola} emoji={word.emoji} size={150} textStyle={styles.recEmoji} imageMarginTop={20} />
       <Text style={styles.recWord}>{word.parola}</Text>
       <Text style={styles.recMeta}>
         {meta.label} · {position} · parola {round + 1} di {PRODUCTION_ROUNDS}
@@ -573,7 +573,7 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
                 state === true && !isTarget && styles.tileWrong,
               ]}
             >
-              <WordVisual parola={w.parola} emoji={w.emoji} size={56} textStyle={styles.tileEmoji} />
+              <WordVisual parola={w.parola} emoji={w.emoji} size={112} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{w.parola.toUpperCase()}</Text>
             </Pressable>
           );
@@ -615,7 +615,7 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
         ))}
       </View>
       <Pressable onPress={() => say(current.parola)} style={{ alignItems: "center" }}>
-        <WordVisual parola={current.parola} emoji={current.emoji} size={80} textStyle={ocaStyles.emoji} imageMarginTop={10} />
+        <WordVisual parola={current.parola} emoji={current.emoji} size={130} textStyle={ocaStyles.emoji} imageMarginTop={10} />
         <Text style={ocaStyles.word}>{current.parola}</Text>
       </Pressable>
       <Pressable style={ocaStyles.sayBtn} onPress={advance}>
