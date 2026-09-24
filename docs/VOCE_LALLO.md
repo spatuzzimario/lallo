@@ -96,16 +96,26 @@ con CLAUDE.md §8: "mai punire l'errore, celebrare ogni tentativo").
 - Mai umorismo che richieda un tono sarcastico o ambiguo — un bambino di 3-6
   anni prende tutto alla lettera.
 
+## Pilota completato
+
+Il fonema R (37 parole, iniziale + mediana) e le 18 righe fisse/template
+sono stati generati per intero con Linda Fiore/eleven_v3 e validati
+dall'utente — file in `app/assets/audio/parole/` e `app/assets/audio/lines/`.
+Nessun caso ha richiesto l'articolo come workaround dopo il passaggio a
+`eleven_v3`. Restano da generare gli altri 24 fonemi (~408 parole) più i
+75 template sugli altri fonemi e le 4 righe titolo album — stessa
+pipeline: `creative_generate_speech` con `eleven_v3`/parola isolata,
+download diretto da `storage.googleapis.com` (raggiungibile senza
+passare dall'utente), salvataggio in `app/assets/audio/parole/<slug>.mp3`.
+
 ## Da validare prima dell'uso clinico reale
 
-- **Pronuncia dei fonemi italiani target** (R, S/Z, SC/SCI, GN, GLI,
+- **Pronuncia dei fonemi italiani target** (S/Z, SC/SCI, GN, GLI,
   TR/STR/PR...) va controllata da un madrelingua italiano — idealmente la
   logopedista di riferimento del progetto — fonema per fonema, non solo a
-  campione in sessione di sviluppo. Il campione testato in sessione (rana,
-  sole, gnomo, scivolo, treno, casa) copre solo una minima parte dei fonemi
-  prioritari.
+  campione in sessione di sviluppo. Il pilota copre solo R per intero; gli
+  altri 24 fonemi sono ancora da generare e validare.
 - Se una parola specifica risulta pronunciata in modo ambiguo o innaturale
   con `eleven_v3`, va segnalata: si rigenera puntualmente con un testo
   diverso (es. `eleven_multilingual_v2`, o un articolo davanti come
-  workaround temporaneo — non più necessario per "gnomo" ma potenzialmente
-  utile per altri casi non ancora scoperti).
+  workaround temporaneo se necessario).
