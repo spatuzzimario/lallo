@@ -37,7 +37,7 @@ Riferimento visivo/di interazione: la landing + demo HTML già realizzata (`land
 - **App:** React Native + Expo SDK 51, TypeScript. Web via Expo Web dalla stessa codebase.
 - **Backend/DB/Auth:** Supabase (Postgres + Auth + Storage). Progetto esistente: `https://zrzrmarrhiityuoszdze.supabase.co`.
 - **Abbonamenti:** RevenueCat (iOS + Android, Small Business Program 15%).
-- **Voce:** ElevenLabs per la voce-modello (pronuncia corretta) e le consegne audio; caching in Supabase Storage. In demo si può usare la TTS di sistema come fallback.
+- **Voce:** motore ElevenLabs per la voce-modello (pronuncia corretta) e le consegne audio, generato via Higgsfield (`text2speech_v2`, `variant: "elevenlabs"`, voce preset "Gracie") — passa dall'abbonamento Higgsfield esistente, non serve una chiave ElevenLabs separata. Dettagli/personalità in `docs/VOCE_LALLO.md`. Caching in Supabase Storage. In demo si può usare la TTS di sistema come fallback.
 - **Audio bambino:** `expo-av` per registrazione; pitch-shift on-device per la feature "pappagallo".
 - Testing su dispositivo reale (il motivo per cui siamo su Claude Code).
 
