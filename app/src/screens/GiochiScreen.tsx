@@ -109,15 +109,26 @@ export default function GiochiScreen({ navigation }: any) {
   }
 
   const meta = WORD_BANK[selectedPhoneme];
-  const position = meta.iniziale.length ? "iniziale" : "mediana";
   const group = profile.phonemeGroups.find((g) => g.id === selectedPhoneme);
   // Se il fonema non è ancora stato toccato (nessun gruppo salvato), la mappa mostra comunque
   // il livello 1 come punto di partenza — il gruppo vero viene creato al primo Fatto (vedi
   // recordSession in useGamificationStore).
   const levels = group?.levels ?? freshLevelsForDisplay();
 
+  // La posizione del fonema è determinata dal LIVELLO, non è una scelta indipendente: la
+  // scala clinica lo dice già nell'etichetta stessa (LEVEL_LABELS: 2 "Parola iniziale", 3
+  // "Frase iniziale", 4 "Parola mediana", 5 "Frase mediana"). Prima qui veniva calcolata una
+  // sola volta per fonema, sempre "iniziale" se disponibile, identica per tutti i livelli —
+  // per questo i giochi di Livello 4/5 non mostravano mai le parole con il fonema in mezzo
+  // come dovrebbero (bug segnalato: la posizione nel database non si rifletteva negli
+  // esercizi). wordsFor() ha comunque un fallback se la posizione richiesta è vuota per quel
+  // fonema (es. "gli" non ha parole iniziali).
+  function positionForLevel(level: ClinicalLevel): "iniziale" | "mediana" {
+    return level >= 4 ? "mediana" : "iniziale";
+  }
+
   function openGame(exerciseType: string, level: ClinicalLevel) {
-    navigation.navigate("Session", { phonemeGroupId: selectedPhoneme, level, position, exerciseType });
+    navigation.navigate("Session", { phonemeGroupId: selectedPhoneme, level, position: positionForLevel(level), exerciseType });
   }
 
   function tapNode(lvl: LevelProgress) {

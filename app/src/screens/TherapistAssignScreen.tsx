@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WORD_BANK, PHONEME_ORDER, PhonemeKey } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
-import { ClinicalLevel } from "../types/gamification";
+import { ClinicalLevel, LEVEL_LABELS } from "../types/gamification";
 
 // NOTA ARCHITETTURALE: in un vero prodotto B2B2C il logopedista avrebbe
 // quasi certamente un portale/login separato dal device del bambino, non
@@ -18,12 +18,9 @@ export default function TherapistAssignScreen({ navigation }: any) {
   const profile = useGamificationStore((s) => s.profile);
   const assignPlan = useGamificationStore((s) => s.assignPlan);
   const [phoneme, setPhoneme] = useState<PhonemeKey>("r");
-  const [position, setPosition] = useState<"iniziale" | "mediana">("iniziale");
   const [level, setLevel] = useState<ClinicalLevel>(1);
 
   const meta = WORD_BANK[phoneme];
-  const hasIniziale = meta.iniziale.length > 0;
-  const hasMediana = meta.mediana.length > 0;
   // Suoni segnalati dal genitore in onboarding (vedi punto 6, feedback clinico luglio 2026):
   // sono solo un suggerimento pre-compilato, non un'assegnazione — il logopedista deve
   // comunque toccare "Assegna piano della settimana" qui sotto per attivarli davvero.
@@ -31,14 +28,11 @@ export default function TherapistAssignScreen({ navigation }: any) {
 
   function handleSelectPhoneme(key: PhonemeKey) {
     setPhoneme(key);
-    const m = WORD_BANK[key];
-    if (!m.iniziale.length && position === "iniziale") setPosition("mediana");
-    if (!m.mediana.length && position === "mediana") setPosition("iniziale");
   }
 
   function handleAssign() {
     assignPlan(phoneme, `Suono ${meta.label}`, level);
-    Alert.alert("Piano assegnato ✓", `${meta.label} · ${position} · livello ${level} sbloccato per il bambino.`, [
+    Alert.alert("Piano assegnato ✓", `${meta.label} · livello ${level} (${LEVEL_LABELS[level]}) sbloccato per il bambino.`, [
       { text: "OK", onPress: () => navigation.navigate("WorldMap") },
     ]);
   }
@@ -82,29 +76,11 @@ export default function TherapistAssignScreen({ navigation }: any) {
         ))}
       </View>
 
-      <Text style={styles.fieldLabel}>POSIZIONE</Text>
-      <View style={styles.chipRow}>
-        <Pressable
-          disabled={!hasIniziale}
-          onPress={() => setPosition("iniziale")}
-          style={[styles.chip, position === "iniziale" && styles.chipSelected, !hasIniziale && styles.chipDisabled]}
-        >
-          <Text style={[styles.chipText, position === "iniziale" && styles.chipTextSelected]}>Iniziale</Text>
-        </Pressable>
-        <Pressable
-          disabled={!hasMediana}
-          onPress={() => setPosition("mediana")}
-          style={[styles.chip, position === "mediana" && styles.chipSelected, !hasMediana && styles.chipDisabled]}
-        >
-          <Text style={[styles.chipText, position === "mediana" && styles.chipTextSelected]}>Mediana</Text>
-        </Pressable>
-      </View>
-
       <Text style={styles.fieldLabel}>LIVELLO</Text>
       <View style={styles.chipRow}>
         {[1, 2, 3, 4, 5].map((l) => (
           <Pressable key={l} onPress={() => setLevel(l as ClinicalLevel)} style={[styles.chip, level === l && styles.chipSelected]}>
-            <Text style={[styles.chipText, level === l && styles.chipTextSelected]}>{l}</Text>
+            <Text style={[styles.chipText, level === l && styles.chipTextSelected]}>{l} · {LEVEL_LABELS[l as ClinicalLevel]}</Text>
           </Pressable>
         ))}
       </View>
