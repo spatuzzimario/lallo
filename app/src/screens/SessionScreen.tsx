@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet, StyleProp, TextStyle } from "react-native";
 import * as Speech from "expo-speech";
+import { useAudioPlayer } from "expo-audio";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   PhonemeKey,
@@ -84,6 +85,16 @@ export default function SessionScreen({ navigation, route }: any) {
   // nessuna callback): usarlo per il proseguimento della navigazione avrebbe bloccato
   // l'app sulla schermata dell'esercizio finito su web, senza modo di continuare.
   const [celebration, setCelebration] = useState<{ level: ClinicalLevel } | null>(null);
+  // Feedback vocale sullo sblocco: molti bambini che usano l'app non sanno ancora leggere,
+  // quindi il testo dell'overlay da solo non basta a indicargli cosa toccare per proseguire.
+  const celebrationPlayer = useAudioPlayer(require("../../assets/audio/lines/sess_livello_sbloccato.mp3"));
+
+  useEffect(() => {
+    if (celebration) {
+      celebrationPlayer.seekTo(0);
+      celebrationPlayer.play();
+    }
+  }, [celebration]);
 
   function finishSession() {
     if (params.demo) {
