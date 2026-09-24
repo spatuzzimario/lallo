@@ -125,7 +125,13 @@ export default function SessionScreen({ navigation, route }: any) {
       setCelebration({ level: nextLevel.level });
       return;
     }
-    navigation.navigate("MainTabs");
+    // goBack() invece di navigate("MainTabs"): l'unico modo per arrivare qui è da
+    // GiochiScreen, quindi MainTabs è già subito sotto in pila — navigate("MainTabs") lo
+    // "ritrova" ma nel farlo perde lo stato locale di GiochiScreen (il suono scelto torna
+    // sempre a quello di default invece di restare su quello appena giocato). goBack()
+    // torna alla stessa istanza dello schermo senza toccarne lo stato, esattamente come fa
+    // già la freccia "‹" qui sopra.
+    navigation.goBack();
   }
 
   function logAttempt(word: string, correct: boolean) {
@@ -198,7 +204,7 @@ export default function SessionScreen({ navigation, route }: any) {
               Hai sbloccato il Livello {celebration.level} · {LEVEL_LABELS[celebration.level]} per il suono{" "}
               {meta.label}. Lo trovi nella mappa in Giochi.
             </Text>
-            <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate("MainTabs")}>
+            <Pressable style={styles.primaryBtn} onPress={() => navigation.goBack()}>
               <Text style={styles.primaryBtnText}>Evviva!</Text>
             </Pressable>
           </View>

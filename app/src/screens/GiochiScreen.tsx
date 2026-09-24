@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -75,6 +75,18 @@ export default function GiochiScreen({ navigation }: any) {
 
   const [selectedPhoneme, setSelectedPhoneme] = useState<PhonemeKey>(initialPhoneme);
   const [expandedLevel, setExpandedLevel] = useState<ClinicalLevel | null>(null);
+
+  // Il chip del suono selezionato deve essere sempre visibile senza dover scorrere a mano
+  // (segnalato: la scelta del suono era poco visibile) — teniamo la posizione x di ogni
+  // chip via onLayout e scorriamo lì ogni volta che il suono selezionato cambia.
+  const soundRowRef = useRef<ScrollView>(null);
+  const chipX = useRef<Partial<Record<PhonemeKey, number>>>({});
+  useEffect(() => {
+    const x = chipX.current[selectedPhoneme];
+    if (x !== undefined) {
+      soundRowRef.current?.scrollTo({ x: Math.max(0, x - 16), animated: true });
+    }
+  }, [selectedPhoneme]);
 
   // Istruzione vocale ogni volta che il bambino apre questa tab (non solo la prima volta):
   // non sa leggere, quindi il "cosa fare qui" deve passare dall'audio — useFocusEffect
@@ -173,8 +185,13 @@ export default function GiochiScreen({ navigation }: any) {
         })}
       </View>
 
-      <Text style={styles.sectionLabel}>SUONO</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+      <Text style={styles.sectionLabel}>SUONO SU CUI STAI GIOCANDO</Text>
+      <ScrollView
+        ref={soundRowRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipRow}
+      >
         {PHONEME_ORDER.map((key) => {
           const locked = isPremium(key) && !subscriptionActive;
           const on = key === selectedPhoneme;
@@ -182,10 +199,11 @@ export default function GiochiScreen({ navigation }: any) {
             <Pressable
               key={key}
               onPress={() => selectPhoneme(key)}
+              onLayout={(e) => { chipX.current[key] = e.nativeEvent.layout.x; }}
               style={[styles.chip, on && styles.chipOn, locked && styles.chipLocked]}
             >
               <Text style={[styles.chipText, on && styles.chipTextOn]}>{WORD_BANK[key].label}</Text>
-              {locked && <Text style={styles.chipLock}>🔒</Text>}
+              {locked && <Text style={[styles.chipLock, on && styles.chipTextOn]}>🔒</Text>}
             </Pressable>
           );
         })}
@@ -276,15 +294,22 @@ const styles = StyleSheet.create({
   rewardCellGems: { fontSize: 10.5, fontWeight: "700", color: C.inkSoft },
   rewardCellGemsDone: { color: C.jadeDeep },
   sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.5, color: C.inkSoft, marginBottom: 10 },
-  chipRow: { gap: 8, paddingRight: 8 },
+  chipRow: { gap: 8, paddingRight: 8, paddingVertical: 2 },
   chip: {
     flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1.5, borderColor: C.line,
-    borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14, backgroundColor: "#fff",
+    borderRadius: 999, paddingVertical: 9, paddingHorizontal: 16, backgroundColor: "#fff",
   },
-  chipOn: { borderColor: C.jade, backgroundColor: "#E9F5F1" },
+  // Prima il chip selezionato aveva solo un bordo verde e uno sfondo appena diverso dal
+  // bianco — troppo poco per essere notato al volo mentre si sceglie il suono. Ora è pieno
+  // (stesso trattamento del badge "suono" qui sotto), con un'ombra leggera per farlo
+  // "saltare fuori" dalla riga.
+  chipOn: {
+    borderColor: C.jade, backgroundColor: C.jade,
+    shadowColor: C.jade, shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3,
+  },
   chipLocked: { opacity: 0.6 },
-  chipText: { fontSize: 13, fontWeight: "700", color: C.ink },
-  chipTextOn: { color: C.jade },
+  chipText: { fontSize: 13.5, fontWeight: "700", color: C.ink },
+  chipTextOn: { color: "#fff" },
   chipLock: { fontSize: 11 },
   chevron: { fontSize: 18, color: C.line },
   pathHeader: {
