@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import IntroSplashScreen from "./src/screens/IntroSplashScreen";
 import GiochiScreen from "./src/screens/GiochiScreen";
+import LivelliScreen from "./src/screens/LivelliScreen";
 import LalloScreen from "./src/screens/LalloScreen";
 import AlbumScreen from "./src/screens/AlbumScreen";
 import ProgressiScreen from "./src/screens/ProgressiScreen";
@@ -212,6 +213,7 @@ export default function App() {
           <Stack.Screen name="Auth" component={AuthScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
+          <Stack.Screen name="Livelli" component={LivelliScreen} />
           <Stack.Screen name="Session" component={SessionScreen} />
           <Stack.Screen name="AdultGate" component={AdultGateScreen} options={{ presentation: "modal" }} />
           <Stack.Screen name="ParentDashboard" component={ParentDashboardScreen} />
