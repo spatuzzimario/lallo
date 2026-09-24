@@ -202,7 +202,7 @@ export default function SessionScreen({ navigation, route }: any) {
         <MemoryGame phonemeKey={phonemeKey} level={params.level} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "registratore" && (
-        <Registratore phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
+        <Registratore navigation={navigation} phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "coppie" && (
         <CoppieMinime phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
@@ -507,8 +507,8 @@ const PRODUCTION_ROUNDS = 3;
    vedi audioRecordingConsent su ChildProfile. Senza consenso il tasto resta bloccato.
    Auto-avanza tra le parole (3 a sessione): dopo ogni registrazione+riascolto non serve
    più un tap manuale su "Fatto" — prima non era chiaro quando l'esercizio fosse finito. */
-function Registratore({ phonemeKey, position, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
+function Registratore({ navigation, phonemeKey, position, onAttempt, onDone }: {
+  navigation: any; phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const meta = WORD_BANK[phonemeKey];
@@ -526,7 +526,11 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   function playModel() { speakWord(word.parola); }
 
   function toggleRecord() {
-    if (!hasConsent || justDone) return;
+    if (justDone) return;
+    if (!hasConsent) {
+      navigation.navigate("MicConsent");
+      return;
+    }
     if (!recording) {
       setRecording(true);
     } else {
@@ -554,8 +558,7 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
       </Text>
       {!hasConsent && (
         <Text style={styles.warnNote}>
-          Serve il consenso di un genitore per registrare la voce. Vai su Progressi → Privacy
-          e registrazioni per attivarlo.
+          Tocca il microfono per attivarlo: serve il consenso di un genitore per registrare la voce.
         </Text>
       )}
       <View style={styles.recRow}>
@@ -565,7 +568,7 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
         <Pressable
           style={[styles.recMicBtn, recording && styles.recMicBtnActive, !hasConsent && styles.recMicBtnLocked]}
           onPress={toggleRecord}
-          disabled={!hasConsent || justDone}
+          disabled={justDone}
         >
           <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : recording ? "⏸" : "🎤"}</Text>
         </Pressable>

@@ -159,7 +159,10 @@ export default function LalloScreen({ navigation }: any) {
   const player = useAudioPlayer(recordedUri);
 
   async function startRecording() {
-    if (!hasConsent) return;
+    if (!hasConsent) {
+      navigation.navigate("MicConsent");
+      return;
+    }
     const perm = await requestRecordingPermissionsAsync();
     if (!perm.granted) {
       setPermissionDenied(true);
@@ -253,8 +256,7 @@ export default function LalloScreen({ navigation }: any) {
       <View style={styles.talkCard}>
         {!hasConsent && (
           <Text style={styles.warnNote}>
-            Serve il consenso di un genitore per registrare la voce. Vai su Progressi → Privacy e registrazioni per
-            attivarlo.
+            Tocca il microfono per attivarlo: serve il consenso di un genitore per registrare la voce.
           </Text>
         )}
         {permissionDenied && (
@@ -264,7 +266,6 @@ export default function LalloScreen({ navigation }: any) {
           <Pressable
             style={[styles.micBtn, recorderState.isRecording && styles.micBtnActive, !hasConsent && styles.micBtnLocked]}
             onPress={recorderState.isRecording ? stopRecording : startRecording}
-            disabled={!hasConsent}
           >
             <Text style={styles.micBtnText}>{!hasConsent ? "🔒" : recorderState.isRecording ? "⏸" : "🎤"}</Text>
           </Pressable>
@@ -278,7 +279,7 @@ export default function LalloScreen({ navigation }: any) {
         </View>
         <Text style={styles.talkCap}>
           {!hasConsent
-            ? " "
+            ? "Tocca il microfono per attivarlo"
             : recorderState.isRecording
             ? "Sto registrando… tocca di nuovo per fermare"
             : recordedUri

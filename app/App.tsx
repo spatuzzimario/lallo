@@ -34,6 +34,7 @@ import {
 import PaywallScreen from "./src/screens/PaywallScreen";
 import AuthScreen from "./src/screens/AuthScreen";
 import { PrivacyConsentScreen } from "./src/screens/ParentScreens";
+import MicConsentScreen from "./src/screens/MicConsentScreen";
 // NOTA: TherapistAssignScreen è stato rimosso da questa app su richiesta esplicita —
 // il logopedista avrà un'app separata con login proprio. Il file resta nel
 // repository (src/screens/TherapistAssignScreen.tsx) per essere riusato lì,
@@ -221,6 +222,7 @@ export default function App() {
           <Stack.Screen name="Livelli" component={LivelliScreen} />
           <Stack.Screen name="Session" component={SessionScreen} />
           <Stack.Screen name="PrivacyConsent" component={PrivacyConsentScreen} />
+          <Stack.Screen name="MicConsent" component={MicConsentScreen} options={{ presentation: "modal" }} />
         </Stack.Navigator>
       </NavigationContainer>
       {showIntro && <IntroSplashScreen onDone={() => setShowIntro(false)} />}
