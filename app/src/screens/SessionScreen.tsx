@@ -57,6 +57,26 @@ function say(text: string) {
   Speech.speak(text, { language: "it-IT", pitch: 1.05, rate: 0.92 });
 }
 
+// Feedback sonoro per i giochi a scelta (Caccia al suono, Ascolta e scegli, Coppie minime,
+// Memory): un suono immediato al tocco, prima ancora della pronuncia della parola, così il
+// bambino sa subito se ha indovinato. "Sbagliato" resta incoraggiante, mai punitivo (CLAUDE.md
+// §8: "mai punire l'errore, celebrare ogni tentativo") — niente buzzer, solo un invito a riprovare.
+function useFeedbackSounds() {
+  const correctPlayer = useAudioPlayer(require("../../assets/audio/lines/sess_risposta_giusta.mp3"));
+  const wrongPlayer = useAudioPlayer(require("../../assets/audio/lines/sess_risposta_sbagliata.mp3"));
+
+  function playCorrect() {
+    correctPlayer.seekTo(0);
+    correctPlayer.play();
+  }
+  function playWrong() {
+    wrongPlayer.seekTo(0);
+    wrongPlayer.play();
+  }
+
+  return { playCorrect, playWrong };
+}
+
 export default function SessionScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const params: SessionParams = route.params;
@@ -242,6 +262,7 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const meta = WORD_BANK[phonemeKey];
   const targetCount = tiles.filter((t) => t.correct).length;
+  const { playCorrect, playWrong } = useFeedbackSounds();
 
   useEffect(() => {
     say(`Trova le ${targetCount} parole con il suono ${meta.label}`);
@@ -252,7 +273,8 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
     const next = { ...picked, [t.parola]: t.correct };
     setPicked(next);
     onAttempt(t.parola, t.correct);
-    say(t.parola);
+    if (t.correct) playCorrect(); else playWrong();
+    setTimeout(() => say(t.parola), 700);
 
     const targetsFound = tiles.filter((x) => x.correct && next[x.parola] === true).length;
     const allAnswered = Object.keys(next).length === tiles.length;
@@ -279,6 +301,8 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
             >
               <WordVisual parola={t.parola} emoji={t.emoji} size={112} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{t.parola}</Text>
+              {state === true && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {state === false && <Text style={styles.feedbackBadge}>🔄</Text>}
             </Pressable>
           );
         })}
@@ -380,7 +404,9 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
 
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
+  const [mismatched, setMismatched] = useState<string[]>([]);
   const [firstUid, setFirstUid] = useState<string | null>(null);
+  const { playCorrect, playWrong } = useFeedbackSounds();
 
   useEffect(() => {
     say(`Trova le coppie con il suono ${meta.label}`);
@@ -394,14 +420,20 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
     if (!firstUid) { setFirstUid(card.uid); return; }
     const first = cards.find((c) => c.uid === firstUid)!;
     if (first.parola === card.parola) {
+      playCorrect();
       setMatched((m) => [...m, card.parola]);
       onAttempt(card.parola, true);
       setFirstUid(null);
       setFlipped((f) => f.filter((u) => u !== firstUid && u !== card.uid));
       if (matched.length + 1 === 3) setTimeout(onDone, 900);
     } else {
+      playWrong();
+      setMismatched([firstUid, card.uid]);
       onAttempt(card.parola, false);
-      setTimeout(() => setFlipped((f) => f.filter((u) => u !== firstUid && u !== card.uid)), 700);
+      setTimeout(() => {
+        setFlipped((f) => f.filter((u) => u !== firstUid && u !== card.uid));
+        setMismatched([]);
+      }, 700);
       setFirstUid(null);
     }
   }
@@ -412,13 +444,26 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
       <View style={styles.memGrid}>
         {cards.map((c) => {
           const shown = flipped.includes(c.uid) || matched.includes(c.parola);
+          const isMatched = matched.includes(c.parola);
+          const isMismatched = mismatched.includes(c.uid);
           return (
-            <Pressable key={c.uid} onPress={() => handleFlip(c)} style={[styles.memCard, shown && styles.memCardFlipped]}>
+            <Pressable
+              key={c.uid}
+              onPress={() => handleFlip(c)}
+              style={[
+                styles.memCard,
+                shown && styles.memCardFlipped,
+                isMatched && styles.memCardMatched,
+                isMismatched && styles.memCardWrong,
+              ]}
+            >
               {shown ? (
                 <WordVisual parola={c.parola} emoji={c.emoji} size={80} textStyle={styles.memCardText} />
               ) : (
                 <Text style={styles.memCardText}>?</Text>
               )}
+              {isMatched && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {isMismatched && <Text style={styles.feedbackBadge}>🔄</Text>}
             </Pressable>
           );
         })}
@@ -570,6 +615,7 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
 }) {
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  const { playCorrect, playWrong } = useFeedbackSounds();
 
   const roundData = useMemo(() => {
     const pool = wordsFor(phonemeKey, position);
@@ -603,6 +649,7 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
     setPicked(w.parola);
     const correct = w.parola === roundData.target.parola;
     onAttempt(w.parola, correct);
+    if (correct) playCorrect(); else playWrong();
     setTimeout(() => {
       setPicked(null);
       if (round + 1 < ASCOLTA_ROUNDS) setRound((r) => r + 1);
@@ -622,18 +669,18 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
         {roundData.options.map((w) => {
           const isTarget = w.parola === roundData.target.parola;
           const wasPicked = picked === w.parola;
+          const showCorrect = picked !== null && isTarget;
+          const showWrong = wasPicked && !isTarget;
           return (
             <Pressable
               key={w.parola}
               onPress={() => pick(w)}
-              style={[
-                styles.tile,
-                picked !== null && isTarget && styles.tileCorrect,
-                wasPicked && !isTarget && styles.tileWrong,
-              ]}
+              style={[styles.tile, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
             >
               <WordVisual parola={w.parola} emoji={w.emoji} size={90} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{w.parola}</Text>
+              {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
             </Pressable>
           );
         })}
@@ -654,6 +701,7 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   const [round, setRound] = useState(0);
   const target = pair[round % 2];
   const [picked, setPicked] = useState<string | null>(null);
+  const { playCorrect, playWrong } = useFeedbackSounds();
 
   function playTarget() { say(target.parola); }
 
@@ -671,7 +719,8 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
     setPicked(word.parola);
     const correct = word.parola === target.parola;
     onAttempt(word.parola, correct);
-    say(word.parola);
+    if (correct) playCorrect(); else playWrong();
+    setTimeout(() => say(word.parola), 700);
     setTimeout(() => {
       setPicked(null);
       if (round + 1 < PRODUCTION_ROUNDS) setRound((r) => r + 1);
@@ -694,18 +743,18 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
         {pair.map((w) => {
           const state = picked === null ? null : w.parola === picked;
           const isTarget = w.parola === target.parola;
+          const showCorrect = picked !== null && isTarget;
+          const showWrong = state === true && !isTarget;
           return (
             <Pressable
               key={w.parola}
               onPress={() => pick(w)}
-              style={[
-                styles.tile,
-                picked !== null && isTarget && styles.tileCorrect,
-                state === true && !isTarget && styles.tileWrong,
-              ]}
+              style={[styles.tile, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
             >
               <WordVisual parola={w.parola} emoji={w.emoji} size={112} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{w.parola.toUpperCase()}</Text>
+              {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
             </Pressable>
           );
         })}
@@ -835,12 +884,19 @@ const styles = StyleSheet.create({
   tileWrong: { borderColor: "#FF6A4D", backgroundColor: "#FDECE7" },
   tileEmoji: { fontSize: 30 },
   tileWord: { fontWeight: "700", marginTop: 4 },
+  // Iconcina di rinforzo sulla tile, in aggiunta al colore: un bambino che non legge ancora
+  // riconosce comunque "giusto/riprova" a colpo d'occhio. Mai una X: coerente con "mai punire
+  // l'errore" (CLAUDE.md §8) — 🔄 invita a riprovare invece di segnalare una colpa.
+  feedbackBadge: { position: "absolute", top: 6, right: 6, fontSize: 20 },
+  feedbackBadgeCorrect: { color: "#0E5C53", fontWeight: "800" },
   memGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8 },
   memCard: {
     width: "30%", aspectRatio: 1, borderRadius: 13, borderWidth: 2, borderColor: "#D9CEBC",
     backgroundColor: "#137A6E", alignItems: "center", justifyContent: "center", marginBottom: 8,
   },
   memCardFlipped: { backgroundColor: "#fff", borderColor: "#137A6E" },
+  memCardMatched: { borderColor: "#137A6E", backgroundColor: "#E9F5F1" },
+  memCardWrong: { borderColor: "#FF6A4D", backgroundColor: "#FDECE7" },
   memCardText: { fontSize: 24 },
   recEmoji: { fontSize: 60, marginTop: 20 },
   recWord: { fontSize: 34, fontWeight: "800", marginTop: 6 },
