@@ -30,24 +30,21 @@ found").
   scivolo (SC), treno (gruppo TR), casa (controllo base) — tutte corrette
   tranne "gnomo" con le impostazioni di default (vedi sotto).
 
-## Modelli — due usi diversi
+## Modelli — un solo modello per tutto
 
-- **Parole modello isolate** → `eleven_v3`. Necessario per i casi limite
-  (es. "gnomo" pronunciato male con `eleven_multilingual_v2` da solo,
-  corretto passando a `eleven_v3` senza bisogno di aggiungere un articolo
-  davanti). Usare `eleven_v3` per tutte le ~445 parole del word bank per
-  coerenza, anche se la maggior parte avrebbe funzionato anche con
-  `eleven_multilingual_v2`.
-- **Righe di personalità/istruzioni** (frasi lunghe: intro, consegne dei
-  giochi, incoraggiamenti) → `eleven_multilingual_v2`. Validato bene sulla
-  frase intro completa di Lallo (~15 secondi).
+Il pilota (fonema R) aveva usato uno split a due modelli: `eleven_v3` per
+le parole isolate, `eleven_multilingual_v2` per le righe di personalità.
+Dopo la validazione del pilota, decisione dell'utente: **`eleven_v3` per
+tutto** (parole isolate e frasi/template/righe di personalità), per
+semplicità di pipeline e coerenza timbrica. Tutta la produzione degli
+altri 24 fonemi (parole target, frasi guida caccia/memory/livelli, righe
+titolo album) è stata generata con `eleven_v3`.
 
 Parametri di chiamata di riferimento (tool `creative_generate_speech` del
 connettore ElevenLabs):
 
 ```
-model_id: "eleven_v3"              # parole isolate
-model_id: "eleven_multilingual_v2" # frasi/personalità
+model_id: "eleven_v3"
 voice_id: "3DPhHWXDY263XJ1d2EPN"
 prompt: "<testo italiano da leggere>"
 ```
@@ -55,11 +52,10 @@ prompt: "<testo italiano da leggere>"
 ## Costo
 
 A differenza di Higgsfield (costo fisso per generazione), ElevenLabs
-addebita per durata/caratteri: ~5-8 crediti per una parola isolata,
-~200 crediti per una frase lunga (~15s). Per l'intera produzione (539
-clip: 445 parole + 94 righe fisse/template) il totale stimato è
-nell'ordine di alcune migliaia di crediti — verificare il piano/i crediti
-disponibili prima di lanciare la produzione completa.
+addebita per durata/caratteri: ~30-50 crediti per una parola isolata,
+~30-130 crediti per una riga/frase template con `eleven_v3`. Produzione
+completa: 441 parole + 94 righe = 535 clip, qualche migliaio di crediti
+in totale.
 
 ## Chi è Lallo quando parla
 
@@ -78,12 +74,15 @@ con CLAUDE.md §8: "mai punire l'errore, celebrare ogni tentativo").
 ## Due modalità di lettura — distinzione importante
 
 1. **Lallo-che-parla-con-te** (intro, istruzioni, incoraggiamento): piena
-   personalità, calore, ritmo giocoso. Modello `eleven_multilingual_v2`.
+   personalità, calore, ritmo giocoso.
 2. **Lallo-che-pronuncia-la-parola-modello** (il fonema/la parola target che
    il bambino deve imitare): energia abbassata apposta — voce chiara, ritmo
    naturale, zero coloriture che possano confondere l'articolazione. Questa è
    la parte clinicamente sensibile: un errore di pronuncia qui modella
-   un'articolazione scorretta al bambino. Modello `eleven_v3`.
+   un'articolazione scorretta al bambino.
+
+Entrambe le modalità usano `eleven_v3` (vedi sopra); la distinzione è nel
+testo/prompt scritto, non nel modello.
 
 ## Linee guida di scrittura del testo
 
@@ -96,25 +95,35 @@ con CLAUDE.md §8: "mai punire l'errore, celebrare ogni tentativo").
 - Mai umorismo che richieda un tono sarcastico o ambiguo — un bambino di 3-6
   anni prende tutto alla lettera.
 
-## Pilota completato
+## Produzione completa
 
-Il fonema R (37 parole, iniziale + mediana) e le 18 righe fisse/template
-sono stati generati per intero con Linda Fiore/eleven_v3 e validati
-dall'utente — file in `app/assets/audio/parole/` e `app/assets/audio/lines/`.
-Nessun caso ha richiesto l'articolo come workaround dopo il passaggio a
-`eleven_v3`. Restano da generare gli altri 24 fonemi (~408 parole) più i
-75 template sugli altri fonemi e le 4 righe titolo album — stessa
-pipeline: `creative_generate_speech` con `eleven_v3`/parola isolata,
-download diretto da `storage.googleapis.com` (raggiungibile senza
-passare dall'utente), salvataggio in `app/assets/audio/parole/<slug>.mp3`.
+Pilota (fonema R, 37 parole + 18 righe fisse/template) validato
+dall'utente, poi produzione estesa a tutti gli altri 24 fonemi su
+istruzione esplicita dell'utente ("eleven V3 per tutto"). Stato finale:
+
+- **441 parole target** in `app/assets/audio/parole/<slug>.mp3` — tutti i
+  25 fonemi del word bank (`app/src/constants/wordBank.ts`), posizione
+  iniziale + mediana.
+- **94 righe fisse/template** in `app/assets/audio/lines/<slug>.mp3` —
+  18 righe di personalità/UI del pilota, 72 frasi guida
+  (`tpl_caccia_<fonema>`, `tpl_memory_<fonema>`, `tpl_livelli_<fonema>` ×
+  24 fonemi non-R) e le 4 righe di congratulazioni per i titoli album
+  (Esploratore, Cercatore d'oro, Grande esploratore, Maestro delle parole).
+
+Tutto generato con `creative_generate_speech` (connettore nativo
+ElevenLabs), voce Linda Fiore, modello `eleven_v3`, download diretto da
+`storage.googleapis.com` (raggiungibile senza passare dall'utente),
+salvato in `app/assets/audio/parole/` o `app/assets/audio/lines/` a
+seconda del tipo di contenuto. Nessun caso ha richiesto l'articolo come
+workaround.
 
 ## Da validare prima dell'uso clinico reale
 
 - **Pronuncia dei fonemi italiani target** (S/Z, SC/SCI, GN, GLI,
   TR/STR/PR...) va controllata da un madrelingua italiano — idealmente la
   logopedista di riferimento del progetto — fonema per fonema, non solo a
-  campione in sessione di sviluppo. Il pilota copre solo R per intero; gli
-  altri 24 fonemi sono ancora da generare e validare.
+  campione in sessione di sviluppo. Tutti i 25 fonemi sono ora generati;
+  la validazione clinica sistematica resta da fare prima dell'uso reale.
 - Se una parola specifica risulta pronunciata in modo ambiguo o innaturale
   con `eleven_v3`, va segnalata: si rigenera puntualmente con un testo
   diverso (es. `eleven_multilingual_v2`, o un articolo davanti come
