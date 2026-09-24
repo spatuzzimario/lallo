@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lallo — i compiti a casa che i tuoi pazienti faranno davvero</title>
 <meta name="description" content="Lallo è lo strumento dei compiti a casa del logopedista: tu imposti fonema, posizione ed esercizi, il bambino li allena a casa con giochi, e tu vedi i progressi.">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -42,7 +44,7 @@
   nav{position:sticky;top:0;z-index:50;background:rgba(251,246,238,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
   .brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque";font-weight:800;font-size:21px}
-  .brand .mascot{width:30px;height:30px}
+  .brand .mascot{width:30px;height:30px;object-fit:contain;border-radius:8px}
   .nav-links{display:flex;gap:26px;align-items:center;font-weight:500;font-size:15px;color:var(--ink-soft)}
   .nav-links a:hover{color:var(--jade)}
   .nav-links .navcta{color:#fff}
@@ -95,13 +97,7 @@
   .card h4{font-family:"Figtree";font-weight:700;font-size:14.5px}
   .card .meta{font-size:11.5px;color:var(--ink-soft)}
   .card .chev{margin-left:auto;color:var(--line);font-size:18px}
-  .done{background:var(--jade);color:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-size:12px;margin-left:auto;flex-shrink:0}
-
   .sec-label{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:8px 2px 10px}
-  .reward{background:linear-gradient(135deg,var(--sun),#FFB01F);border-radius:18px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
-  .reward .big{font-family:"Bricolage Grotesque";font-weight:800;font-size:26px;color:var(--ink)}
-  .stickers{display:flex;gap:5px;margin-left:auto}
-  .stickers span{font-size:19px}
 
   /* exercise interior */
   .ex-head{display:flex;align-items:center;gap:10px;margin:4px 0 12px}
@@ -194,33 +190,67 @@
   .seq-card.wrong{border-color:var(--coral);background:#FDECE7;animation:shake .3s}
   .seq-story{background:var(--mist);border-radius:14px;padding:13px 14px;font-size:13.5px;color:var(--ink);min-height:52px;line-height:1.45}
 
-  /* pappagallo Lallo (viral) */
-  .gal-feat{border:2px solid var(--coral)!important;background:#FDECE7!important}
-  .gal-feat .meta{color:var(--coral-deep)!important;font-weight:700}
-  .pp-fig{text-align:center;margin:6px 0 4px}
-  .pp-emoji{display:block;font-size:44px;line-height:1}
-  .pp-word{font-family:"Bricolage Grotesque";font-weight:800;font-size:26px;color:var(--ink)}
-  .pp-parrot{text-align:center;font-size:70px;line-height:1;margin:6px 0 2px;transition:transform .1s}
-  .pp-parrot.talk{animation:ppwiggle .5s ease}
-  @keyframes ppwiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-8deg) scale(1.12)}75%{transform:rotate(8deg) scale(1.12)}}
-  .pp-cap{text-align:center;font-size:13px;color:var(--ink-soft);min-height:20px;margin-bottom:12px}
-  .pp-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
-  .pp-btn{border:none;border-radius:14px;padding:13px 8px;font-family:"Figtree";font-weight:700;font-size:14px;cursor:pointer;transition:transform .12s}
-  .pp-btn.mic{background:var(--jade);color:#fff;box-shadow:0 4px 0 var(--jade-deep)}
-  .pp-btn.rep{background:var(--coral);color:#fff;box-shadow:0 4px 0 var(--coral-deep)}
-  .pp-btn:active{transform:translateY(2px)}
-  .pp-share{width:100%;background:var(--sun);color:var(--ink);border:none;border-radius:14px;padding:12px;font-family:"Figtree";font-weight:700;font-size:14px;cursor:pointer}
-  .pp-share:active{transform:translateY(2px)}
-  /* milestone card (viral) */
-  .milestone{background:linear-gradient(135deg,var(--jade),var(--jade-deep));border-radius:18px;padding:16px;margin-bottom:14px;color:#fff;text-align:center}
-  .milestone .ms-emoji{font-size:34px;line-height:1}
-  .milestone .ms-txt{font-family:"Bricolage Grotesque";font-weight:800;font-size:16px;margin:6px 0 2px}
-  .milestone .ms-sub{font-size:12px;opacity:.85;margin-bottom:12px}
-  .ms-share{background:var(--sun);color:var(--ink);border:none;border-radius:12px;padding:10px 18px;font-family:"Figtree";font-weight:700;font-size:13.5px;cursor:pointer}
-  .ms-share:active{transform:translateY(2px)}
-  /* child toast */
-  .ctoast{position:absolute;left:16px;right:16px;bottom:74px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;text-align:center;z-index:30;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
-  .ctoast.show{opacity:1;transform:none}
+
+  /* ---------- MAPPA DEI LIVELLI (tab Giochi, com'è nell'app oggi) ---------- */
+  .reward-strip{display:flex;gap:5px;margin-bottom:14px}
+  .reward-cell{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:7px 2px;text-align:center}
+  .reward-cell .re{font-size:15px;display:block;line-height:1}
+  .reward-cell .rg{font-size:9px;color:var(--ink-soft);font-weight:700;display:block;margin-top:2px}
+  .reward-cell.done{background:var(--mist);border-color:var(--jade)}
+  .reward-cell.today{border-color:var(--sun);border-width:2px}
+  .pchip-row{display:flex;gap:7px;overflow-x:auto;margin:2px 0 14px;padding-bottom:2px}
+  .pchip-row::-webkit-scrollbar{display:none}
+  .pchip{flex-shrink:0;font-family:"Figtree";font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);cursor:default;display:flex;align-items:center;gap:4px}
+  .pchip.sel{background:var(--jade);color:#fff;border-color:var(--jade)}
+  .path-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .path-badge{width:34px;height:34px;border-radius:11px;background:var(--mist);color:var(--jade-deep);display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .path-head h4{font-family:"Bricolage Grotesque";font-weight:700;font-size:14.5px}
+  .path-head .sub{font-size:11px;color:var(--ink-soft)}
+  .node-row{display:flex;align-items:center;gap:11px;padding:9px 0;cursor:pointer}
+  .node-row.locked{cursor:default;opacity:.55}
+  .node-circle{width:32px;height:32px;border-radius:50%;background:var(--mist);color:var(--jade-deep);display:grid;place-items:center;font-weight:800;font-size:13.5px;flex-shrink:0}
+  .node-circle.mastered{background:var(--sun);color:var(--ink)}
+  .node-circle.locked{background:var(--line);color:#fff}
+  .node-label{font-weight:700;font-size:13.5px}
+  .node-sub{font-size:11px;color:var(--ink-soft);margin-top:1px}
+  .node-chev{margin-left:auto;color:var(--line);font-size:18px}
+  .node-connector{width:2px;height:13px;background:var(--line);margin-left:15px}
+  .node-games{padding:2px 0 6px 44px;display:flex;flex-direction:column;gap:8px}
+
+  /* sillabe isolate (Livello 1) */
+  .syl-wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0}
+  .syl-tile{width:66px;height:66px;border-radius:17px;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-family:"Bricolage Grotesque";font-weight:800;font-size:16px;cursor:pointer;transition:all .15s;color:var(--ink)}
+  .syl-tile.done{border-color:var(--jade);background:#E9F5F1;color:var(--jade-deep)}
+  .syl-tile:active{transform:scale(.94)}
+
+  /* tab Lallo (tamagotchi) */
+  .pet-card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:16px;text-align:center;margin-bottom:16px}
+  .pet-img{width:150px;height:150px;object-fit:contain;margin:0 auto;display:block;cursor:pointer;transition:transform .12s}
+  .pet-img.poke{animation:petpoke .5s ease}
+  @keyframes petpoke{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.12) rotate(-6deg)}60%{transform:scale(1.12) rotate(6deg)}}
+  .pet-img.eat{animation:peteat .35s ease}
+  @keyframes peteat{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+  .pet-mood-title{font-family:"Bricolage Grotesque";font-weight:800;font-size:16px;margin-top:8px}
+  .pet-mood-sub{font-size:12px;color:var(--ink-soft);margin:2px 0 10px}
+  .food-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;touch-action:none}
+  .food-tile{width:56px;height:56px;border-radius:14px;border:1.5px solid var(--line);background:#fff;display:grid;place-items:center;cursor:grab;position:relative;touch-action:none;user-select:none}
+  .food-tile img{width:38px;height:38px;object-fit:contain;pointer-events:none}
+  .food-tile.fed{border-color:var(--jade);background:#E9F5F1}
+  .food-tile.dragging{z-index:20;cursor:grabbing;box-shadow:8px 10px 0 rgba(31,46,43,.10)}
+  .talk-card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:16px;text-align:center}
+  .talk-row{display:flex;gap:14px;justify-content:center;margin-bottom:10px}
+
+  /* tab Album */
+  .alb-sub{font-size:12.5px;color:var(--ink-soft);margin:3px 0 12px}
+  .alb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .alb-tile{aspect-ratio:1;border:1.5px solid var(--line);border-radius:14px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;position:relative;padding:4px;transition:all .15s}
+  .alb-tile img{width:38px;height:38px;object-fit:contain;opacity:.4;transition:opacity .15s}
+  .alb-tile.caught{border-color:var(--jade);background:var(--mist)}
+  .alb-tile.caught img{opacity:1}
+  .alb-tile .w{font-size:9.5px;color:var(--ink-soft);text-transform:capitalize}
+  .alb-tile .chk{position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:var(--jade);color:#fff;font-size:9px;display:none;align-items:center;justify-content:center}
+  .alb-tile.caught .chk{display:flex}
+  .alb-banner{background:var(--sun);border-radius:12px;padding:9px;margin-bottom:10px;text-align:center;font-weight:800;font-size:12.5px;color:var(--ink)}
 
   /* ---------- SECTIONS ---------- */
   section.band{padding:80px 0}
@@ -265,6 +295,14 @@
 
   .ita-note{margin-top:40px;background:var(--paper-2);border-left:4px solid var(--coral);border-radius:0 16px 16px 0;padding:22px 24px}
   .ita-note b{font-family:"Bricolage Grotesque"}
+
+  /* feature band: Lallo tamagotchi + Album */
+  .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:46px}
+  .feat-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);text-align:center}
+  .feat-card img{width:110px;height:110px;object-fit:contain;margin-bottom:14px}
+  .feat-card h3{font-size:20px;font-weight:700;margin-bottom:8px}
+  .feat-card p{color:var(--ink-soft);font-size:14.5px}
+  @media(max-width:760px){.feat-grid{grid-template-columns:1fr}}
 
   /* anti-threat */
   .center-band{background:var(--ink);color:var(--paper)}
@@ -331,15 +369,7 @@
 <nav>
   <div class="wrap nav-in">
     <div class="brand">
-      <svg class="mascot" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="16" cy="18" rx="9" ry="10" fill="#137A6E"/>
-        <ellipse cx="16" cy="20" rx="5.5" ry="6.5" fill="#FFC53D"/>
-        <circle cx="12.5" cy="11" r="6" fill="#FF6A4D"/>
-        <circle cx="11" cy="10" r="2.4" fill="#fff"/>
-        <circle cx="10.6" cy="10.4" r="1.1" fill="#1F2E2B"/>
-        <path d="M6.5 11 Q3.5 11.5 5.5 14 Q7 13 8 12 Z" fill="#FFC53D"/>
-        <path d="M19 16 Q24 14 23 20 Q20 19 18.5 18 Z" fill="#0E5C53"/>
-      </svg>
+      <img class="mascot" src="img/lallo-icon-32.webp" alt="">
       Lallo
     </div>
     <div class="nav-links">
@@ -381,7 +411,7 @@
             <!-- ===== CHILD VIEW ===== -->
             <div id="view-child" style="display:flex;flex-direction:column;flex:1;min-height:0">
               <div class="app-top">
-                <div><div class="who">Ciao, Marco! 👋</div><div class="sub">Suono di oggi: la R</div></div>
+                <div><div class="who" id="topTitle">Giochi</div></div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <button class="snd-btn" id="sndBtn" onclick="toggleSound(this)" title="Attiva/disattiva audio">🔊</button>
                   <div class="pill">🔥 4 giorni</div>
@@ -389,28 +419,78 @@
               </div>
               <div class="app-body">
 
-                <!-- OGGI -->
-                <div class="screen on" data-c="oggi">
-                  <div class="reward">
-                    <div><div class="big">3</div><div style="font-size:11px;color:var(--ink)">giochi per oggi</div></div>
-                    <div class="stickers"><span>⭐</span><span>🦜</span><span>🎖️</span></div>
+                <!-- GIOCHI (mappa dei livelli — com'è nell'app oggi, niente più tab "Oggi") -->
+                <div class="screen on" data-c="giochi">
+                  <div class="who" style="margin-bottom:2px">Ciao, Marco! 👋</div>
+                  <div class="sub" style="margin-bottom:16px">Scegli un suono e continua da dove eri</div>
+
+                  <div class="sec-label">RICOMPENSA DEL GIORNO</div>
+                  <div class="reward-strip">
+                    <div class="reward-cell done"><span class="re">✅</span><span class="rg">5</span></div>
+                    <div class="reward-cell done"><span class="re">✅</span><span class="rg">10</span></div>
+                    <div class="reward-cell done"><span class="re">✅</span><span class="rg">10</span></div>
+                    <div class="reward-cell today"><span class="re">💎</span><span class="rg">15</span></div>
+                    <div class="reward-cell"><span class="re">💎</span><span class="rg">15</span></div>
+                    <div class="reward-cell"><span class="re">💎</span><span class="rg">20</span></div>
+                    <div class="reward-cell"><span class="re">💎</span><span class="rg">30</span></div>
                   </div>
-                  <div class="sec-label">Da fare oggi</div>
-                  <div class="card" onclick="openEx('caccia','oggi')">
-                    <div class="ic" style="background:#FDECE7">🔎</div>
-                    <div><h4>Caccia al suono</h4><div class="meta">R iniziale · livello 3</div></div>
-                    <div class="chev">›</div>
+
+                  <div class="sec-label">SUONO</div>
+                  <div class="pchip-row">
+                    <div class="pchip sel">R</div>
+                    <div class="pchip">S</div>
+                    <div class="pchip">SC/SCI 🔒</div>
+                    <div class="pchip">GN 🔒</div>
+                    <div class="pchip">TR/STR 🔒</div>
                   </div>
-                  <div class="card" onclick="openEx('rec','oggi')">
-                    <div class="ic" style="background:#E9F5F1">🎤</div>
-                    <div><h4>Registratore</h4><div class="meta">R intervocalica · livello 3</div></div>
-                    <div class="chev">›</div>
+
+                  <div class="path-head">
+                    <div class="path-badge">R</div>
+                    <div><h4>Giochi per il suono R</h4><div class="sub">Tutti i giochi di questo percorso allenano questo suono</div></div>
                   </div>
-                  <div class="card" onclick="openEx('memory','oggi')">
-                    <div class="ic" style="background:#FFF3D6">🧩</div>
-                    <div><h4>Memory dei suoni</h4><div class="meta">Discriminazione · livello 2–3</div></div>
-                    <div class="chev">›</div>
+                  <div id="nodeMap"></div>
+                </div>
+
+                <!-- LIVELLO 1 · SUONO ISOLATO (sillabe, non più una lista di giochi) -->
+                <div class="screen" data-c="sillabe">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Livello 1 · Suono isolato</div></div>
+                  <div class="ex-q">Tocca ogni sillaba e ripetila ad alta voce 🦜</div>
+                  <div class="syl-wrap">
+                    <div class="syl-tile" onclick="sylTap(this,'RA')">RA</div>
+                    <div class="syl-tile" onclick="sylTap(this,'RE')">RE</div>
+                    <div class="syl-tile" onclick="sylTap(this,'RI')">RI</div>
+                    <div class="syl-tile" onclick="sylTap(this,'RO')">RO</div>
+                    <div class="syl-tile" onclick="sylTap(this,'RU')">RU</div>
                   </div>
+                  <div class="rec-cap" id="sylCap">Tocca le sillabe una per una</div>
+                </div>
+
+                <!-- RIPETI (il più semplice: nessuna risposta sbagliata) -->
+                <div class="screen" data-c="ripeti">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Ripeti</div></div>
+                  <div class="ex-q">Ascolta e ripeti ad alta voce 🦜</div>
+                  <div style="text-align:center;font-size:56px;line-height:1;margin:8px 0 2px" id="ripEmoji">🐸</div>
+                  <div class="rec-word" id="ripWord">rana</div>
+                  <div class="rec-cap" style="margin-bottom:16px" id="ripMeta">R iniziale · parola 1 di 3</div>
+                  <div class="rec-row">
+                    <button class="rec-btn rec-listen" onclick="ripPlay()" title="Ascolta">▶</button>
+                    <button class="rec-btn rec-mic" onclick="ripNext()" title="Prossima parola">→</button>
+                  </div>
+                  <div class="rec-cap">Qui non si sbaglia mai: si ascolta e si ripete</div>
+                </div>
+
+                <!-- ASCOLTA E SCEGLI -->
+                <div class="screen" data-c="ascolta">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Ascolta e scegli</div></div>
+                  <div class="ex-q">Ascolta la parola e tocca l'immagine giusta</div>
+                  <div class="cm-play"><button class="rec-btn rec-listen" onclick="ascPlay()" title="Ascolta">▶</button></div>
+                  <div class="grid2" id="ascGrid">
+                    <div class="tile" onclick="ascPick(this,'rana')"><span class="emo">🐸</span>Rana</div>
+                    <div class="tile" onclick="ascPick(this,'rosa')"><span class="emo">🌹</span>Rosa</div>
+                    <div class="tile" onclick="ascPick(this,'robot')"><span class="emo">🤖</span>Robot</div>
+                    <div class="tile" onclick="ascPick(this,'gatto')"><span class="emo">🐱</span>Gatto</div>
+                  </div>
+                  <div class="rec-cap" id="ascCap">Tocca ▶ per ascoltare</div>
                 </div>
 
                 <!-- CACCIA AL SUONO -->
@@ -440,39 +520,6 @@
                     <button class="rec-btn rec-mic" onclick="toggleRec(this)" title="Registra">🎤</button>
                   </div>
                   <div class="rec-cap" id="recCap">Tocca ▶ per il modello, 🎤 per registrarti</div>
-                </div>
-
-                <!-- GIOCHI (galleria) -->
-                <div class="screen" data-c="giochi">
-                  <div class="sec-label">Tutti i giochi</div>
-                  <div class="card gal-feat" onclick="openEx('pappagallo','giochi')">
-                    <div class="ic" style="background:#fff">🦜</div>
-                    <div><h4>Ripeti con Lallo</h4><div class="meta">Novità · il pappagallo ti ripete!</div></div><div class="chev">›</div>
-                  </div>
-                  <div class="card" onclick="openEx('caccia','giochi')">
-                    <div class="ic" style="background:#FDECE7">🔎</div>
-                    <div><h4>Caccia al suono</h4><div class="meta">Discriminazione · liv. 1–3</div></div><div class="chev">›</div>
-                  </div>
-                  <div class="card" onclick="openEx('rec','giochi')">
-                    <div class="ic" style="background:#E9F5F1">🎤</div>
-                    <div><h4>Registratore</h4><div class="meta">Produzione · liv. 3–5</div></div><div class="chev">›</div>
-                  </div>
-                  <div class="card" onclick="openEx('memory','giochi')">
-                    <div class="ic" style="background:#FFF3D6">🧩</div>
-                    <div><h4>Memory</h4><div class="meta">Discriminazione · liv. 2–3</div></div><div class="chev">›</div>
-                  </div>
-                  <div class="card" onclick="openEx('coppie','giochi')">
-                    <div class="ic" style="background:#FDECE7">👯</div>
-                    <div><h4>Coppie minime</h4><div class="meta">Discriminazione fine · liv. 3</div></div><div class="chev">›</div>
-                  </div>
-                  <div class="card" onclick="openEx('oca','giochi')">
-                    <div class="ic" style="background:#E9F5F1">🎲</div>
-                    <div><h4>Gioco dell'oca</h4><div class="meta">Produzione · liv. 3–4</div></div><div class="chev">›</div>
-                  </div>
-                  <div class="card" onclick="openEx('sequenze','giochi')">
-                    <div class="ic" style="background:#FFF3D6">📖</div>
-                    <div><h4>Sequenze illustrate</h4><div class="meta">Narrazione · liv. 5</div></div><div class="chev">›</div>
-                  </div>
                 </div>
 
                 <!-- MEMORY -->
@@ -531,44 +578,71 @@
                   <div class="seq-story" id="seqStory">Tocca l'immagine giusta per iniziare…</div>
                 </div>
 
-                <!-- PAPPAGALLO LALLO (feature virale) -->
-                <div class="screen" data-c="pappagallo">
-                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Ripeti con Lallo</div></div>
-                  <div class="ex-q">Dì la parola… e senti come la ripete Lallo! 🦜</div>
-                  <div class="pp-fig" onclick="ppNext()" title="Cambia parola"><span class="pp-emoji" id="ppEmoji">🐸</span><span class="pp-word" id="ppWord">rana</span></div>
-                  <div class="pp-parrot" id="ppParrot">🦜</div>
-                  <div class="pp-cap" id="ppCap">Tocca il microfono e prova!</div>
-                  <div class="pp-row">
-                    <button class="pp-btn mic" onclick="ppSay()">🎤 Dillo tu</button>
-                    <button class="pp-btn rep" onclick="ppRepeat()">🦜 Lallo ripete!</button>
+                <!-- LALLO (tamagotchi — 2ª tab dell'app, non più un "gioco" tra gli altri) -->
+                <div class="screen" data-c="lallo">
+                  <div class="pet-card">
+                    <img class="pet-img" id="petImg" src="img/lallo-felice.webp" alt="Lallo" onclick="pokeLallo()">
+                    <div class="pet-mood-title" id="petMoodTitle">Lallo è felice!</div>
+                    <div class="pet-mood-sub" id="petMoodSub">È sazio e vuole giocare con te.</div>
+                    <div class="pbar" style="height:12px"><i id="hungerFill" style="width:100%"></i></div>
                   </div>
-                  <button class="pp-share" onclick="ppShare()">🎬 Salva la clip da condividere</button>
+                  <div class="sec-label">TRASCINA UN CIBO SU LALLO PER SFAMARLO</div>
+                  <div class="food-row" id="foodRow">
+                    <div class="food-tile" data-food="banana"><img src="img/parole/banana.webp" alt="banana" draggable="false"></div>
+                    <div class="food-tile" data-food="arancia"><img src="img/parole/arancia.webp" alt="arancia" draggable="false"></div>
+                    <div class="food-tile" data-food="pera"><img src="img/parole/pera.webp" alt="pera" draggable="false"></div>
+                    <div class="food-tile" data-food="carota"><img src="img/parole/carota.webp" alt="carota" draggable="false"></div>
+                    <div class="food-tile" data-food="riso"><img src="img/parole/riso.webp" alt="riso" draggable="false"></div>
+                    <div class="food-tile" data-food="ananas"><img src="img/parole/ananas.webp" alt="ananas" draggable="false"></div>
+                    <div class="food-tile" data-food="pisello"><img src="img/parole/pisello.webp" alt="pisello" draggable="false"></div>
+                  </div>
+                  <div class="sec-label">PARLA CON LALLO</div>
+                  <div class="talk-card">
+                    <div class="talk-row">
+                      <button class="rec-btn rec-mic" id="lalloMicBtn" onclick="lalloToggleMic()">🎤</button>
+                      <button class="rec-btn rec-listen" onclick="lalloParrot()">🦜</button>
+                    </div>
+                    <div class="rec-cap" id="lalloTalkCap">Tocca il microfono e digli qualcosa</div>
+                  </div>
                 </div>
 
-                <!-- PROGRESSI -->
+                <!-- PROGRESSI (come nell'app oggi: barre per livello + livelli conquistati, niente più card traguardo/sticker qui) -->
                 <div class="screen" data-c="progressi">
-                  <div class="sec-label">I progressi di Marco</div>
-                  <div class="milestone">
-                    <div class="ms-emoji">🎉</div>
-                    <div class="ms-txt">Marco ha conquistato la R iniziale!</div>
-                    <div class="ms-sub">Traguardo sbloccato oggi</div>
-                    <button class="ms-share" onclick="msShare()">🦜 Condividi il traguardo</button>
+                  <div class="sec-label">I PROGRESSI DI MARCO</div>
+                  <div class="pbar-row"><div class="pbar-top"><span>R · livello 1</span><span>100%</span></div><div class="pbar"><i style="width:100%"></i></div></div>
+                  <div class="pbar-row"><div class="pbar-top"><span>R · livello 2</span><span>80%</span></div><div class="pbar"><i style="width:80%"></i></div></div>
+                  <div class="pbar-row"><div class="pbar-top"><span>R · livello 3</span><span>55%</span></div><div class="pbar"><i style="width:55%"></i></div></div>
+                  <div class="pbar-row"><div class="pbar-top"><span>S · livello 1</span><span>100%</span></div><div class="pbar"><i style="width:100%"></i></div></div>
+                  <div class="rewardCard" style="text-align:center;background:var(--sun);border-radius:18px;padding:14px;margin-top:18px">
+                    <div style="font-weight:800;font-size:26px;color:var(--ink)">2</div>
+                    <div style="font-size:11px;color:var(--ink)">livelli conquistati</div>
                   </div>
-                  <div class="pbar-row"><div class="pbar-top"><span>R iniziale</span><span>80%</span></div><div class="pbar"><i style="width:80%"></i></div></div>
-                  <div class="pbar-row"><div class="pbar-top"><span>R intervocalica</span><span>55%</span></div><div class="pbar"><i style="width:55%"></i></div></div>
-                  <div class="pbar-row"><div class="pbar-top"><span>Gruppo TR / PR</span><span>30%</span></div><div class="pbar"><i style="width:30%"></i></div></div>
-                  <div class="reward" style="margin-top:18px">
-                    <div><div class="big">12</div><div style="font-size:11px;color:var(--ink)">stickers conquistati</div></div>
-                    <div class="stickers"><span>🦜</span><span>⭐</span><span>🏆</span><span>🎈</span></div>
+                </div>
+
+                <!-- ALBUM (4ª tab — fotografa le parole nel mondo reale) -->
+                <div class="screen" data-c="album">
+                  <div class="who">Album</div>
+                  <div class="alb-sub" id="albSub">0/9 parole fotografate</div>
+                  <div class="alb-banner" id="albBanner" style="display:none"></div>
+                  <div class="alb-grid" id="albGrid">
+                    <div class="alb-tile" data-word="rana" onclick="albCatch(this,'rana')"><img src="img/parole/rana.webp" alt=""><span class="w">rana</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="rosa" onclick="albCatch(this,'rosa')"><img src="img/parole/rosa.webp" alt=""><span class="w">rosa</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="robot" onclick="albCatch(this,'robot')"><img src="img/parole/robot.webp" alt=""><span class="w">robot</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="sole" onclick="albCatch(this,'sole')"><img src="img/parole/sole.webp" alt=""><span class="w">sole</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="casa" onclick="albCatch(this,'casa')"><img src="img/parole/casa.webp" alt=""><span class="w">casa</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="albero" onclick="albCatch(this,'albero')"><img src="img/parole/albero.webp" alt=""><span class="w">albero</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="banana" onclick="albCatch(this,'banana')"><img src="img/parole/banana.webp" alt=""><span class="w">banana</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="pera" onclick="albCatch(this,'pera')"><img src="img/parole/pera.webp" alt=""><span class="w">pera</span><span class="chk">✓</span></div>
+                    <div class="alb-tile" data-word="carota" onclick="albCatch(this,'carota')"><img src="img/parole/carota.webp" alt=""><span class="w">carota</span><span class="chk">✓</span></div>
                   </div>
                 </div>
 
               </div>
-              <div class="ctoast" id="childToast"></div>
               <div class="tabbar">
-                <button class="tab active" data-tab="oggi" onclick="goChild('oggi')"><span class="ti">🏠</span>Oggi</button>
-                <button class="tab" data-tab="giochi" onclick="goChild('giochi')"><span class="ti">🎮</span>Giochi</button>
+                <button class="tab active" data-tab="giochi" onclick="goChild('giochi')"><span class="ti">🎮</span>Giochi</button>
+                <button class="tab" data-tab="lallo" onclick="goChild('lallo')"><span class="ti">🦜</span>Lallo</button>
                 <button class="tab" data-tab="progressi" onclick="goChild('progressi')"><span class="ti">📈</span>Progressi</button>
+                <button class="tab" data-tab="album" onclick="goChild('album')"><span class="ti">📸</span>Album</button>
               </div>
             </div>
 
@@ -711,23 +785,38 @@
     <p class="lead2">Mappati alla scala terapeutica reale — dal suono isolato al racconto. Non "dei giochi", ma una progressione.</p>
     <div class="scala">
       <span class="lab">La scala clinica:</span>
-      <span class="lv"><b>1</b> Suono</span>
-      <span class="lv"><b>2</b> Sillaba</span>
-      <span class="lv"><b>3</b> Parola</span>
-      <span class="lv"><b>4</b> Frase</span>
-      <span class="lv"><b>5</b> Racconto</span>
+      <span class="lv"><b>1</b> Suono isolato</span>
+      <span class="lv"><b>2</b> Parola</span>
+      <span class="lv"><b>3</b> Frase</span>
+      <span class="lv"><b>4</b> Parola</span>
+      <span class="lv"><b>5</b> Frase</span>
     </div>
-    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 26px">Caccia al suono, memory e coppie minime lavorano sulla <b>discriminazione</b> (percepire il suono), un asse distinto dalla produzione.</p>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 26px">Al Livello 1 non c'è scelta tra giochi: solo le sillabe isolate col suono target, da toccare e ripetere. Dal Livello 2 in poi si parte sempre dal più semplice — <b>Ripeti</b> (nessuna risposta sbagliata) — fino al più difficile — <b>Caccia al suono</b>, che richiede aver già capito bene il suono.</p>
     <div class="ex-grid">
+      <div class="exq"><div class="emoji">🔁</div><h3>Ripeti</h3><div class="role">Produzione guidata</div><p>Ascolta il modello e ripeti ad alta voce. Nessuna risposta sbagliata: il primo passo, senza rischio.</p><span class="lvl">Livello 2–3</span></div>
+      <div class="exq"><div class="emoji">👂</div><h3>Ascolta e scegli</h3><div class="role">Discriminazione</div><p>Ascolta la parola e tocca l'immagine giusta tra più opzioni.</p><span class="lvl">Livello 2–3</span></div>
+      <div class="exq"><div class="emoji">🧩</div><h3>Memory</h3><div class="role">Discriminazione + lessico</div><p>Abbina coppie con lo stesso suono, allenando memoria di lavoro.</p><span class="lvl">Livello 2–3</span></div>
+      <div class="exq"><div class="emoji">🔎</div><h3>Caccia al suono</h3><div class="role">Discriminazione percettiva</div><p>Trova le parole che contengono il fonema target: il più difficile del gruppo.</p><span class="lvl">Livello 2–3</span></div>
       <div class="exq"><div class="emoji">🎤</div><h3>Registratore</h3><div class="role">Produzione + autoascolto</div><p>Ascolta il modello, registra, riascolta e confronta. Il cuore del lavoro a casa.</p><span class="lvl">Livello 3–5</span></div>
-      <div class="exq"><div class="emoji">🔎</div><h3>Caccia al suono</h3><div class="role">Discriminazione percettiva</div><p>Trova le parole che contengono il fonema target nella posizione assegnata.</p><span class="lvl">Livello 1–3</span></div>
-      <div class="exq"><div class="emoji">🧩</div><h3>Memory</h3><div class="role">Discriminazione + lessico</div><p>Abbina coppie con lo stesso suono, o coppie minime, allenando memoria di lavoro.</p><span class="lvl">Livello 2–3</span></div>
       <div class="exq"><div class="emoji">👯</div><h3>Coppie minime</h3><div class="role">Discriminazione fine</div><p>Sole/sale, pala/bala: tocca la parola pronunciata. L'esercizio più clinico del set.</p><span class="lvl">Livello 3</span></div>
       <div class="exq"><div class="emoji">🎲</div><h3>Gioco dell'oca</h3><div class="role">Produzione ripetuta + motivazione</div><p>Avanzi di una casella solo pronunciando bene. Ripetizione che non annoia.</p><span class="lvl">Livello 3–4</span></div>
       <div class="exq"><div class="emoji">📖</div><h3>Sequenze illustrate</h3><div class="role">Narrazione e generalizzazione</div><p>Racconta la storia in ordine: il fonema nell'eloquio quasi spontaneo.</p><span class="lvl">Livello 5</span></div>
     </div>
     <div class="ita-note">
       <p><b>Pensato per l'italiano, non tradotto dall'inglese.</b> Le app straniere lavorano la posizione "fine parola" (final /s/, /t/), che in italiano — lingua a sillabe aperte — conta pochissimo. Lallo lavora dove serve davvero: <b>iniziale, intervocalica, gruppi consonantici (tr, str, pr) e digrammi (gn, gl, sc)</b>, i veri scogli del bambino italiano.</p>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <img src="img/lallo-felice.webp" alt="Lallo, il pappagallo mascotte">
+        <h3>Lallo cresce con lui</h3>
+        <p>Un pappagallo virtuale da sfamare ogni giorno: si trascina il cibo su di lui come se glielo si desse per davvero, e lui reagisce quando lo si tocca. Motiva a tornare, senza premi finti.</p>
+      </div>
+      <div class="feat-card">
+        <img src="img/parole/rana.webp" alt="Album delle parole">
+        <h3>L'album delle parole</h3>
+        <p>Il bambino fotografa nel mondo reale gli oggetti che corrispondono alle parole allenate, e li colleziona in un album con titoli da sbloccare. Il suono esce dallo schermo.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -804,7 +893,7 @@
 
 <footer>
   <div class="wrap foot-in">
-    <div class="brand" style="font-size:18px">🦜 Lallo</div>
+    <div class="brand" style="font-size:18px"><img class="mascot" src="img/lallo-icon-32.webp" alt="">Lallo</div>
     <div>Dati trattati in conformità al GDPR · voce dei bambini cifrata e mai condivisa</div>
     <div>© 2026 · "Lallo" è un nome di lavoro</div>
   </div>
@@ -845,19 +934,17 @@ function sayParrot(text){
     speechSynthesis.speak(u);
   }catch(e){}
 }
-function showChildToast(msg){
-  const t=document.getElementById('childToast'); if(!t) return;
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(window._ctoast); window._ctoast=setTimeout(()=>t.classList.remove('show'),2400);
-}
 const PROMPTS = {
+  sillabe:'Tocca ogni sillaba e ripetila ad alta voce',
+  ripeti:'Ascolta e ripeti ad alta voce',
+  ascolta:'Ascolta la parola e tocca l\'immagine giusta',
   caccia:'Tocca tutte le parole che iniziano con la erre',
   rec:'Ascolta come si dice, poi prova tu',
   memory:'Trova le coppie di parole con la erre',
   coppie:'Ascolta, poi tocca la parola che hai sentito',
   oca:'Dì la parola per far avanzare il pappagallo',
   sequenze:'Tocca le immagini in ordine per raccontare la storia',
-  pappagallo:'Dì la parola, poi senti come la ripete Lallo'
+  album:'Scegli una parola e fotografala per aggiungerla al tuo album!'
 };
 
 /* ---------- view switch ---------- */
@@ -869,23 +956,232 @@ function setView(v){
   document.getElementById('tgPro').classList.toggle('active', v==='pro');
 }
 
-/* ---------- child navigation ---------- */
+/* ---------- child navigation (4 tab, come nell'app oggi: Giochi · Lallo · Progressi ·
+   Album — non c'è più una tab "Oggi" separata, vedi App.tsx/GiochiScreen.tsx) ---------- */
+const TOP_TABS = ['giochi','lallo','progressi','album'];
+const TOP_TITLES = { giochi:'Giochi', lallo:'Lallo', progressi:'Progressi', album:'Album' };
 function goChild(name){
   document.querySelectorAll('#view-child .screen').forEach(s=>s.classList.toggle('on', s.dataset.c===name));
-  const activeTab = name==='oggi' ? 'oggi' : name==='progressi' ? 'progressi' : 'giochi';
+  const activeTab = TOP_TABS.includes(name) ? name : 'giochi';
   document.querySelectorAll('#view-child .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===activeTab));
+  const topTitle=document.getElementById('topTitle'); if(topTitle) topTitle.textContent = TOP_TITLES[activeTab];
   resetRec();
+  if(name==='giochi') renderMap();
+  if(name==='sillabe') sylReset();
+  if(name==='ripeti') ripReset();
+  if(name==='ascolta') ascReset();
   if(name==='caccia') cacciaReset();
   if(name==='memory') memReset();
   if(name==='coppie') cmReset();
   if(name==='oca') ocaReset();
   if(name==='sequenze') seqReset();
-  if(name==='pappagallo') ppReset();
-  if(PROMPTS[name]) say(PROMPTS[name]);
+  if(name==='lallo') renderPet();
+  // Istruzione vocale ad ogni apertura di schermo/tab — il bambino non sa leggere,
+  // stessa scelta della vera app (useFocusEffect su ogni schermata).
+  if(name==='giochi') say('Ciao Marco! Scegli un suono per iniziare a giocare');
+  else if(name==='lallo') say(lalloMood()==='affamato' ? 'Lallo ha fame! Trascina un cibo su di lui per sfamarlo' : 'Trascina un cibo su Lallo per sfamarlo, o tocca il microfono per parlare con lui!');
+  else if(PROMPTS[name]) say(PROMPTS[name]);
 }
 let exOrigin='giochi';
 function openEx(name, origin){ exOrigin = origin || 'giochi'; goChild(name); }
 function exBack(){ goChild(exOrigin); }
+function openGame(type){ openEx(type, 'giochi'); }
+
+/* ---------- mappa dei livelli (tab Giochi) ----------
+   Stesso schema della vera app (GiochiScreen.tsx): un percorso a 5 nodi/livelli
+   clinici, ogni gioco dichiara a quali livelli si applica. Livello 1 non è più una
+   lista di giochi tra cui scegliere: apre direttamente le sillabe isolate. Qui, a
+   differenza dell'app vera, tutti i livelli restano esplorabili da subito (niente
+   sblocco progressivo) per far vedere tutto il ventaglio di giochi nella demo. */
+const GAMES = [
+  { type:'ripeti',   label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', emoji:'🔁', levels:[2,3] },
+  { type:'ascolta',  label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[2,3] },
+  { type:'memory',   label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', emoji:'🧩', levels:[2,3] },
+  { type:'caccia',   label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', emoji:'🔎', levels:[2,3] },
+  { type:'rec',      label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎤', levels:[3,4,5] },
+  { type:'coppie',   label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', emoji:'👯', levels:[3] },
+  { type:'oca',      label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎲', levels:[3,4] },
+  { type:'sequenze', label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[5] },
+];
+const LEVEL_LABELS = { 1:'Suono isolato', 2:'Parola iniziale', 3:'Frase iniziale', 4:'Parola mediana', 5:'Frase mediana' };
+let expandedLevel = null;
+let level1Mastered = false;
+function tapNode(lvl){
+  if(lvl===1){ openEx('sillabe','giochi'); return; }
+  expandedLevel = (expandedLevel===lvl) ? null : lvl;
+  renderMap();
+}
+function renderMap(){
+  const root=document.getElementById('nodeMap'); if(!root) return;
+  let html='';
+  for(let lvl=1; lvl<=5; lvl++){
+    const mastered = lvl===1 && level1Mastered;
+    const chev = lvl===1 ? '' : (expandedLevel===lvl ? '︿' : '›');
+    html += `<div class="node-row" onclick="tapNode(${lvl})">`
+      + `<div class="node-circle${mastered?' mastered':''}">${mastered?'⭐':lvl}</div>`
+      + `<div style="flex:1"><div class="node-label">Livello ${lvl} · ${LEVEL_LABELS[lvl]}</div>`
+      + (mastered ? `<div class="node-sub">5/5 ⭐ · conquistato</div>` : '')
+      + `</div>`
+      + (chev ? `<div class="node-chev">${chev}</div>` : '')
+      + `</div>`;
+    if(lvl<5) html += `<div class="node-connector"></div>`;
+    if(expandedLevel===lvl){
+      const games = GAMES.filter(g=>g.levels.includes(lvl));
+      html += `<div class="node-games">` + games.map(g =>
+        `<div class="card" onclick="openGame('${g.type}')">`
+        + `<div class="ic" style="background:${g.bg}">${g.emoji}</div>`
+        + `<div><h4>${g.label}</h4><div class="meta">${g.meta}</div></div>`
+        + `<div class="chev">›</div>`
+        + `</div>`
+      ).join('') + `</div>`;
+    }
+  }
+  root.innerHTML = html;
+}
+
+/* ---------- Livello 1 · suono isolato (sillabe) ---------- */
+const SYL_LIST = ['RA','RE','RI','RO','RU'];
+let sylDone = new Set();
+function sylReset(){
+  sylDone = new Set();
+  document.querySelectorAll('.syl-tile').forEach(t=>t.classList.remove('done'));
+  const c=document.getElementById('sylCap'); if(c) c.textContent='Tocca le sillabe una per una';
+}
+function sylTap(el, syl){
+  if(el.classList.contains('done')) return;
+  say(syl);
+  el.classList.add('done');
+  sylDone.add(syl);
+  if(sylDone.size===SYL_LIST.length){
+    document.getElementById('sylCap').textContent='Evviva! Livello 1 completato 🦜';
+    level1Mastered = true;
+    setTimeout(()=>say('Evviva! Hai completato il livello uno!'), 300);
+    setTimeout(()=>goChild('giochi'), 1800);
+  }
+}
+
+/* ---------- Ripeti (il più semplice: niente risposte sbagliate) ---------- */
+const RIP_WORDS=[{w:'rana',e:'🐸'},{w:'rosa',e:'🌹'},{w:'robot',e:'🤖'}];
+let ripIdx=0;
+function ripReset(){ ripIdx=0; updateRip(); setTimeout(()=>say(RIP_WORDS[0].w),1500); }
+function updateRip(){
+  document.getElementById('ripEmoji').textContent=RIP_WORDS[ripIdx].e;
+  document.getElementById('ripWord').textContent=RIP_WORDS[ripIdx].w;
+  document.getElementById('ripMeta').textContent='R iniziale · parola '+(ripIdx+1)+' di '+RIP_WORDS.length;
+}
+function ripPlay(){ say(RIP_WORDS[ripIdx].w); }
+function ripNext(){
+  if(ripIdx+1<RIP_WORDS.length){ ripIdx++; updateRip(); say(RIP_WORDS[ripIdx].w); }
+  else exBack();
+}
+
+/* ---------- Ascolta e scegli ---------- */
+function ascReset(){
+  document.querySelectorAll('#ascGrid .tile').forEach(t=>t.classList.remove('correct','wrong'));
+  const c=document.getElementById('ascCap'); if(c) c.textContent='Tocca ▶ per ascoltare';
+  setTimeout(()=>say('rana'),1500);
+}
+function ascPlay(){ say('rana'); document.getElementById('ascCap').textContent='🔊 Ho detto… "rana"'; }
+function ascPick(el, word){
+  if(el.classList.contains('correct')||el.classList.contains('wrong')) return;
+  say(word);
+  if(word==='rana'){ el.classList.add('correct'); document.getElementById('ascCap').textContent='✓ Esatto!'; }
+  else { el.classList.add('wrong'); document.getElementById('ascCap').textContent='Riascolta e riprova 🦜'; setTimeout(()=>el.classList.remove('wrong'),420); }
+}
+
+/* ---------- Lallo (tamagotchi, 2ª tab) ----------
+   Stessa logica della vera app (LalloScreen.tsx): fame che sale nel tempo, 3 pose
+   reali (felice/neutro/affamato), i cibi si trascinano davvero sopra Lallo con i
+   Pointer Events nativi del browser (equivalente web del PanResponder di React
+   Native usato nell'app) — un tap secco sfama comunque, per chi non trascina bene. */
+let hunger = 100;
+const MOOD_IMG = { felice:'img/lallo-felice.webp', neutro:'img/lallo-neutro.webp', affamato:'img/lallo-affamato.webp' };
+const MOOD_COPY = {
+  felice:   { t:'Lallo è felice!', s:'È sazio e vuole giocare con te.' },
+  neutro:   { t:'Lallo va bene',   s:"Comincia ad avere un po' di fame." },
+  affamato: { t:'Lallo ha fame!',  s:'Dagli qualcosa da mangiare.' },
+};
+function lalloMood(){ return hunger>60?'felice':hunger>25?'neutro':'affamato'; }
+function renderPet(){
+  const m=lalloMood();
+  document.getElementById('petImg').src = MOOD_IMG[m];
+  document.getElementById('petMoodTitle').textContent = MOOD_COPY[m].t;
+  document.getElementById('petMoodSub').textContent = MOOD_COPY[m].s;
+  document.getElementById('hungerFill').style.width = hunger+'%';
+}
+const POKE_LINES=['Hihi!','Che solletico!','Ehi!','Mi piace giocare con te!','Ahah, di nuovo!'];
+function pokeLallo(){
+  say(POKE_LINES[Math.floor(Math.random()*POKE_LINES.length)]);
+  const img=document.getElementById('petImg');
+  img.classList.remove('poke'); void img.offsetWidth; img.classList.add('poke');
+}
+function feedLallo(food){
+  hunger = Math.min(100, hunger+30);
+  renderPet();
+  say('Mmm, che buono! Grazie!');
+  const img=document.getElementById('petImg');
+  img.classList.remove('eat'); void img.offsetWidth; img.classList.add('eat');
+  const tile=document.querySelector('.food-tile[data-food="'+food+'"]');
+  if(tile){ tile.classList.add('fed'); setTimeout(()=>tile.classList.remove('fed'),900); }
+}
+function setupFoodDrag(){
+  document.querySelectorAll('.food-tile').forEach(tile=>{
+    let sx=0, sy=0, dragging=false, moved=false;
+    tile.addEventListener('pointerdown', e=>{
+      dragging=true; moved=false; sx=e.clientX; sy=e.clientY;
+      tile.setPointerCapture(e.pointerId);
+      tile.classList.add('dragging');
+    });
+    tile.addEventListener('pointermove', e=>{
+      if(!dragging) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy;
+      if(Math.abs(dx)>4||Math.abs(dy)>4) moved=true;
+      tile.style.transform='translate('+dx+'px,'+dy+'px)';
+    });
+    tile.addEventListener('pointerup', e=>{
+      if(!dragging) return;
+      dragging=false;
+      tile.classList.remove('dragging');
+      tile.style.transform='';
+      const food=tile.dataset.food;
+      if(!moved){ feedLallo(food); return; }
+      const petImg=document.getElementById('petImg');
+      const r=petImg.getBoundingClientRect();
+      const overPet = e.clientX>=r.left && e.clientX<=r.right && e.clientY>=r.top && e.clientY<=r.bottom;
+      if(overPet) feedLallo(food);
+    });
+  });
+}
+let lalloRecording=false, lalloHasRecording=false;
+function lalloToggleMic(){
+  lalloRecording=!lalloRecording;
+  const btn=document.getElementById('lalloMicBtn'), cap=document.getElementById('lalloTalkCap');
+  if(lalloRecording){ btn.style.background='#E84B30'; cap.textContent='Sto registrando… tocca di nuovo per fermare'; }
+  else { btn.style.background=''; lalloHasRecording=true; cap.textContent='Tocca il pappagallo per sentirlo ripetere!'; }
+}
+function lalloParrot(){
+  if(!lalloHasRecording) return;
+  sayParrot('Ciao Lallo!');
+  document.getElementById('lalloTalkCap').textContent="Ahah! Lallo l'ha ripetuta 🦜";
+}
+
+/* ---------- Album (4ª tab) ---------- */
+let albCaught=new Set();
+const ALB_TOTAL=9;
+function albCatch(el, word){
+  if(albCaught.has(word)) return;
+  albCaught.add(word);
+  el.classList.add('caught');
+  document.getElementById('albSub').textContent = albCaught.size+'/'+ALB_TOTAL+' parole fotografate';
+  if(albCaught.size===5){
+    const b=document.getElementById('albBanner');
+    b.textContent='🔎 Nuovo titolo: Esploratore!';
+    b.style.display='block';
+    say('Bravo! Hai un nuovo titolo: Esploratore!');
+  } else {
+    say('Foto aggiunta al tuo album, bravo!');
+  }
+}
 
 /* caccia al suono */
 function hit(el,correct,word){
@@ -973,27 +1269,6 @@ function seqTap(el,order){
   }
 }
 
-/* pappagallo Lallo (feature virale) */
-let ppPos=0;
-const ppWords=[{w:'rana',img:'🐸'},{w:'rosa',img:'🌹'},{w:'robot',img:'🤖'},{w:'orso',img:'🐻'},{w:'ruota',img:'🛞'}];
-function ppReset(){ ppPos=0; updatePp(); }
-function updatePp(){
-  const e=document.getElementById('ppEmoji'); if(e) e.textContent=ppWords[ppPos].img;
-  const w=document.getElementById('ppWord'); if(w) w.textContent=ppWords[ppPos].w;
-  const c=document.getElementById('ppCap'); if(c) c.textContent='Tocca il microfono e prova!';
-}
-function ppNext(){ ppPos=(ppPos+1)%ppWords.length; updatePp(); }
-function ppSay(){ say(ppWords[ppPos].w); document.getElementById('ppCap').textContent='Bravo! Ora tocca "Lallo ripete!" 🦜'; }
-function ppRepeat(){
-  sayParrot(ppWords[ppPos].w);
-  const p=document.getElementById('ppParrot'); if(p){ p.classList.remove('talk'); void p.offsetWidth; p.classList.add('talk'); }
-  document.getElementById('ppCap').textContent='Ahah! Lallo l\'ha ripetuta 🦜';
-}
-function ppShare(){ showChildToast('🎬 Clip di Lallo salvata! Condividila con la famiglia 🦜'); }
-
-/* milestone card (feature virale) */
-function msShare(){ showChildToast('🦜 Traguardo condiviso! Un applauso a Marco 🎉'); }
-
 /* registratore */
 function playModel(){
   say('torre');
@@ -1077,6 +1352,10 @@ async function submitWL(){
   document.getElementById('wlFormInner').style.display='none';
   document.getElementById('wlSuccess').classList.add('show');
 }
+
+/* ---------- init demo telefono ---------- */
+renderMap();
+setupFoodDrag();
 </script>
 </body>
 </html>
