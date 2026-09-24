@@ -1,34 +1,65 @@
 # La voce di Lallo — scelta tecnica e personalità
 
-Decisione presa in sessione (settembre 2026), sostituisce quanto scritto in
-`CLAUDE.md` §3 ("ElevenLabs per la voce-modello... in demo si può usare la TTS
-di sistema come fallback"): la voce di Lallo — sia le battute di personalità
-sia la pronuncia delle parole/fonemi target — viene generata tramite
-**Higgsfield → modello `text2speech_v2`, motore `variant: "elevenlabs"`**
-(passa dall'abbonamento/crediti Higgsfield già disponibili, non serve una
-chiave ElevenLabs separata). Il fallback a TTS di sistema resta valido solo
-per l'ambiente di demo/sviluppo quando non è disponibile la generazione.
+Decisione finale presa in sessione (settembre 2026), sostituisce quanto
+scritto in `CLAUDE.md` §3. Storico: nella stessa sessione si era prima
+scelto un percorso via Higgsfield (`text2speech_v2`, voce preset "Gracie")
+— abbandonato perché sulle **parole isolate** (non frasi) quella voce
+leggeva l'italiano con un accento inglese marcato, non correggibile né
+cambiando motore (elevenlabs/seed_speech/minimax/seed_audio) né cambiando
+preset all'interno del catalogo Higgsfield (nessuno dei ~136 preset
+disponibili — verificato per intero — ha un tag di lingua, e nessuno
+testato leggeva bene l'italiano isolato).
+
+## Decisione finale
+
+La voce di Lallo — sia le battute di personalità sia la pronuncia delle
+parole/fonemi target — viene generata tramite il **connettore nativo
+ElevenLabs** (non più Higgsfield), usando una voce reale dalla libreria
+ElevenLabs dell'utente. Il connettore nativo raggiunge i server ElevenLabs
+direttamente (a differenza del wrapper Higgsfield, che accetta solo i suoi
+136 preset ed è rifiutato per qualunque voice_id esterno con "Voice not
+found").
 
 ## Voce scelta
 
-- **Nome preset:** Gracie (voce femminile)
-- **voice_id:** `09878754-f20b-5330-9790-58a8027ab5b2`
-- **voice_type:** `preset`
-- Scelta dopo ascolto comparativo di 3 candidate (Gracie, Annie, Benji) su una
-  riga di prova in italiano contenente la parola modello "rana" (fonema R
-  iniziale) — Gracie è risultata la più convincente per timbro e chiarezza
-  articolatoria.
+- **Nome:** Linda Fiore — Prickly, Cheerful and Full
+- **voice_id:** `3DPhHWXDY263XJ1d2EPN`
+- Fornita direttamente dall'utente dalla propria libreria ElevenLabs.
+  Validata su parola isolata ("rana") e su frase lunga (intro di Lallo),
+  poi su un campione di parole target diverse: sole (S), gnomo (GN),
+  scivolo (SC), treno (gruppo TR), casa (controllo base) — tutte corrette
+  tranne "gnomo" con le impostazioni di default (vedi sotto).
 
-Parametri di chiamata di riferimento (vedi Higgsfield MCP `generate_audio` /
-`generate_audio_batch`):
+## Modelli — due usi diversi
+
+- **Parole modello isolate** → `eleven_v3`. Necessario per i casi limite
+  (es. "gnomo" pronunciato male con `eleven_multilingual_v2` da solo,
+  corretto passando a `eleven_v3` senza bisogno di aggiungere un articolo
+  davanti). Usare `eleven_v3` per tutte le ~445 parole del word bank per
+  coerenza, anche se la maggior parte avrebbe funzionato anche con
+  `eleven_multilingual_v2`.
+- **Righe di personalità/istruzioni** (frasi lunghe: intro, consegne dei
+  giochi, incoraggiamenti) → `eleven_multilingual_v2`. Validato bene sulla
+  frase intro completa di Lallo (~15 secondi).
+
+Parametri di chiamata di riferimento (tool `creative_generate_speech` del
+connettore ElevenLabs):
 
 ```
-model: "text2speech_v2"
-variant: "elevenlabs"
-voice_type: "preset"
-voice_id: "09878754-f20b-5330-9790-58a8027ab5b2"
+model_id: "eleven_v3"              # parole isolate
+model_id: "eleven_multilingual_v2" # frasi/personalità
+voice_id: "3DPhHWXDY263XJ1d2EPN"
 prompt: "<testo italiano da leggere>"
 ```
+
+## Costo
+
+A differenza di Higgsfield (costo fisso per generazione), ElevenLabs
+addebita per durata/caratteri: ~5-8 crediti per una parola isolata,
+~200 crediti per una frase lunga (~15s). Per l'intera produzione (539
+clip: 445 parole + 94 righe fisse/template) il totale stimato è
+nell'ordine di alcune migliaia di crediti — verificare il piano/i crediti
+disponibili prima di lanciare la produzione completa.
 
 ## Chi è Lallo quando parla
 
@@ -47,31 +78,21 @@ con CLAUDE.md §8: "mai punire l'errore, celebrare ogni tentativo").
 ## Due modalità di lettura — distinzione importante
 
 1. **Lallo-che-parla-con-te** (intro, istruzioni, incoraggiamento): piena
-   personalità, calore, ritmo giocoso.
+   personalità, calore, ritmo giocoso. Modello `eleven_multilingual_v2`.
 2. **Lallo-che-pronuncia-la-parola-modello** (il fonema/la parola target che
    il bambino deve imitare): energia abbassata apposta — voce chiara, ritmo
    naturale, zero coloriture che possano confondere l'articolazione. Questa è
    la parte clinicamente sensibile: un errore di pronuncia qui modella
-   un'articolazione scorretta al bambino.
-
-Nello script, le due modalità vanno scritte come righe separate (mai la
-stessa frase a fare da intro *e* da modello), per poter eventualmente
-applicare in futuro impostazioni diverse (es. `stability`/`style` più alte
-sul modello, se il motore lo permetterà).
+   un'articolazione scorretta al bambino. Modello `eleven_v3`.
 
 ## Linee guida di scrittura del testo
-
-L'API non espone un "prompt di stile" libero (a differenza dei modelli
-immagine/video) — la caratterizzazione passa dalla voce scelta *e* da come è
-scritto il testo:
 
 - Frasi brevi, una sola idea per frase.
 - Punteggiatura che detta il ritmo: virgole per pause brevi, punti per pause
   piene, punti esclamativi con parsimonia (non ogni frase).
 - Niente maiuscolo per enfasi (letto male dai motori TTS).
-- La parola modello va isolata in una frase a sé, non incastrata in una frase
-  lunga: "Ascolta bene: rana." non "Adesso ti faccio sentire la parola rana
-  che ha il suono R".
+- La parola modello va isolata in una frase a sé, con iniziale maiuscola e
+  punto finale (es. "Rana."), mai incastrata in una frase più lunga.
 - Mai umorismo che richieda un tono sarcastico o ambiguo — un bambino di 3-6
   anni prende tutto alla lettera.
 
@@ -80,8 +101,11 @@ scritto il testo:
 - **Pronuncia dei fonemi italiani target** (R, S/Z, SC/SCI, GN, GLI,
   TR/STR/PR...) va controllata da un madrelingua italiano — idealmente la
   logopedista di riferimento del progetto — fonema per fonema, non solo a
-  orecchio in sessione di sviluppo.
-- Se un fonema specifico risulta pronunciato in modo ambiguo o innaturale da
-  Gracie/motore ElevenLabs, va segnalato: si può provare una voce diversa
-  solo per quella parola, o rivedere il testo (es. spelling fonetico) prima
-  di considerarlo pronto per un bambino reale.
+  campione in sessione di sviluppo. Il campione testato in sessione (rana,
+  sole, gnomo, scivolo, treno, casa) copre solo una minima parte dei fonemi
+  prioritari.
+- Se una parola specifica risulta pronunciata in modo ambiguo o innaturale
+  con `eleven_v3`, va segnalata: si rigenera puntualmente con un testo
+  diverso (es. `eleven_multilingual_v2`, o un articolo davanti come
+  workaround temporaneo — non più necessario per "gnomo" ma potenzialmente
+  utile per altri casi non ancora scoperti).
