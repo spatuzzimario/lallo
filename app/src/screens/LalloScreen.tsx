@@ -10,10 +10,10 @@ import {
   requestRecordingPermissionsAsync,
   setAudioModeAsync,
 } from "expo-audio";
-import * as Speech from "expo-speech";
 import { useGamificationStore, getDayStreak } from "../store/useGamificationStore";
 import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LalloMood } from "../constants/lalloPet";
 import { getWordImage } from "../constants/wordImage";
+import { useVoice } from "../hooks/useVoice";
 
 // Presentazione lunga di Lallo, sentita/vista solo la prima volta che si apre questa tab
 // (settembre 2026, feedback: "Lallo si presenta solo la prima volta, poi solo le
@@ -55,6 +55,7 @@ export default function LalloScreen({ navigation }: any) {
   const talkToLallo = useGamificationStore((s) => s.talkToLallo);
   const markIntroSeen = useGamificationStore((s) => s.markIntroSeen);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+  const { speak } = useVoice();
 
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -81,13 +82,13 @@ export default function LalloScreen({ navigation }: any) {
       const seen = useGamificationStore.getState().profile?.introsSeen.lallo;
       if (!seen) {
         setShowIntro(true);
-        say(INTRO_TEXT);
+        speak(INTRO_TEXT, "lallo_intro");
         markIntroSeen("lallo");
         return;
       }
       setShowIntro(false);
-      if (mood === "affamato") say("Lallo ha fame! Trascina un cibo su di lui per sfamarlo");
-      else say("Trascina un cibo su Lallo per sfamarlo, o tocca il microfono per parlare con lui!");
+      if (mood === "affamato") speak("Lallo ha fame! Trascina un cibo su di lui per sfamarlo", "lallo_ha_fame");
+      else speak("Trascina un cibo su Lallo per sfamarlo, o tocca il microfono per parlare con lui!", "lallo_trascina_cibo");
     }, [mood])
   );
 
@@ -110,7 +111,7 @@ export default function LalloScreen({ navigation }: any) {
   const bobTranslate = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
 
   function pokeLallo() {
-    say(POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)]);
+    speak(POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)]);
     Animated.sequence([
       Animated.timing(petScale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
       Animated.spring(petRotate, { toValue: 1, useNativeDriver: true, friction: 3 }),
@@ -132,7 +133,7 @@ export default function LalloScreen({ navigation }: any) {
   function feed(food: string) {
     feedLallo();
     setJustFed(food);
-    say("Mmm, che buono! Grazie!");
+    speak("Mmm, che buono! Grazie!", "lallo_grazie_cibo");
     eatReaction();
     setTimeout(() => setJustFed(null), 1200);
   }
@@ -342,10 +343,6 @@ function DraggableFood({ food, img, justFed, lalloRef, onFeed }: {
   );
 }
 
-function say(text: string) {
-  Speech.stop();
-  Speech.speak(text, { language: "it-IT", pitch: 1.05, rate: 0.92 });
-}
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg, padding: 18 },

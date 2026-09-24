@@ -2,10 +2,10 @@ import React, { useCallback, useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import * as Speech from "expo-speech";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
 import { ClinicalLevel, LevelProgress, LEVEL_LABELS } from "../types/gamification";
+import { useVoice } from "../hooks/useVoice";
 
 const C = {
   paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC",
@@ -53,13 +53,11 @@ export default function LivelliScreen({ navigation, route }: any) {
   const profile = useGamificationStore((s) => s.profile);
   const phonemeKey = route.params.phonemeGroupId as PhonemeKey;
   const [expandedLevel, setExpandedLevel] = useState<ClinicalLevel | null>(null);
+  const { speak } = useVoice();
 
   useFocusEffect(
     useCallback(() => {
-      Speech.stop();
-      Speech.speak(`Scegli un livello per allenare il suono ${WORD_BANK[phonemeKey].label}`, {
-        language: "it-IT", pitch: 1.05, rate: 0.92,
-      });
+      speak(`Scegli un livello per allenare il suono ${WORD_BANK[phonemeKey].label}`, `tpl_livelli_${phonemeKey}`);
     }, [phonemeKey])
   );
 

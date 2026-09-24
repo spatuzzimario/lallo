@@ -3,10 +3,10 @@ import { View, Text, Image, Pressable, ScrollView, StyleSheet } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import * as Speech from "expo-speech";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { WORD_ILLUSTRATIONS } from "../constants/illustrations";
 import { currentTitle, nextTitle } from "../constants/album";
+import { useVoice } from "../hooks/useVoice";
 
 const C = {
   bg: "#FBF6EE", jade: "#137A6E", jadeDeep: "#0E5C53", coral: "#FF6A4D",
@@ -46,6 +46,7 @@ export default function AlbumScreen() {
   // Stato locale invece di leggere introsSeen direttamente nel render — vedi stessa nota in
   // LalloScreen: altrimenti la bolla sparirebbe un istante dopo essere apparsa.
   const [showIntro, setShowIntro] = useState(false);
+  const { speak } = useVoice();
 
   const catchesByWord = useMemo(() => {
     const map = new Map<string, number>();
@@ -61,18 +62,15 @@ export default function AlbumScreen() {
   // stesso ragionamento in GiochiScreen/LalloScreen).
   useFocusEffect(
     useCallback(() => {
-      Speech.stop();
       const seen = useGamificationStore.getState().profile?.introsSeen.album;
       if (!seen) {
         setShowIntro(true);
-        Speech.speak(INTRO_TEXT, { language: "it-IT", pitch: 1.05, rate: 0.92 });
+        speak(INTRO_TEXT, "album_intro");
         markIntroSeen("album");
         return;
       }
       setShowIntro(false);
-      Speech.speak("Scegli una parola e fotografala per aggiungerla al tuo album!", {
-        language: "it-IT", pitch: 1.05, rate: 0.92,
-      });
+      speak("Scegli una parola e fotografala per aggiungerla al tuo album!", "album_scegli_parola");
     }, [])
   );
 
@@ -100,13 +98,11 @@ export default function AlbumScreen() {
       if (after && after.threshold !== before?.threshold) {
         setNewTitleBanner(`${after.emoji} Nuovo titolo: ${after.name}!`);
         setTimeout(() => setNewTitleBanner(null), 2500);
-        Speech.stop();
-        Speech.speak(`Bravo! Hai un nuovo titolo: ${after.name}!`, { language: "it-IT", pitch: 1.05, rate: 0.92 });
+        speak(`Bravo! Hai un nuovo titolo: ${after.name}!`, after.audioSlug);
         return;
       }
     }
-    Speech.stop();
-    Speech.speak("Foto aggiunta al tuo album, bravo!", { language: "it-IT", pitch: 1.05, rate: 0.92 });
+    speak("Foto aggiunta al tuo album, bravo!", "album_foto_aggiunta");
   }
 
   if (!profile) return null;

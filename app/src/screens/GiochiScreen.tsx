@@ -2,10 +2,10 @@ import React, { useCallback } from "react";
 import { View, Text, Image, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import * as Speech from "expo-speech";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium } from "../constants/wordBank";
 import { ClinicalLevel } from "../types/gamification";
+import { useVoice } from "../hooks/useVoice";
 
 const C = {
   paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC",
@@ -29,13 +29,11 @@ export default function GiochiScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const subscriptionActive = !!profile?.subscriptionActive;
+  const { speak } = useVoice();
 
   useFocusEffect(
     useCallback(() => {
-      Speech.stop();
-      Speech.speak("Scegli un suono per iniziare a giocare", {
-        language: "it-IT", pitch: 1.05, rate: 0.92,
-      });
+      speak("Scegli un suono per iniziare a giocare", "giochi_scegli_suono");
     }, [])
   );
 

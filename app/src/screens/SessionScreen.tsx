@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Image, Pressable, ScrollView, StyleSheet, StyleProp, TextStyle } from "react-native";
-import * as Speech from "expo-speech";
 import { useAudioPlayer } from "expo-audio";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -18,6 +17,7 @@ import {
 import { getWordImage } from "../constants/wordImage";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS } from "../types/gamification";
+import { useVoice } from "../hooks/useVoice";
 
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
@@ -50,11 +50,6 @@ interface SessionParams {
   // Prova rapida senza codice, non legata a un piano assegnato: non deve scrivere
   // progressi reali sul profilo (usata finché non esiste ancora un profilo bambino).
   demo?: boolean;
-}
-
-function say(text: string) {
-  Speech.stop();
-  Speech.speak(text, { language: "it-IT", pitch: 1.05, rate: 0.92 });
 }
 
 // Feedback sonoro per i giochi a scelta (Caccia al suono, Ascolta e scegli, Coppie minime,
@@ -263,9 +258,10 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   const meta = WORD_BANK[phonemeKey];
   const targetCount = tiles.filter((t) => t.correct).length;
   const { playCorrect, playWrong } = useFeedbackSounds();
+  const { speak, speakWord } = useVoice();
 
   useEffect(() => {
-    say(`Trova le ${targetCount} parole con il suono ${meta.label}`);
+    speak(`Trova le ${targetCount} parole con il suono ${meta.label}`, `tpl_caccia_${phonemeKey}`);
   }, []);
 
   function handlePick(t: WordEntry & { correct: boolean }) {
@@ -274,7 +270,7 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
     setPicked(next);
     onAttempt(t.parola, t.correct);
     if (t.correct) playCorrect(); else playWrong();
-    setTimeout(() => say(t.parola), 700);
+    setTimeout(() => speakWord(t.parola), 700);
 
     const targetsFound = tiles.filter((x) => x.correct && next[x.parola] === true).length;
     const allAnswered = Object.keys(next).length === tiles.length;
@@ -326,19 +322,20 @@ function SillabeIsolate({ phonemeKey, onAttempt, onDone }: {
   const meta = WORD_BANK[phonemeKey];
   const syllables = useMemo(() => syllableEntries(phonemeKey), [phonemeKey]);
   const [tapped, setTapped] = useState<Set<string>>(new Set());
+  const { speak, speakWord } = useVoice();
 
   useEffect(() => {
     if (syllables.length === 0) {
-      say("Per questo suono si parte direttamente dal livello 2!");
+      speak("Per questo suono si parte direttamente dal livello 2!", "sess_livello2_diretto");
       onAttempt(phonemeKey, true);
       setTimeout(onDone, 1400);
       return;
     }
-    say(`Tocca ogni sillaba e ripetila ad alta voce`);
+    speak("Tocca ogni sillaba e ripetila ad alta voce", "sess_tocca_sillabe");
   }, []);
 
   function tapSyllable(syl: WordEntry) {
-    say(syl.parola);
+    speakWord(syl.parola);
     onAttempt(syl.parola, true);
     setTapped((prev) => {
       if (prev.has(syl.parola)) return prev;
@@ -428,14 +425,15 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
   const [mismatched, setMismatched] = useState<string[]>([]);
   const [firstUid, setFirstUid] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
+  const { speak, speakWord } = useVoice();
 
   useEffect(() => {
-    say(`Trova le coppie con il suono ${meta.label}`);
+    speak(`Trova le coppie con il suono ${meta.label}`, `tpl_memory_${phonemeKey}`);
   }, [pairCount]);
 
   function handleFlip(card: typeof cards[number]) {
     if (flipped.includes(card.uid) || matched.includes(card.parola)) return;
-    say(card.parola);
+    speakWord(card.parola);
     setFlipped((f) => [...f, card.uid]);
     if (!firstUid) { setFirstUid(card.uid); return; }
     const first = cards.find((c) => c.uid === firstUid)!;
@@ -519,12 +517,13 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
   const [recording, setRecording] = useState(false);
   const [justDone, setJustDone] = useState(false);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+  const { speakWord } = useVoice();
 
   useEffect(() => {
-    say(word.parola);
+    speakWord(word.parola);
   }, [word.parola]);
 
-  function playModel() { say(word.parola); }
+  function playModel() { speakWord(word.parola); }
 
   function toggleRecord() {
     if (!hasConsent || justDone) return;
@@ -588,14 +587,15 @@ function Ripeti({ phonemeKey, onAttempt, onDone }: {
   const words = useMemo(() => allWordsFor(phonemeKey), [phonemeKey]);
   const [idx, setIdx] = useState(0);
   const word = words[idx];
+  const { speak, speakWord } = useVoice();
 
   useEffect(() => {
     if (!word) return;
     if (idx === 0) {
-      say("Ascolta e ripeti ad alta voce");
-      setTimeout(() => say(word.parola), 1500);
+      speak("Ascolta e ripeti ad alta voce", "sess_ascolta_ripeti");
+      setTimeout(() => speakWord(word.parola), 1500);
     } else {
-      say(word.parola);
+      speakWord(word.parola);
     }
   }, [idx, phonemeKey]);
 
@@ -617,7 +617,7 @@ function Ripeti({ phonemeKey, onAttempt, onDone }: {
         {meta.label} · parola {idx + 1} di {words.length}
       </Text>
       <View style={styles.recRow}>
-        <Pressable style={styles.recListenBtn} onPress={() => say(word.parola)}>
+        <Pressable style={styles.recListenBtn} onPress={() => speakWord(word.parola)}>
           <Text style={styles.recBtnText}>▶</Text>
         </Pressable>
         <Pressable style={styles.recMicBtn} onPress={next}>
@@ -642,6 +642,7 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
+  const { speak, speakWord } = useVoice();
 
   const roundData = useMemo(() => {
     const pool = wordsFor(phonemeKey, position);
@@ -663,10 +664,10 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
 
   useEffect(() => {
     if (round === 0) {
-      say("Ripeti quello che hai sentito e tocca l'immagine giusta");
-      setTimeout(() => say(roundData.target.parola), 1600);
+      speak("Ripeti quello che hai sentito e tocca l'immagine giusta", "sess_ripeti_tocca_immagine");
+      setTimeout(() => speakWord(roundData.target.parola), 1600);
     } else {
-      say(roundData.target.parola);
+      speakWord(roundData.target.parola);
     }
   }, [round]);
 
@@ -688,7 +689,7 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
       <Text style={styles.question}>
         Ripeti quello che hai sentito e tocca l'immagine giusta · {round + 1} di {ASCOLTA_ROUNDS}
       </Text>
-      <Pressable style={styles.playBtn} onPress={() => say(roundData.target.parola)}>
+      <Pressable style={styles.playBtn} onPress={() => speakWord(roundData.target.parola)}>
         <Text style={styles.recBtnText}>▶</Text>
       </Pressable>
       <View style={styles.grid}>
@@ -728,12 +729,13 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   const target = pair[round % 2];
   const [picked, setPicked] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
+  const { speak, speakWord } = useVoice();
 
-  function playTarget() { say(target.parola); }
+  function playTarget() { speakWord(target.parola); }
 
   useEffect(() => {
     if (round === 0) {
-      say("Ascolta, poi tocca la parola che hai sentito");
+      speak("Ascolta, poi tocca la parola che hai sentito", "sess_ascolta_tocca_parola");
       setTimeout(playTarget, 1600);
     } else {
       playTarget();
@@ -746,7 +748,7 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
     const correct = word.parola === target.parola;
     onAttempt(word.parola, correct);
     if (correct) playCorrect(); else playWrong();
-    setTimeout(() => say(word.parola), 700);
+    setTimeout(() => speakWord(word.parola), 700);
     setTimeout(() => {
       setPicked(null);
       if (round + 1 < PRODUCTION_ROUNDS) setRound((r) => r + 1);
@@ -802,15 +804,16 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   }, [phonemeKey, position]);
   const [pos, setPos] = useState(0);
   const current = words[pos];
+  const { speak, speakWord } = useVoice();
 
   useEffect(() => {
-    say("Dì la parola per far avanzare il pappagallo!");
-    if (current) setTimeout(() => say(current.parola), 900);
+    speak("Dì la parola per far avanzare il pappagallo!", "sess_di_parola_oca");
+    if (current) setTimeout(() => speakWord(current.parola), 900);
   }, []);
 
   function advance() {
     onAttempt(current.parola, true);
-    say(current.parola);
+    speakWord(current.parola);
     if (pos < 5) setPos(pos + 1);
     else setTimeout(onDone, 600);
   }
@@ -825,7 +828,7 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
           </View>
         ))}
       </View>
-      <Pressable onPress={() => say(current.parola)} style={{ alignItems: "center" }}>
+      <Pressable onPress={() => speakWord(current.parola)} style={{ alignItems: "center" }}>
         <WordVisual parola={current.parola} emoji={current.emoji} size={130} textStyle={ocaStyles.emoji} imageMarginTop={10} />
         <Text style={ocaStyles.word}>{current.parola}</Text>
       </Pressable>
@@ -850,15 +853,16 @@ function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
   const [next, setNext] = useState(1);
   const [story, setStory] = useState("Tocca l'immagine giusta per iniziare…");
   const [wrongOrder, setWrongOrder] = useState<number | null>(null);
+  const { speak } = useVoice();
 
   useEffect(() => {
-    say("Tocca le immagini in ordine per raccontare la storia");
+    speak("Tocca le immagini in ordine per raccontare la storia", "sess_tocca_immagini_ordine");
   }, []);
 
   function tap(step: typeof steps[number]) {
     if (step.order < next) return;
     if (step.order === next) {
-      say(step.said);
+      speak(step.said);
       setStory((s) => (next === 1 ? step.text : `${s} ${step.text}`));
       if (next === 3) setTimeout(onDone, 1200);
       setNext((n) => n + 1);
