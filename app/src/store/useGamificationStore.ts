@@ -10,6 +10,7 @@ import {
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
 import { getHunger } from "../constants/lalloPet";
 import { linkPurchasesToChild } from "../api/purchases";
+import { requestReminderPermission, scheduleNextReminder, cancelReminders } from "../notifications/reminders";
 
 interface GamificationStore {
   profile: ChildProfile | null;
@@ -19,6 +20,7 @@ interface GamificationStore {
   setParentReportedConcerns: (concerns: string[]) => void;
   setAudioRecordingConsent: (consent: boolean) => void;
   setCameraConsent: (consent: boolean) => void;
+  setRemindersEnabled: (enabled: boolean) => Promise<boolean>;
   setSubscriptionActive: (active: boolean) => void;
   addPhotoCatch: (word: string, uri: string) => void;
   removePhotoCatch: (id: string) => void;
@@ -227,6 +229,11 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         sessionLog: [...profile.sessionLog, logEntry],
       },
     });
+
+    // Ha appena giocato: sposta in avanti il prossimo promemoria (vedi
+    // notifications/reminders.ts) invece di lasciarne uno per "oggi" che arriverebbe dopo che
+    // ha già fatto l'esercizio.
+    if (profile.remindersEnabled) scheduleNextReminder(profile.displayName).catch(() => {});
   },
 
   // Chiamata dallo schermo di assegnazione del logopedista (TherapistAssignScreen).
@@ -291,6 +298,23 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     const profile = get().profile;
     if (!profile) return;
     set({ profile: { ...profile, cameraConsent: consent } });
+  },
+
+  // Ritorna false (senza attivare nulla) se il genitore nega il permesso di sistema, così lo
+  // switch in Privacy e registrazioni può tornare visivamente su "off" invece di mentire.
+  setRemindersEnabled: async (enabled) => {
+    const profile = get().profile;
+    if (!profile) return false;
+    if (!enabled) {
+      await cancelReminders();
+      set({ profile: { ...profile, remindersEnabled: false } });
+      return true;
+    }
+    const granted = await requestReminderPermission();
+    if (!granted) return false;
+    await scheduleNextReminder(profile.displayName);
+    set({ profile: { ...profile, remindersEnabled: true } });
+    return true;
   },
 
   // Fonte di verità: RevenueCat (vedi api/purchases.ts), mai un tap dell'utente. Chiamata

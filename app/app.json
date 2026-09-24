@@ -37,7 +37,8 @@
         {
           "cameraPermission": "Lallo usa la fotocamera per l'Album, dove il bambino fotografa oggetti reali che corrispondono alle parole che sta imparando, solo dopo il consenso del genitore. Le foto restano solo su questo dispositivo."
         }
-      ]
+      ],
+      "expo-notifications"
     ]
   }
 }

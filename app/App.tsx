@@ -81,6 +81,7 @@ const seedProfile: ChildProfile = {
   parentReportedConcerns: [],
   audioRecordingConsent: false,
   cameraConsent: false,
+  remindersEnabled: false,
   introsSeen: { lallo: false, album: false },
   sessionLog: [],
   lalloPet: { lastFedAt: null, lastInteractionAt: null },

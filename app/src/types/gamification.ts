@@ -84,6 +84,10 @@ export interface ChildProfile {
   // AlbumScreen). Finché è false la fotocamera non si apre. Le foto restano solo sul
   // dispositivo (expo-file-system), non vengono mai caricate su Supabase Storage.
   cameraConsent: boolean;
+  // Promemoria giornaliero locale (vedi notifications/reminders.ts): il genitore lo attiva da
+  // Progressi → Privacy, mai un popup di permesso non richiesto. Finché è false non viene
+  // programmata/richiesta nessuna notifica.
+  remindersEnabled: boolean;
   // Prima volta che il bambino ha visto/sentito la presentazione di Lallo su ciascuna
   // sezione (settembre 2026, feedback: "Lallo si presenta solo la prima volta, poi solo le
   // istruzioni del gioco"). Vive solo in memoria come il resto del profilo — finché non c'è

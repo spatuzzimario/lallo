@@ -325,6 +325,20 @@ export function PrivacyConsentScreen({ navigation }: any) {
   const profile = useGamificationStore((s) => s.profile);
   const setAudioRecordingConsent = useGamificationStore((s) => s.setAudioRecordingConsent);
   const setCameraConsent = useGamificationStore((s) => s.setCameraConsent);
+  const setRemindersEnabled = useGamificationStore((s) => s.setRemindersEnabled);
+
+  // setRemindersEnabled ritorna false se il genitore nega il permesso di sistema: lo switch
+  // deve restare/tornare su "off" invece di mostrare uno stato che non corrisponde al vero
+  // (il valore mostrato viene comunque da profile.remindersEnabled, non da uno stato locale).
+  async function handleToggleReminders(value: boolean) {
+    const ok = await setRemindersEnabled(value);
+    if (value && !ok) {
+      Alert.alert(
+        "Permesso non concesso",
+        "Per ricevere il promemoria devi consentire le notifiche a Lallo dalle impostazioni del telefono."
+      );
+    }
+  }
 
   function openLegalDoc(name: string) {
     // TODO: collegare l'URL vero della Privacy Policy / Cookie Policy (probabilmente
@@ -382,6 +396,25 @@ export function PrivacyConsentScreen({ navigation }: any) {
           <Switch
             value={profile.cameraConsent}
             onValueChange={setCameraConsent}
+            trackColor={{ false: "#D9CEBC", true: COLORS.jade }}
+          />
+        </View>
+      </View>
+
+      <View style={privacyStyles.card}>
+        <Text style={privacyStyles.cardTitle}>Promemoria</Text>
+        <Text style={privacyStyles.cardText}>
+          Se {profile.displayName} non ha ancora giocato in giornata, Lallo manda un
+          promemoria nel tardo pomeriggio su questo dispositivo — mai più di uno al giorno,
+          niente notifiche se ha già fatto l'esercizio.
+        </Text>
+        <View style={privacyStyles.consentRow}>
+          <Text style={privacyStyles.consentLabel}>
+            Ricordami di far giocare {profile.displayName} ogni giorno
+          </Text>
+          <Switch
+            value={profile.remindersEnabled}
+            onValueChange={handleToggleReminders}
             trackColor={{ false: "#D9CEBC", true: COLORS.jade }}
           />
         </View>
