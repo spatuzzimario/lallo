@@ -473,7 +473,7 @@ function Registratore({ phonemeKey, position, onAttempt, onDone }: {
       </Text>
       {!hasConsent && (
         <Text style={styles.warnNote}>
-          Serve il consenso di un genitore per registrare la voce. Vai su Genitori → Privacy
+          Serve il consenso di un genitore per registrare la voce. Vai su Progressi → Privacy
           e registrazioni per attivarlo.
         </Text>
       )}

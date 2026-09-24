@@ -61,7 +61,6 @@ export interface ChildProfile {
   gender?: "maschio" | "femmina" | "preferisco_non_dire";
   avatarId: string;
   stars: number;
-  gems: number;
   streak: StreakState;
   unlockedCosmetics: string[];
   phonemeGroups: PhonemeGroup[];
@@ -85,10 +84,12 @@ export interface ChildProfile {
   // AlbumScreen). Finché è false la fotocamera non si apre. Le foto restano solo sul
   // dispositivo (expo-file-system), non vengono mai caricate su Supabase Storage.
   cameraConsent: boolean;
-  // Ricompensa giornaliera (reward base, non clinica): date ISO (YYYY-MM-DD) in cui è
-  // già stata assegnata. Ciclo di 7 giorni non spezzato da un giorno saltato — stesso
-  // spirito "generoso" dei grace days dello streak, non è un contatore di fila rigido.
-  dailyRewards: { claimedDates: string[] };
+  // Prima volta che il bambino ha visto/sentito la presentazione di Lallo su ciascuna
+  // sezione (settembre 2026, feedback: "Lallo si presenta solo la prima volta, poi solo le
+  // istruzioni del gioco"). Vive solo in memoria come il resto del profilo — finché non c'è
+  // una persistenza reale (Supabase/AsyncStorage), "la prima volta" vale per sessione
+  // dell'app, si ripresenta se l'app viene chiusa e riaperta da zero.
+  introsSeen: { lallo: boolean; album: boolean };
   // Storico delle sessioni completate — per la dashboard genitore (§6.5: uso nel tempo,
   // ultimi 7 giorni, andamento per fonema). Vedi SessionLogEntry.
   sessionLog: SessionLogEntry[];

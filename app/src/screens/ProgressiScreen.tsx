@@ -1,63 +1,82 @@
-import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useGamificationStore } from "../store/useGamificationStore";
+import { ParentDashboardScreen } from "./ParentScreens";
 
-const C = { paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", jade: "#137A6E", mist: "#E4EFEA", sun: "#FFC53D", line: "#D9CEBC" };
+const C = { bg: "#FFF8EE", primary: "#2A20E0", text: "#1A1A1A", subtext: "#666", coral: "#FF6A4D" };
 
-export default function ProgressiScreen() {
+// Ispirato al "Are you a grown up?" di Speech Blubs: una domanda matematica semplice prima
+// di entrare nella zona genitori. Non è vera sicurezza (un bambino di 8 anni potrebbe
+// risolverla), è un filtro di attrito intenzionale contro i click accidentali di chi ha
+// 3-6 anni, che è il target reale dell'app.
+function randomProblem() {
+  const a = Math.floor(Math.random() * 6) + 2;
+  const b = Math.floor(Math.random() * 6) + 2;
+  const correct = a + b;
+  const distractors = new Set<number>();
+  while (distractors.size < 2) {
+    const d = correct + (Math.floor(Math.random() * 5) - 2);
+    if (d !== correct && d > 0) distractors.add(d);
+  }
+  const options = [...distractors, correct].sort(() => Math.random() - 0.5);
+  return { a, b, correct, options };
+}
+
+// Settembre 2026 (feedback): prima "Genitori" era un'iconetta a parte in cima a Giochi, che
+// apriva un gate a modale e poi la dashboard come schermata separata ("ParentDashboard").
+// Ora è tutto qui, come 4ª e ultima tab: il calcolo protegge l'intera tab (si rifà ad ogni
+// riavvio dell'app, ma resta sbloccata per il resto della sessione una volta risolto — non
+// ha senso richiederlo ad ogni singolo tap sulla tab, il calcolo è un filtro di attrito, non
+// una password). Dopo il calcolo, il contenuto è la dashboard genitore già esistente
+// (ParentDashboardScreen): progressi dettagliati per fonema, uso settimanale, andamento,
+// abbonamento, consensi.
+export default function ProgressiScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
-  const profile = useGamificationStore((s) => s.profile);
-  if (!profile) return null;
+  const [problem, setProblem] = useState(randomProblem);
+  const [wrong, setWrong] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
 
-  const totalMastered = profile.phonemeGroups.reduce(
-    (sum, g) => sum + g.levels.filter((l) => l.status === "mastered").length,
-    0
-  );
+  function check(value: number) {
+    if (value === problem.correct) {
+      setUnlocked(true);
+    } else {
+      setWrong(true);
+      setTimeout(() => setWrong(false), 500);
+      setProblem(randomProblem());
+    }
+  }
+
+  if (unlocked) {
+    return <ParentDashboardScreen navigation={navigation} />;
+  }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: insets.top + 12 }}>
-      <Text style={styles.sectionLabel}>I PROGRESSI DI {profile.displayName?.toUpperCase()}</Text>
-
-      {profile.phonemeGroups.map((group) =>
-        group.levels
-          .filter((lvl) => lvl.status !== "locked")
-          .map((lvl) => {
-            const pct = lvl.starsPossible ? Math.round((lvl.starsEarned / lvl.starsPossible) * 100) : 0;
-            return (
-              <View key={`${group.id}-${lvl.level}`} style={styles.barRow}>
-                <View style={styles.barTop}>
-                  <Text style={styles.barLabel}>{group.name} · livello {lvl.level}</Text>
-                  <Text style={styles.barPct}>{pct}%</Text>
-                </View>
-                <View style={styles.barTrack}>
-                  <View style={[styles.barFill, { width: `${pct}%` }]} />
-                </View>
-              </View>
-            );
-          })
-      )}
-
-      <View style={styles.rewardCard}>
-        <Text style={styles.rewardBig}>{totalMastered}</Text>
-        <Text style={styles.rewardLabel}>livelli conquistati</Text>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+      <Text style={styles.lock}>🔒</Text>
+      <Text style={styles.title}>Sei un adulto?</Text>
+      <Text style={styles.subtitle}>Questa parte è per i genitori. Risolvi il calcolo per continuare.</Text>
+      <Text style={[styles.problem, wrong && styles.problemWrong]}>
+        {problem.a} + {problem.b} = ?
+      </Text>
+      <View style={styles.optionsRow}>
+        {problem.options.map((opt) => (
+          <Pressable key={opt} onPress={() => check(opt)} style={styles.optionBtn}>
+            <Text style={styles.optionText}>{opt}</Text>
+          </Pressable>
+        ))}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.paper },
-  sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.5, color: C.inkSoft, marginBottom: 12 },
-  barRow: { marginBottom: 14 },
-  barTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
-  barLabel: { fontSize: 12.5, fontWeight: "600", color: C.ink },
-  barPct: { fontSize: 12.5, fontWeight: "600", color: C.ink },
-  barTrack: { height: 11, backgroundColor: C.mist, borderRadius: 999, overflow: "hidden" },
-  barFill: { height: "100%", backgroundColor: C.jade, borderRadius: 999 },
-  rewardCard: {
-    alignItems: "center", backgroundColor: C.sun, borderRadius: 18, padding: 14, marginTop: 18,
-  },
-  rewardBig: { fontWeight: "800", fontSize: 26, color: C.ink },
-  rewardLabel: { fontSize: 11, color: C.ink },
+  container: { flex: 1, backgroundColor: C.bg, alignItems: "center", padding: 24 },
+  lock: { fontSize: 50, marginTop: 40 },
+  title: { fontSize: 24, fontWeight: "800", marginTop: 16, color: C.text },
+  subtitle: { fontSize: 15, color: C.subtext, textAlign: "center", marginTop: 10, marginBottom: 50 },
+  problem: { fontSize: 40, fontWeight: "800", color: C.text, marginBottom: 30 },
+  problemWrong: { color: C.coral },
+  optionsRow: { flexDirection: "row", gap: 16 },
+  optionBtn: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
+  optionText: { color: "#fff", fontSize: 22, fontWeight: "800" },
 });

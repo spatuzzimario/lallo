@@ -18,6 +18,13 @@ const C = {
 // cresce nel tempo insieme alla generazione delle immagini, questo elenco con lei).
 const HUNTABLE_WORDS = Object.keys(WORD_ILLUSTRATIONS).sort();
 
+// Presentazione lunga di Lallo, vista/sentita solo la prima volta che si apre questa tab
+// (settembre 2026, stesso principio di LalloScreen: la mascotte spiega la sezione una volta
+// sola, poi solo l'istruzione breve del compito).
+const INTRO_TEXT =
+  "Questo è il tuo Album! Ogni parola che stai imparando ha un disegno qui dentro. È una " +
+  "caccia al tesoro: fotografa più oggetti veri che puoi trovare per riempirlo e vincere i badge!";
+
 // Album fotografico delle parole (feature virale/retention): il bambino sceglie una parola
 // PRIMA di scattare — l'app non riconosce le foto (nessun AI vision validata per bambini,
 // stesso principio del niente-ASR automatico, vedi CLAUDE.md §10). Le foto restano solo sul
@@ -29,12 +36,16 @@ export default function AlbumScreen() {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const addPhotoCatch = useGamificationStore((s) => s.addPhotoCatch);
+  const markIntroSeen = useGamificationStore((s) => s.markIntroSeen);
   const hasConsent = useGamificationStore((s) => !!s.profile?.cameraConsent);
 
   const [activeWord, setActiveWord] = useState<string | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [justCaught, setJustCaught] = useState<string | null>(null);
   const [newTitleBanner, setNewTitleBanner] = useState<string | null>(null);
+  // Stato locale invece di leggere introsSeen direttamente nel render — vedi stessa nota in
+  // LalloScreen: altrimenti la bolla sparirebbe un istante dopo essere apparsa.
+  const [showIntro, setShowIntro] = useState(false);
 
   const catchesByWord = useMemo(() => {
     const map = new Map<string, number>();
@@ -51,6 +62,14 @@ export default function AlbumScreen() {
   useFocusEffect(
     useCallback(() => {
       Speech.stop();
+      const seen = useGamificationStore.getState().profile?.introsSeen.album;
+      if (!seen) {
+        setShowIntro(true);
+        Speech.speak(INTRO_TEXT, { language: "it-IT", pitch: 1.05, rate: 0.92 });
+        markIntroSeen("album");
+        return;
+      }
+      setShowIntro(false);
       Speech.speak("Scegli una parola e fotografala per aggiungerla al tuo album!", {
         language: "it-IT", pitch: 1.05, rate: 0.92,
       });
@@ -95,6 +114,14 @@ export default function AlbumScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
       <Text style={styles.title}>Album</Text>
+
+      {showIntro && (
+        <View style={styles.introBubble}>
+          <Image source={require("../../assets/lallo-splash.png")} style={styles.introMascot} resizeMode="contain" />
+          <Text style={styles.introText}>{INTRO_TEXT}</Text>
+        </View>
+      )}
+
       <Text style={styles.subtitle}>
         {distinctCaught}/{HUNTABLE_WORDS.length} parole fotografate
         {title ? ` · ${title.emoji} ${title.name}` : ""}
@@ -113,7 +140,7 @@ export default function AlbumScreen() {
 
       {!hasConsent && (
         <Text style={styles.warnNote}>
-          Serve il consenso di un genitore per usare la fotocamera. Vai su Genitori → Privacy e registrazioni per
+          Serve il consenso di un genitore per usare la fotocamera. Vai su Progressi → Privacy e registrazioni per
           attivarlo.
         </Text>
       )}
@@ -151,6 +178,12 @@ export default function AlbumScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg, padding: 18 },
   title: { fontSize: 20, fontWeight: "800", color: C.ink },
+  introBubble: {
+    flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#fff",
+    borderRadius: 16, borderWidth: 1.5, borderColor: C.jade, padding: 12, marginTop: 12,
+  },
+  introMascot: { width: 40, height: 40 },
+  introText: { flex: 1, fontSize: 12.5, color: C.ink, lineHeight: 18 },
   subtitle: { fontSize: 13, color: C.inkSoft, marginTop: 4 },
   nextTitleNote: { fontSize: 11.5, color: C.jadeDeep, marginTop: 2, fontStyle: "italic" },
   banner: { backgroundColor: C.sun, borderRadius: 12, padding: 10, marginTop: 10, alignItems: "center" },

@@ -27,6 +27,7 @@ interface GamificationStore {
   setChildInfo: (info: { displayName?: string; gender?: ChildProfile["gender"] }) => void;
   feedLallo: () => void;
   talkToLallo: () => void;
+  markIntroSeen: (section: "lallo" | "album") => void;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -34,10 +35,28 @@ const SESSIONS_TO_COUNT_WEEK = 3;
 const GRACE_DAYS_PER_MONTH = 2;
 const LALLO_SNACK_BOOST = 15; // punti sazietà per un'interazione "Parla con Lallo"
 
-// Reward giornaliero (base, non clinico): gemme per posizione nel ciclo di 7 giorni,
-// assegnate alla prima sessione completata della giornata. Esportato così la UI (striscia
-// su Home) mostra gli stessi numeri senza duplicarli.
-export const DAILY_REWARD_GEMS = [1, 1, 2, 2, 3, 3, 5];
+// Giorni consecutivi in cui il bambino ha completato almeno una sessione — un contatore
+// onesto e semplice (niente gemme/ricompense inventate, tolte settembre 2026 su feedback:
+// "non hanno senso, fai un tracker visivo dei giorni"). Calcolato al volo dal sessionLog
+// reale invece di essere un altro numero salvato a parte, così non può mai disallinearsi
+// dallo storico vero. Conta all'indietro da oggi; se oggi non si è ancora giocato ma ieri sì,
+// lo streak è ancora "vivo" (si rompe solo quando passa un giorno intero senza sessioni).
+export function getDayStreak(sessionLog: SessionLogEntry[]): number {
+  if (sessionLog.length === 0) return 0;
+  const days = new Set(sessionLog.map((e) => e.date));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let cursor = new Date(today);
+  if (!days.has(cursor.toISOString().slice(0, 10))) {
+    cursor.setDate(cursor.getDate() - 1); // oggi non ancora giocato: parti da ieri
+  }
+  let streak = 0;
+  while (days.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
 
 function freshLevels(): LevelProgress[] {
   return [1, 2, 3, 4, 5, 6, 7].map((level) => ({
@@ -184,23 +203,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     });
 
     const newStreak = updateStreak(profile.streak, result.completedAt.slice(0, 10));
-
-    // Gems only from streak milestones, not from routine play —
-    // keeps the cosmetic economy tied to consistency, not grinding.
-    const justHitWeeklyMilestone =
-      newStreak.currentWeeks > profile.streak.currentWeeks;
-    const gemsAwarded = justHitWeeklyMilestone ? 5 : 0;
-
-    // Ricompensa giornaliera: al massimo una volta al giorno, ciclo di 7 non spezzato da un
-    // giorno saltato (stesso spirito "generoso" dei grace days sopra).
     const todayStr = result.completedAt.slice(0, 10);
-    const claimedToday = profile.dailyRewards.claimedDates.includes(todayStr);
-    const claimedDates = claimedToday
-      ? profile.dailyRewards.claimedDates
-      : [...profile.dailyRewards.claimedDates, todayStr];
-    const dailyRewardGems = claimedToday
-      ? 0
-      : DAILY_REWARD_GEMS[(claimedDates.length - 1) % DAILY_REWARD_GEMS.length];
 
     const logEntry: SessionLogEntry = {
       date: todayStr,
@@ -219,10 +222,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       profile: {
         ...profile,
         stars: profile.stars + totalStars,
-        gems: profile.gems + gemsAwarded + dailyRewardGems,
         streak: newStreak,
         phonemeGroups: updatedGroups,
-        dailyRewards: { claimedDates },
         sessionLog: [...profile.sessionLog, logEntry],
       },
     });
@@ -363,6 +364,16 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         },
       },
     });
+  },
+
+  // Segna vista la presentazione di Lallo su una sezione (tab Lallo o Album) — da lì in poi
+  // il bambino sente solo le istruzioni brevi del gioco/schermata, non più la spiegazione
+  // lunga di chi è Lallo e a cosa serve quella sezione (settembre 2026, vedi LalloScreen/
+  // AlbumScreen). Vale per questa sessione dell'app, non persiste tra un riavvio e l'altro.
+  markIntroSeen: (section) => {
+    const profile = get().profile;
+    if (!profile) return;
+    set({ profile: { ...profile, introsSeen: { ...profile.introsSeen, [section]: true } } });
   },
 
   // Avvia il piano self-directed (nessun logopedista collegato) al termine dello screener.

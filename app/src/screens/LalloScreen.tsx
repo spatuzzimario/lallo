@@ -11,9 +11,19 @@ import {
   setAudioModeAsync,
 } from "expo-audio";
 import * as Speech from "expo-speech";
-import { useGamificationStore } from "../store/useGamificationStore";
+import { useGamificationStore, getDayStreak } from "../store/useGamificationStore";
 import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LalloMood } from "../constants/lalloPet";
 import { getWordImage } from "../constants/wordImage";
+
+// Presentazione lunga di Lallo, sentita/vista solo la prima volta che si apre questa tab
+// (settembre 2026, feedback: "Lallo si presenta solo la prima volta, poi solo le
+// istruzioni del gioco") — spiega chi è e a cosa serve, prima di lasciare il bambino
+// scegliere cosa fare. Le volte successive si sente solo la riga breve legata all'umore
+// (vedi più sotto), come già prima.
+const INTRO_TEXT =
+  "Ciao, sono Lallo! Sono un pappagallo e ripeto tutto quello che mi dici — sono qui per " +
+  "aiutarti a esercitarti con le parole. Puoi darmi da mangiare, parlarmi, oppure premere " +
+  "Gioca per allenarti insieme a me!";
 
 const C = {
   bg: "#FBF6EE", jade: "#137A6E", jadeDeep: "#0E5C53", coral: "#FF6A4D",
@@ -38,11 +48,12 @@ const POKE_REACTIONS = ["Hihi!", "Che solletico!", "Ehi!", "Mi piace giocare con
 // immagini statiche già esistenti (felice/neutro/affamato): un piccolo dondolio continuo
 // (idle), una reazione "boing" al tocco diretto, e una reazione più marcata quando viene
 // sfamato. È un buon compromesso per l'MVP, non un vero personaggio animato frame-by-frame.
-export default function LalloScreen() {
+export default function LalloScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
   const feedLallo = useGamificationStore((s) => s.feedLallo);
   const talkToLallo = useGamificationStore((s) => s.talkToLallo);
+  const markIntroSeen = useGamificationStore((s) => s.markIntroSeen);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
 
   const [now, setNow] = useState(Date.now());
@@ -54,11 +65,27 @@ export default function LalloScreen() {
   const hunger = useMemo(() => getHunger(profile?.lalloPet.lastFedAt ?? null), [profile?.lalloPet.lastFedAt, now]);
   const mood = getMood(hunger);
   const moodCopy = LALLO_MOOD_COPY[mood];
+  const dayStreak = useMemo(() => getDayStreak(profile?.sessionLog ?? []), [profile?.sessionLog]);
+
+  // Mostra la presentazione lunga solo alla prima apertura di questa tab in assoluto (per
+  // questa sessione dell'app — vedi nota su introsSeen in types/gamification.ts). Stato
+  // locale invece di leggere direttamente introsSeen dal profilo nel render: altrimenti la
+  // bolla sparirebbe al primo re-render dopo markIntroSeen(), un istante dopo essere apparsa.
+  const [showIntro, setShowIntro] = useState(false);
 
   // Istruzione vocale ogni volta che il bambino apre questa tab (non solo la prima volta,
-  // vedi stesso ragionamento in GiochiScreen).
+  // vedi stesso ragionamento in GiochiScreen) — tranne la primissima volta in assoluto, che
+  // sente la presentazione lunga invece della riga breve sull'umore.
   useFocusEffect(
     useCallback(() => {
+      const seen = useGamificationStore.getState().profile?.introsSeen.lallo;
+      if (!seen) {
+        setShowIntro(true);
+        say(INTRO_TEXT);
+        markIntroSeen("lallo");
+        return;
+      }
+      setShowIntro(false);
       if (mood === "affamato") say("Lallo ha fame! Trascina un cibo su di lui per sfamarlo");
       else say("Trascina un cibo su Lallo per sfamarlo, o tocca il microfono per parlare con lui!");
     }, [mood])
@@ -158,7 +185,20 @@ export default function LalloScreen() {
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
-      <Text style={styles.title}>Lallo</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Lallo</Text>
+        {dayStreak > 0 && (
+          <View style={styles.streakPill}>
+            <Text style={styles.streakText}>🔥 {dayStreak} {dayStreak === 1 ? "giorno" : "giorni"} di fila</Text>
+          </View>
+        )}
+      </View>
+
+      {showIntro && (
+        <View style={styles.introBubble}>
+          <Text style={styles.introText}>{INTRO_TEXT}</Text>
+        </View>
+      )}
 
       <View style={styles.petCard}>
         <View ref={petBoxRef} collapsable={false}>
@@ -179,6 +219,10 @@ export default function LalloScreen() {
           <View style={[styles.hungerFill, { width: `${hunger}%` }, hunger < 33 && styles.hungerFillLow]} />
         </View>
       </View>
+
+      <Pressable style={styles.playBtn} onPress={() => navigation.navigate("Giochi")}>
+        <Text style={styles.playBtnText}>🎮 Vai a giocare con Lallo!</Text>
+      </Pressable>
 
       <Text style={styles.sectionLabel}>TRASCINA UN CIBO SU LALLO PER SFAMARLO</Text>
       <View style={styles.foodRow}>
@@ -201,7 +245,7 @@ export default function LalloScreen() {
       <View style={styles.talkCard}>
         {!hasConsent && (
           <Text style={styles.warnNote}>
-            Serve il consenso di un genitore per registrare la voce. Vai su Genitori → Privacy e registrazioni per
+            Serve il consenso di un genitore per registrare la voce. Vai su Progressi → Privacy e registrazioni per
             attivarlo.
           </Text>
         )}
@@ -305,7 +349,20 @@ function say(text: string) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg, padding: 18 },
-  title: { fontSize: 20, fontWeight: "800", color: C.ink, marginBottom: 12 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  title: { fontSize: 20, fontWeight: "800", color: C.ink },
+  streakPill: { backgroundColor: C.mist, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10 },
+  streakText: { fontSize: 11.5, fontWeight: "600", color: C.jadeDeep },
+  introBubble: {
+    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1.5, borderColor: C.jade,
+    padding: 14, marginBottom: 14,
+  },
+  introText: { fontSize: 13, color: C.ink, lineHeight: 19 },
+  playBtn: {
+    backgroundColor: C.coral, borderRadius: 16, paddingVertical: 14, alignItems: "center",
+    marginBottom: 18, shadowColor: C.coral, shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3,
+  },
+  playBtnText: { color: "#fff", fontSize: 15.5, fontWeight: "800" },
   petCard: {
     backgroundColor: "#fff", borderRadius: 20, borderWidth: 1.5, borderColor: C.line,
     alignItems: "center", padding: 16, marginBottom: 18,

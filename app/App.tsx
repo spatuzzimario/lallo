@@ -33,7 +33,7 @@ import {
 } from "./src/screens/DiagnosticScreens";
 import PaywallScreen from "./src/screens/PaywallScreen";
 import AuthScreen from "./src/screens/AuthScreen";
-import { AdultGateScreen, ParentDashboardScreen, PrivacyConsentScreen } from "./src/screens/ParentScreens";
+import { PrivacyConsentScreen } from "./src/screens/ParentScreens";
 // NOTA: TherapistAssignScreen è stato rimosso da questa app su richiesta esplicita —
 // il logopedista avrà un'app separata con login proprio. Il file resta nel
 // repository (src/screens/TherapistAssignScreen.tsx) per essere riusato lì,
@@ -70,7 +70,6 @@ const seedProfile: ChildProfile = {
   displayName: "Marco",
   avatarId: "lallo-default",
   stars: 0,
-  gems: 0,
   streak: {
     currentWeeks: 0,
     sessionsThisWeek: 0,
@@ -82,7 +81,7 @@ const seedProfile: ChildProfile = {
   parentReportedConcerns: [],
   audioRecordingConsent: false,
   cameraConsent: false,
-  dailyRewards: { claimedDates: [] },
+  introsSeen: { lallo: false, album: false },
   sessionLog: [],
   lalloPet: { lastFedAt: null, lastInteractionAt: null },
   photoCatches: [],
@@ -135,32 +134,37 @@ const seedProfile: ChildProfile = {
   ],
 };
 
-// La tab "Oggi" è stata rimossa (agosto 2026): senza un logopedista che assegna un piano
-// giornaliero (modello parent-first), mostrava solo gli stessi 2 esercizi auto-generati
-// dallo screener — già coperti dal nodo "Livello 1" della mappa in Giochi, che ora è la
-// prima tab (saluto/streak/reward giornaliero vivono in testa a quello schermo).
+// Settembre 2026 (feedback): l'app ora si apre sulla tab Lallo, non più su Giochi — la
+// mascotte si presenta e da lì il bambino decide se dargli da mangiare, parlargli o
+// giocare (che porta alla tab Giochi). L'ordine delle tab segue lo stesso ordine logico,
+// con Lallo per prima. "Progressi" è stata unita all'area genitori (prima un'iconetta a
+// parte in Giochi): ora è un'unica tab in fondo, protetta dallo stesso calcolo di prima —
+// vedi ProgressiScreen.
 function MainTabs() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: "#137A6E" }}>
-      <Tab.Screen
-        name="Giochi"
-        component={GiochiScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🎮</Text> }}
-      />
+    <Tab.Navigator
+      initialRouteName="Lallo"
+      screenOptions={{ headerShown: false, tabBarActiveTintColor: "#137A6E" }}
+    >
       <Tab.Screen
         name="Lallo"
         component={LalloScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🦜</Text> }}
       />
       <Tab.Screen
-        name="Progressi"
-        component={ProgressiScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📈</Text> }}
+        name="Giochi"
+        component={GiochiScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🎮</Text> }}
       />
       <Tab.Screen
         name="Album"
         component={AlbumScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📸</Text> }}
+      />
+      <Tab.Screen
+        name="Progressi"
+        component={ProgressiScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📈</Text> }}
       />
     </Tab.Navigator>
   );
@@ -215,8 +219,6 @@ export default function App() {
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Livelli" component={LivelliScreen} />
           <Stack.Screen name="Session" component={SessionScreen} />
-          <Stack.Screen name="AdultGate" component={AdultGateScreen} options={{ presentation: "modal" }} />
-          <Stack.Screen name="ParentDashboard" component={ParentDashboardScreen} />
           <Stack.Screen name="PrivacyConsent" component={PrivacyConsentScreen} />
         </Stack.Navigator>
       </NavigationContainer>
