@@ -224,7 +224,7 @@ export default function SessionScreen({ navigation, route }: any) {
       {celebration && (
         <View style={styles.celebrationOverlay}>
           <View style={styles.celebrationCard}>
-            <Text style={styles.celebrationEmoji}>🎉</Text>
+            <Image source={require("../../assets/icons/icon_celebration.png")} style={styles.celebrationEmoji} resizeMode="contain" />
             <Text style={styles.celebrationTitle}>Livello conquistato!</Text>
             <Text style={styles.celebrationText}>
               Hai sbloccato il Livello {celebration.level} · {LEVEL_LABELS[celebration.level]} per il suono{" "}
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
   celebrationCard: {
     backgroundColor: "#fff", borderRadius: 22, padding: 26, alignItems: "center", maxWidth: 340,
   },
-  celebrationEmoji: { fontSize: 48, marginBottom: 8 },
+  celebrationEmoji: { width: 64, height: 64, marginBottom: 8 },
   celebrationTitle: { fontSize: 20, fontWeight: "800", color: "#1F2E2B", marginBottom: 10, textAlign: "center" },
   celebrationText: { fontSize: 14, color: "#4A5A56", textAlign: "center", lineHeight: 20, marginBottom: 20 },
 });

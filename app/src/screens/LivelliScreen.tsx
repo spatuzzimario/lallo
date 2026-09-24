@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, Text, Image, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useGamificationStore } from "../store/useGamificationStore";
@@ -25,14 +25,14 @@ const C = {
 // suono). I giochi di produzione più avanzati (Registratore, Coppie minime, Gioco dell'oca,
 // Sequenze) restano dopo, nel loro ordine originale.
 const GAMES = [
-  { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", emoji: "🔁", levels: [2, 3] },
-  { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", emoji: "👂", levels: [2, 3] },
-  { type: "memory", label: "Memory", meta: "Discriminazione", bg: "#FFF3D6", emoji: "🧩", levels: [2, 3] },
-  { type: "caccia", label: "Caccia al suono", meta: "Discriminazione", bg: "#FDECE7", emoji: "🔎", levels: [2, 3] },
-  { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", emoji: "🎤", levels: [3, 4, 5] },
-  { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", emoji: "👯", levels: [3] },
-  { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", emoji: "🎲", levels: [3, 4] },
-  { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", emoji: "📖", levels: [5] },
+  { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", icon: require("../../assets/icons/game_ripeti.png"), levels: [2, 3] },
+  { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_ascolta.png"), levels: [2, 3] },
+  { type: "memory", label: "Memory", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_memory.png"), levels: [2, 3] },
+  { type: "caccia", label: "Caccia al suono", meta: "Discriminazione", bg: "#FDECE7", icon: require("../../assets/icons/game_caccia.png"), levels: [2, 3] },
+  { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_registratore.png"), levels: [3, 4, 5] },
+  { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", icon: require("../../assets/icons/game_coppie.png"), levels: [3] },
+  { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_oca.png"), levels: [3, 4] },
+  { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_sequenze.png"), levels: [5] },
 ] as const;
 
 function freshLevelsForDisplay(): LevelProgress[] {
@@ -145,7 +145,7 @@ export default function LivelliScreen({ navigation, route }: any) {
                   {nodeGames.map((g) => (
                     <Pressable key={g.type} style={styles.gameCard} onPress={() => openGame(g.type, lvl.level)}>
                       <View style={[styles.iconBoxSmall, { backgroundColor: g.bg }]}>
-                        <Text style={styles.iconEmojiSmall}>{g.emoji}</Text>
+                        <Image source={g.icon} style={styles.iconImageSmall} resizeMode="contain" />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.gameCardTitle}>{g.label}</Text>
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: 14, padding: 10,
   },
   iconBoxSmall: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  iconEmojiSmall: { fontSize: 16 },
+  iconImageSmall: { width: 22, height: 22 },
   gameCardTitle: { fontSize: 13, fontWeight: "700", color: C.ink },
   gameCardMeta: { fontSize: 10.5, color: C.inkSoft, marginTop: 1 },
 });

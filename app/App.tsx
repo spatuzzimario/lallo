@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text } from "react-native";
+import { Text, Image } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import IntroSplashScreen from "./src/screens/IntroSplashScreen";
@@ -61,6 +61,8 @@ import { configurePurchases, getCustomerInfo, hasPremiumEntitlement, addCustomer
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const tabIconStyle = { width: 24, height: 24 };
 
 // Placeholder seed profile — replace with Supabase fetch keyed off
 // the therapist-issued invite code used at onboarding (B2B2C entry point).
@@ -151,22 +153,22 @@ function MainTabs() {
       <Tab.Screen
         name="Lallo"
         component={LalloScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🦜</Text> }}
+        options={{ tabBarIcon: () => <Image source={require("./assets/icons/tab_lallo.png")} style={tabIconStyle} resizeMode="contain" /> }}
       />
       <Tab.Screen
         name="Giochi"
         component={GiochiScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>🎮</Text> }}
+        options={{ tabBarIcon: () => <Image source={require("./assets/icons/tab_giochi.png")} style={tabIconStyle} resizeMode="contain" /> }}
       />
       <Tab.Screen
         name="Album"
         component={AlbumScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📸</Text> }}
+        options={{ tabBarIcon: () => <Image source={require("./assets/icons/tab_album.png")} style={tabIconStyle} resizeMode="contain" /> }}
       />
       <Tab.Screen
         name="Progressi"
         component={ProgressiScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 18 }}>📈</Text> }}
+        options={{ tabBarIcon: () => <Image source={require("./assets/icons/tab_progressi.png")} style={tabIconStyle} resizeMode="contain" /> }}
       />
     </Tab.Navigator>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = { bg: "#FFF8EE", primary: "#2A20E0", text: "#1A1A1A", subtext: "#666", coral: "#FF6A4D" };
@@ -39,7 +39,7 @@ export function AdultMathGate({ subtitle, onPass }: { subtitle: string; onPass: 
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <Text style={styles.lock}>🔒</Text>
+      <Image source={require("../../assets/icons/icon_lock.png")} style={styles.lock} resizeMode="contain" />
       <Text style={styles.title}>Sei un adulto?</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
       <Text style={[styles.problem, wrong && styles.problemWrong]}>
@@ -58,7 +58,7 @@ export function AdultMathGate({ subtitle, onPass }: { subtitle: string; onPass: 
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, alignItems: "center", padding: 24 },
-  lock: { fontSize: 50, marginTop: 40 },
+  lock: { width: 72, height: 72, marginTop: 40 },
   title: { fontSize: 24, fontWeight: "800", marginTop: 16, color: C.text },
   subtitle: { fontSize: 15, color: C.subtext, textAlign: "center", marginTop: 10, marginBottom: 50 },
   problem: { fontSize: 40, fontWeight: "800", color: C.text, marginBottom: 30 },
