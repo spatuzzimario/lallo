@@ -7,15 +7,16 @@ export interface AlbumTitle {
   threshold: number;
   name: string;
   emoji: string;
+  audioSlug: string; // vedi app/assets/audio/lines/titolo_*.mp3 e src/constants/lineAudio.ts
 }
 
 // Soglie sul numero di parole DIVERSE fotografate almeno una volta (non sul totale scatti:
 // fotografare 10 volte la stessa banana non deve valere quanto 10 parole diverse).
 export const ALBUM_TITLES: AlbumTitle[] = [
-  { threshold: 5, name: "Esploratore", emoji: "🔎" },
-  { threshold: 15, name: "Cercatore d'oro", emoji: "🏅" },
-  { threshold: 30, name: "Grande esploratore", emoji: "🗺️" },
-  { threshold: 60, name: "Maestro delle parole", emoji: "👑" },
+  { threshold: 5, name: "Esploratore", emoji: "🔎", audioSlug: "titolo_esploratore" },
+  { threshold: 15, name: "Cercatore d'oro", emoji: "🏅", audioSlug: "titolo_cercatore_oro" },
+  { threshold: 30, name: "Grande esploratore", emoji: "🗺️", audioSlug: "titolo_grande_esploratore" },
+  { threshold: 60, name: "Maestro delle parole", emoji: "👑", audioSlug: "titolo_maestro_parole" },
 ];
 
 export function currentTitle(distinctWordsCaught: number): AlbumTitle | null {
