@@ -846,9 +846,9 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
    costruire template aggiuntivi è un prossimo passo di contenuto. */
 function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
   const steps = [
-    { order: 1, emoji: "🌧️", text: "Prima piove...", said: "Prima piove" },
-    { order: 2, emoji: "🌈", text: "poi esce l'arcobaleno...", said: "Poi esce l'arcobaleno" },
-    { order: 3, emoji: "☀️", text: "e infine torna il sole!", said: "E infine torna il sole" },
+    { order: 1, emoji: "🌧️", text: "Prima piove...", said: "Prima piove.", saidSlug: "seq_esempio_pioggia" },
+    { order: 2, emoji: "🌈", text: "poi esce l'arcobaleno...", said: "Poi esce l'arcobaleno.", saidSlug: "seq_esempio_arcobaleno" },
+    { order: 3, emoji: "☀️", text: "e infine torna il sole!", said: "E infine torna il sole!", saidSlug: "seq_esempio_sole" },
   ];
   const [next, setNext] = useState(1);
   const [story, setStory] = useState("Tocca l'immagine giusta per iniziare…");
@@ -862,7 +862,7 @@ function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
   function tap(step: typeof steps[number]) {
     if (step.order < next) return;
     if (step.order === next) {
-      speak(step.said);
+      speak(step.said, step.saidSlug);
       setStory((s) => (next === 1 ? step.text : `${s} ${step.text}`));
       if (next === 3) setTimeout(onDone, 1200);
       setNext((n) => n + 1);

@@ -39,7 +39,13 @@ const MOOD_IMAGES: Record<LalloMood, any> = {
 // Frasi di reazione al tocco diretto su Lallo (stile Talking Tom, "poke") — non è mai la
 // stessa per non stancare, e restano generiche/allegre, mai un vero dialogo intelligente:
 // qui è solo audio preregistrato/di sistema, nessuna AI che genera risposte.
-const POKE_REACTIONS = ["Hihi!", "Che solletico!", "Ehi!", "Mi piace giocare con te!", "Ahah, di nuovo!"];
+const POKE_REACTIONS = [
+  { text: "Hihi!", slug: "lallo_poke_1" },
+  { text: "Che solletico!", slug: "lallo_poke_2" },
+  { text: "Ehi!", slug: "lallo_poke_3" },
+  { text: "Mi piace giocare con te!", slug: "lallo_poke_4" },
+  { text: "Ahah, di nuovo!", slug: "lallo_poke_5" },
+];
 
 // NOTA SU COSA È REALMENTE FATTIBILE QUI (senza asset di animazione veri): Lallo non ha
 // fotogrammi disegnati per masticare/parlare come un vero personaggio animato (servirebbe
@@ -111,7 +117,8 @@ export default function LalloScreen({ navigation }: any) {
   const bobTranslate = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
 
   function pokeLallo() {
-    speak(POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)]);
+    const reaction = POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)];
+    speak(reaction.text, reaction.slug);
     Animated.sequence([
       Animated.timing(petScale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
       Animated.spring(petRotate, { toValue: 1, useNativeDriver: true, friction: 3 }),
