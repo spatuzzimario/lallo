@@ -391,22 +391,19 @@ const syllableStyles = StyleSheet.create({
 
 /* ---------------- Memory ----------------
    4 livelli di difficoltà legati al Livello clinico della sessione (scala 1-7, vedi
-   types/gamification.ts), con tabelloni crescenti da 6 a 15 carte. Per arrivarci con numeri
-   "belli" (6/9/12/15, non 6/8/10/12 delle coppie classiche) i gruppi da abbinare sono di 3
-   carte uguali invece che 2 — così anche i suoni più poveri di parole (es. Z sorda: solo 8
-   parole in tutto tra iniziale e mediana) reggono il livello più difficile, che ne richiede
-   solo 5 distinte (non 15). Il confronto è "fail-fast": appena tra le carte scoperte ce n'è
-   una che non combacia si segnala subito sbagliato, senza costringere il bambino a scoprire
-   tutte e 3 le carte alla cieca. */
-const MEMORY_GROUP_SIZE = 3;
+   types/gamification.ts), con tabelloni crescenti da 6 a 16 carte — sempre un numero pari,
+   altrimenti le coppie non tornano: 6/8/12/16, non 6/9/12/15. */
 // La scala clinica va da 1 a 7 (vedi types/gamification.ts); qui la comprimiamo su 4 livelli
-// di difficoltà del tabellone, dal più facile (Livello 1-2) al più difficile (Livello 7).
-const MEMORY_GROUPS_BY_LEVEL: Record<ClinicalLevel, number> = { 1: 2, 2: 2, 3: 3, 4: 3, 5: 4, 6: 4, 7: 5 };
+// di difficoltà del tabellone (in numero di coppie), dal più facile (Livello 1-2) al più
+// difficile (Livello 7). 8 coppie al livello 7 è già il massimo di parole distinte che i
+// suoni più poveri riescono a offrire (es. Z sorda: solo 8 parole in tutto tra iniziale e
+// mediana, usate tutte senza scarto per la variazione tra un tentativo e l'altro).
+const MEMORY_PAIRS_BY_LEVEL: Record<ClinicalLevel, number> = { 1: 3, 2: 3, 3: 4, 4: 4, 5: 6, 6: 6, 7: 8 };
 
 function memoryCardWidth(totalCards: number): `${number}%` {
-  if (totalCards <= 9) return "30%"; // 3 per riga
+  if (totalCards <= 8) return "30%"; // 3 per riga
   if (totalCards === 12) return "22%"; // 4 per riga
-  return "18%"; // 15 carte, 5 per riga
+  return "18%"; // 16 carte, 5 per riga
 }
 
 function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
@@ -414,65 +411,60 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const meta = WORD_BANK[phonemeKey];
-  const groupCount = MEMORY_GROUPS_BY_LEVEL[level] ?? 2;
+  const pairCount = MEMORY_PAIRS_BY_LEVEL[level] ?? 3;
   const [round, setRound] = useState(0);
   const cards = useMemo(() => {
     // iniziale + mediana insieme: alcuni suoni non hanno abbastanza parole in una sola
-    // posizione per i livelli più alti (5 parole distinte).
+    // posizione per i livelli più alti (fino a 8 parole distinte).
     const pool = allWordsFor(phonemeKey);
-    const chosen = pickRandom(pool, Math.min(groupCount, pool.length));
-    const tripled = chosen.flatMap((w) => [w, w, w]);
-    return pickRandom(tripled, tripled.length).map((w, idx) => ({ ...w, uid: `${w.parola}-${idx}` }));
-  }, [phonemeKey, groupCount, round]);
-  const totalMatches = Math.min(groupCount, cards.length / MEMORY_GROUP_SIZE);
+    const chosen = pickRandom(pool, Math.min(pairCount, pool.length));
+    const doubled = chosen.flatMap((w) => [w, w]);
+    return pickRandom(doubled, doubled.length).map((w, idx) => ({ ...w, uid: `${w.parola}-${idx}` }));
+  }, [phonemeKey, pairCount, round]);
+  const totalMatches = Math.min(pairCount, cards.length / 2);
 
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
   const [mismatched, setMismatched] = useState<string[]>([]);
+  const [firstUid, setFirstUid] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
 
   useEffect(() => {
-    say(`Trova i gruppi di ${MEMORY_GROUP_SIZE} carte con il suono ${meta.label}`);
-  }, [groupCount]);
+    say(`Trova le coppie con il suono ${meta.label}`);
+  }, [pairCount]);
 
   function handleFlip(card: typeof cards[number]) {
     if (flipped.includes(card.uid) || matched.includes(card.parola)) return;
     say(card.parola);
-    const newFlipped = [...flipped, card.uid];
-    const flippedCards = newFlipped.map((uid) => cards.find((c) => c.uid === uid)!);
-    const allSame = flippedCards.every((c) => c.parola === flippedCards[0].parola);
-
-    if (!allSame) {
-      setFlipped(newFlipped);
-      playWrong();
-      setMismatched(newFlipped);
-      onAttempt(card.parola, false);
-      setTimeout(() => {
-        setFlipped([]);
-        setMismatched([]);
-      }, 900);
-      return;
-    }
-
-    if (newFlipped.length === MEMORY_GROUP_SIZE) {
+    setFlipped((f) => [...f, card.uid]);
+    if (!firstUid) { setFirstUid(card.uid); return; }
+    const first = cards.find((c) => c.uid === firstUid)!;
+    if (first.parola === card.parola) {
       playCorrect();
       onAttempt(card.parola, true);
-      setFlipped([]);
+      setFirstUid(null);
+      setFlipped((f) => f.filter((u) => u !== firstUid && u !== card.uid));
       setMatched((m) => {
         const next = [...m, card.parola];
         if (next.length === totalMatches) setTimeout(onDone, 900);
         return next;
       });
-      return;
+    } else {
+      playWrong();
+      setMismatched([firstUid, card.uid]);
+      onAttempt(card.parola, false);
+      setTimeout(() => {
+        setFlipped((f) => f.filter((u) => u !== firstUid && u !== card.uid));
+        setMismatched([]);
+      }, 900);
+      setFirstUid(null);
     }
-
-    setFlipped(newFlipped);
   }
 
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.question}>
-        Trova i gruppi di {MEMORY_GROUP_SIZE} con {meta.label} · {cards.length} carte 🦜
+        Trova le coppie con {meta.label} · {cards.length} carte 🦜
       </Text>
       <ScrollView contentContainerStyle={styles.memGrid}>
         {cards.map((c) => {
@@ -502,7 +494,7 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
           );
         })}
       </ScrollView>
-      <Pressable style={styles.secondaryBtn} onPress={() => { setFlipped([]); setMatched([]); setMismatched([]); setRound((r) => r + 1); }}>
+      <Pressable style={styles.secondaryBtn} onPress={() => { setFlipped([]); setMatched([]); setMismatched([]); setFirstUid(null); setRound((r) => r + 1); }}>
         <Text style={styles.secondaryBtnText}>🔀 Nuove carte</Text>
       </Pressable>
     </View>
