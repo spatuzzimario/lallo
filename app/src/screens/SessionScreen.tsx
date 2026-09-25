@@ -210,7 +210,7 @@ export default function SessionScreen({ navigation, route }: any) {
       {exerciseType === "oca" && (
         <GiocoDellOca phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
-      {exerciseType === "sequenze" && <SequenzeIllustrate onDone={finishSession} />}
+      {exerciseType === "sequenze" && <SequenzeIllustrate phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "ripeti" && (
         <Ripeti phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
@@ -726,7 +726,16 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
 function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
-  const pair = MINIMAL_PAIRS[phonemeKey] ?? MINIMAL_PAIRS.s!;
+  const curated = MINIMAL_PAIRS[phonemeKey];
+  // Le 4 categorie composite/cluster (cons_r, r_cons, s_cons, mnl_cons) non hanno una
+  // coppia minima curata (vedi nota in wordBank.ts) — invece di mostrare sempre "sole/sale"
+  // di un suono non pertinente, si pescano due parole reali e diverse del fonema stesso.
+  const pair = useMemo<[WordEntry, WordEntry]>(() => {
+    if (curated) return curated;
+    const pool = allWordsFor(phonemeKey);
+    const [a, b] = pickRandom(pool, 2);
+    return [a, b ?? a];
+  }, [phonemeKey, curated]);
   const meta = WORD_BANK[phonemeKey];
   const [round, setRound] = useState(0);
   const target = pair[round % 2];
@@ -843,20 +852,28 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
+// Frasi di collegamento della mini-storia: solo TTS (nessuna registrazione professionale
+// dedicata, come già per le istruzioni dinamiche degli altri giochi, es. CacciaAlSuono) —
+// la parola vera invece usa sempre l'audio registrato di Linda Fiore via speakWord().
+const STORY_CONNECTORS = ["Prima incontriamo", "Poi arriva", "E infine ecco"];
+
 /* ---------------- Sequenze illustrate ----------------
-   Narrazione fissa (livello 5, racconto) — non si presta alla rotazione
-   automatica per parola come gli altri giochi. Un solo esempio per ora;
-   costruire template aggiuntivi è un prossimo passo di contenuto. */
-function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
-  const steps = [
-    { order: 1, emoji: "🌧️", text: "Prima piove...", said: "Prima piove.", saidSlug: "seq_esempio_pioggia" },
-    { order: 2, emoji: "🌈", text: "poi esce l'arcobaleno...", said: "Poi esce l'arcobaleno.", saidSlug: "seq_esempio_arcobaleno" },
-    { order: 3, emoji: "☀️", text: "e infine torna il sole!", said: "E infine torna il sole!", saidSlug: "seq_esempio_sole" },
-  ];
+   Livello 5, racconto: 3 parole vere del fonema in allenamento (stesso word bank/audio
+   già usato dagli altri giochi), non più un'unica storia fissa (pioggia/arcobaleno/sole)
+   identica per ogni suono e slegata da quello in allenamento (bug segnalato). */
+function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
+  const meta = WORD_BANK[phonemeKey];
+  const steps = useMemo(() => {
+    const pool = allWordsFor(phonemeKey);
+    const chosen = pickRandom(pool, Math.min(3, pool.length));
+    while (chosen.length < 3 && pool.length) chosen.push(pool[chosen.length % pool.length]);
+    return chosen.map((word, i) => ({ order: i + 1, parola: word.parola, emoji: word.emoji, connector: STORY_CONNECTORS[i] }));
+  }, [phonemeKey]);
+
   const [next, setNext] = useState(1);
   const [story, setStory] = useState("Tocca l'immagine giusta per iniziare…");
   const [wrongOrder, setWrongOrder] = useState<number | null>(null);
-  const { speak } = useVoice();
+  const { speak, speakWord } = useVoice();
 
   useEffect(() => {
     speak("Tocca le immagini in ordine per raccontare la storia", "sess_tocca_immagini_ordine");
@@ -865,9 +882,11 @@ function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
   function tap(step: typeof steps[number]) {
     if (step.order < next) return;
     if (step.order === next) {
-      speak(step.said, step.saidSlug);
-      setStory((s) => (next === 1 ? step.text : `${s} ${step.text}`));
-      if (next === 3) setTimeout(onDone, 1200);
+      speak(`${step.connector} ${step.parola}.`);
+      setTimeout(() => speakWord(step.parola), 900);
+      const line = `${step.connector} ${step.parola}...`;
+      setStory((s) => (next === 1 ? line : `${s} ${line}`));
+      if (next === steps.length) setTimeout(onDone, 1800);
       setNext((n) => n + 1);
     } else {
       setWrongOrder(step.order);
@@ -877,7 +896,7 @@ function SequenzeIllustrate({ onDone }: { onDone: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <Text style={styles.question}>Tocca le immagini in ordine per raccontare la storia.</Text>
+      <Text style={styles.question}>Tocca le immagini in ordine e racconta la storia con {meta.label} 🦜</Text>
       <View style={seqStyles.row}>
         {steps.map((step) => (
           <Pressable

@@ -137,17 +137,36 @@ export const WORD_BANK: Record<PhonemeKey, PhonemeEntry> = {
                     mediana: [w("pizza","🍕"),w("calzino","🧦"),w("marzo","📅"),w("piazza","🏛️")] },
 };
 
-// Coppie minime curate: solo per fonemi dove ha senso clinico un confronto
-// a due parole. Non tutte le 25 categorie hanno una coppia naturale — dove
-// manca, il gioco usa una coppia di fallback (s) e lo segnala all'utente.
+// Coppie minime curate: solo per fonemi dove ha senso clinico un confronto a due parole
+// (categorie a suono singolo). Le 4 categorie composite/cluster (cons_r, r_cons, s_cons,
+// mnl_cons: TR/DR/FR..., -RT-/-RD-..., ST/SP/SC..., -MP-/-NT-/-LC-...) raggruppano più
+// suoni diversi e non hanno un'unica coppia minima onesta da proporre — per quelle
+// CoppieMinime (SessionScreen.tsx) pesca invece due parole reali del fonema stesso dal
+// word bank, invece di ricadere sempre sulla stessa coppia "sole/sale" di un suono non
+// pertinente (bug segnalato: la coppia doveva riguardare il suono in allenamento).
+// DA VALIDARE con un logopedista prima di uso clinico reale, come il resto del word bank.
 export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, [WordEntry, WordEntry]>> = {
   s: [w("sole", "☀️"), w("sale", "🧂")],
   z_ts: [w("razzo", "🚀"), w("riso", "🍚")],
   r: [w("rana", "🐸"), w("lana", "🧶")],
   l: [w("luna", "🌙"), w("una", "1️⃣")],
-  t: [w("tana", "🕳️"), w("dana", "➖")],
+  t: [w("tana", "🕳️"), w("dado", "🎲")],
   c: [w("cane", "🐶"), w("pane", "🍞")],
   p: [w("palla", "⚽"), w("balla", "💃")],
+  b: [w("barca", "⛵"), w("marca", "🏷️")],
+  ci: [w("cielo", "☁️"), w("gelo", "🥶")],
+  d: [w("dente", "🦷"), w("gente", "🧑‍🤝‍🧑")],
+  f: [w("faro", "🗼"), w("caro", "💛")],
+  g: [w("gatto", "🐱"), w("matto", "🌀")],
+  gi: [w("gelo", "🥶"), w("cielo", "☁️")],
+  gli: [w("paglia", "🌾"), w("palla", "⚽")],
+  gn: [w("bagno", "🛁"), w("banco", "🪑")],
+  m: [w("mano", "✋"), w("nano", "🧙")],
+  n: [w("naso", "👃"), w("vaso", "🏺")],
+  sci_sce: [w("pesce", "🐟"), w("cece", "🫘")],
+  v: [w("vento", "💨"), w("cento", "💯")],
+  z_dz: [w("zero", "0️⃣"), w("vero", "✅")],
+  zeta: [w("zucca", "🎃"), w("buca", "🕳️")],
 };
 
 export function wordsFor(key: PhonemeKey, position: "iniziale" | "mediana"): WordEntry[] {
