@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useAudioPlayer } from "expo-audio";
+import { useIsFocused } from "@react-navigation/native";
 import * as Speech from "expo-speech";
 import { getLineAudio } from "../constants/lineAudio";
 import { getWordAudio } from "../constants/wordAudio";
@@ -10,6 +12,19 @@ import { getWordAudio } from "../constants/wordAudio";
 // useFeedbackSounds(): ogni schermata/esercizio che parla chiama useVoice() una volta.
 export function useVoice() {
   const player = useAudioPlayer(null);
+
+  // React Navigation non smonta le schermate quando si naviga (né i tab né lo stack, per
+  // permettere lo swipe-back) — restano montate "sotto" quella nuova. Senza questo, la
+  // voce di una schermata continua a parlare sopra quella della schermata successiva se il
+  // genitore/bambino passa da una all'altra in fretta. Al blur fermiamo subito l'istruzione
+  // in corso, sia essa un audio pre-registrato che il fallback TTS.
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (!isFocused) {
+      player.pause();
+      Speech.stop();
+    }
+  }, [isFocused]);
 
   function playSource(source: number) {
     Speech.stop();
