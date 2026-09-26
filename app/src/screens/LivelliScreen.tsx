@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
+import { PHRASES, RHYMES } from "../constants/phrases";
 import { ClinicalLevel, LevelProgress, LEVEL_LABELS, LEVEL_ORDER, LEVEL_POSITION } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
 
@@ -30,10 +31,12 @@ const WORD_LEVELS: ClinicalLevel[] = ["L1-1", "L1-2", "L1-3", "L1-4plus", "L2-1"
 // invece di sparire o di una restrizione inventata: sono esercizi già esistenti, nessuno ha
 // chiesto di toglierli.
 //
-// L3/L4a/L4b: i loro giochi (Ripeti la frase, Indica la frase, Racconta la storia, Completa
-// la rima, Filastrocca) sono nuovi e non ancora costruiti (blocco successivo del brief) — solo
-// "Sequenze illustrate" è già implementato ed è per questo l'unico mappato su L4a. L3/L4b
-// restano nodi sbloccabili nel percorso ma senza giochi per ora (nessuno al tap, non un bug).
+// L3/L4b: Ripeti la frase/Indica la frase/Completa la rima/Filastrocca hanno contenuto reale
+// (PHRASES/RHYMES) solo per il pilota dei 6 fonemi gratuiti (m,n,p,t,l,s, brief aggiornamento
+// livelli) — per questo hanno un `contentCheck` in più, oltre al livello: senza, il nodo
+// L3/L4b resterebbe sbloccabile ma aprirebbe un esercizio che si autocompleta subito senza
+// contenuto, invece di semplicemente non offrirlo (vedi filtro in nodeGames sotto). "Racconta
+// la storia" (L4a) non è ancora costruito, resta fuori da questo elenco.
 const GAMES = [
   { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", icon: require("../../assets/icons/game_ripeti.png"), levels: WORD_LEVELS },
   { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_ascolta.png"), levels: WORD_LEVELS },
@@ -43,6 +46,26 @@ const GAMES = [
   { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", icon: require("../../assets/icons/game_coppie.png"), levels: WORD_LEVELS },
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_oca.png"), levels: WORD_LEVELS },
   { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4a"] as ClinicalLevel[] },
+  {
+    type: "ripeti_frase", label: "Ripeti la frase", meta: "Produzione", bg: "#E9F5F1",
+    icon: require("../../assets/icons/game_ripeti.png"), levels: ["L3"] as ClinicalLevel[],
+    contentCheck: (key: PhonemeKey) => (PHRASES[key]?.length ?? 0) > 0,
+  },
+  {
+    type: "indica_frase", label: "Indica la frase", meta: "Discriminazione", bg: "#FFF3D6",
+    icon: require("../../assets/icons/game_ascolta.png"), levels: ["L3"] as ClinicalLevel[],
+    contentCheck: (key: PhonemeKey) => (PHRASES[key]?.length ?? 0) >= 2,
+  },
+  {
+    type: "completa_rima", label: "Completa la rima", meta: "Discriminazione", bg: "#FDECE7",
+    icon: require("../../assets/icons/game_coppie.png"), levels: ["L4b"] as ClinicalLevel[],
+    contentCheck: (key: PhonemeKey) => (RHYMES[key]?.length ?? 0) > 0,
+  },
+  {
+    type: "filastrocca", label: "Filastrocca", meta: "Narrazione", bg: "#FFF3D6",
+    icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4b"] as ClinicalLevel[],
+    contentCheck: (key: PhonemeKey) => (RHYMES[key]?.length ?? 0) > 0,
+  },
 ] as const;
 
 // Etichetta compatta per il cerchietto del nodo — gli id L1-*/L2-* mostrano solo il numero di
@@ -140,7 +163,11 @@ export default function LivelliScreen({ navigation, route }: any) {
         {levels.map((lvl, idx) => {
           const locked = lvl.status === "locked";
           const mastered = lvl.status === "mastered";
-          const nodeGames = GAMES.filter((g) => (g.levels as readonly ClinicalLevel[]).includes(lvl.level));
+          const nodeGames = GAMES.filter(
+            (g) =>
+              (g.levels as readonly ClinicalLevel[]).includes(lvl.level) &&
+              (!("contentCheck" in g) || (g as { contentCheck: (key: PhonemeKey) => boolean }).contentCheck(phonemeKey))
+          );
           const groupKey = levelGroupKey(lvl.level);
           const prevGroupKey = idx > 0 ? levelGroupKey(levels[idx - 1].level) : null;
           const groupHeader = groupKey !== prevGroupKey ? GROUP_HEADER_LABEL[groupKey] : null;

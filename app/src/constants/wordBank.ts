@@ -174,6 +174,20 @@ export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, [WordEntry, WordEntry]>> 
   zeta: [w("zucca", "🎃"), w("buca", "🕳️")],
 };
 
+// Cerca una parola per testo in TUTTO il word bank, a prescindere dal fonema — serve alle
+// frasi/filastrocche (constants/phrases.ts, L3/L4b): la parola-chiave di una frase è sempre
+// del fonema in allenamento, ma i distrattori di una rima sono deliberatamente di ALTRI
+// fonemi (servono solo a non far rima, non a esercitare quel suono). Costo O(n) su ~550
+// parole: va bene per un lookup occasionale, non per un ciclo caldo.
+export function findWordEntry(parola: string): WordEntry | null {
+  for (const key of PHONEME_ORDER) {
+    const entry = WORD_BANK[key];
+    const found = [...entry.iniziale, ...entry.mediana].find((w) => w.parola === parola);
+    if (found) return found;
+  }
+  return null;
+}
+
 // Filtra per complessità sillabica (sotto-step L1/L2, brief aggiornamento livelli §A) — una
 // parola senza tag `syllables` resta inclusa: finché il word bank non è taggato, il filtro
 // non deve far sparire parole per un dato mancante (vedi nota su WordEntry.syllables).

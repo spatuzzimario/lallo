@@ -13,7 +13,9 @@ import {
   distractorPool,
   MINIMAL_PAIRS,
   isPremium,
+  findWordEntry,
 } from "../constants/wordBank";
+import { PHRASES, RHYMES, PhraseEntry } from "../constants/phrases";
 import { getWordImage } from "../constants/wordImage";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
@@ -22,7 +24,8 @@ import { useOcaListening } from "../hooks/useOcaListening";
 
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
-  | "ripeti" | "ascolta" | "sillabe";
+  | "ripeti" | "ascolta" | "sillabe"
+  | "ripeti_frase" | "indica_frase" | "completa_rima" | "filastrocca";
 
 // Illustrazione reale della parola quando disponibile (vedi assets/illustrations/parole/),
 // altrimenti l'emoji placeholder del word bank — copertura ancora parziale, generazione
@@ -191,6 +194,10 @@ export default function SessionScreen({ navigation, route }: any) {
             {exerciseType === "ripeti" && "Ripeti"}
             {exerciseType === "ascolta" && "Ascolta e scegli"}
             {exerciseType === "sillabe" && "Suono isolato"}
+            {exerciseType === "ripeti_frase" && "Ripeti la frase"}
+            {exerciseType === "indica_frase" && "Indica la frase"}
+            {exerciseType === "completa_rima" && "Completa la rima"}
+            {exerciseType === "filastrocca" && "Filastrocca"}
           </Text>
           {/* Rende visibile la difficoltà scelta: suono + livello clinico + posizione —
               prima non c'era modo di sapere, dentro l'esercizio, cosa si stava giocando. */}
@@ -222,6 +229,16 @@ export default function SessionScreen({ navigation, route }: any) {
       {exerciseType === "ascolta" && (
         <AscoltaEScegli phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
+      {exerciseType === "ripeti_frase" && (
+        <RipetiLaFrase phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "indica_frase" && (
+        <IndicaLaFrase phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "completa_rima" && (
+        <CompletaLaRima phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "filastrocca" && <Filastrocca phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "sillabe" && (
         <SillabeIsolate phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
@@ -1011,6 +1028,255 @@ function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; on
       <View style={seqStyles.storyBox}>
         <Text style={seqStyles.storyText}>{story}</Text>
       </View>
+    </View>
+  );
+}
+
+/* ---------------- Ripeti la frase ----------------
+   L3 (Frase), produzione: stesso schema di Ripeti/Registratore — ascolta la frase intera e
+   ripetila, tocco per avanzare (nessuna valutazione della pronuncia, brief blocco B). Usa
+   PHRASES (constants/phrases.ts): pilota sui 6 fonemi gratuiti per ora, vedi nota lì. Se il
+   fonema non ha ancora frasi, l'esercizio non va offerto da LivelliScreen (contentCheck) —
+   qui il controllo resta solo come difesa in profondità, come già per SillabeIsolate. */
+function RipetiLaFrase({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const pool = PHRASES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const { speak } = useVoice();
+  const totalRounds = Math.min(PRODUCTION_ROUNDS, pool.length);
+  const phrase: PhraseEntry | undefined = pool[round];
+  const wordEntry = phrase ? findWordEntry(phrase.parola) : null;
+
+  useEffect(() => {
+    if (pool.length === 0) {
+      onDone();
+      return;
+    }
+    speak(phrase!.testo, phrase!.slug);
+  }, [round]);
+
+  function next() {
+    if (!phrase) return;
+    onAttempt(phrase.parola, true);
+    if (round + 1 < totalRounds) setRound((r) => r + 1);
+    else onDone();
+  }
+
+  if (!phrase) return null;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>Ascolta la frase e ripetila ad alta voce</Text>
+      {wordEntry && (
+        <WordVisual parola={wordEntry.parola} emoji={wordEntry.emoji} size={140} textStyle={styles.recEmoji} imageMarginTop={16} />
+      )}
+      <Text style={ocaStyles.word}>{phrase.testo}</Text>
+      <Pressable style={styles.recListenBtn} onPress={() => speak(phrase.testo, phrase.slug)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <Pressable style={ocaStyles.sayBtn} onPress={next}>
+        <Text style={styles.primaryBtnText}>Fatto, ho ripetuto! 🦜</Text>
+      </Pressable>
+      <Text style={styles.recCap}>Frase {round + 1} di {totalRounds}</Text>
+    </View>
+  );
+}
+
+/* ---------------- Indica la frase ----------------
+   L3 (Frase), discriminazione (nuovo gioco, brief blocco A): il bambino sente una frase e
+   tocca, tra 2-3 scene, quella giusta — la "scena" riusa l'immagine/emoji già esistente
+   della parola-chiave della frase (nessuna nuova illustrazione richiesta, vedi nota di
+   scoping). Richiede almeno 2 frasi per il fonema (contentCheck in LivelliScreen). */
+function IndicaLaFrase({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const pool = PHRASES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  const { speak } = useVoice();
+  const totalRounds = Math.min(PRODUCTION_ROUNDS, pool.length);
+  const target: PhraseEntry | undefined = pool[round];
+
+  const options = useMemo(() => {
+    if (!target) return [];
+    const others = pool.filter((p) => p.parola !== target.parola);
+    const distractors = pickRandom(others, Math.min(2, others.length));
+    return pickRandom([target, ...distractors], distractors.length + 1);
+  }, [round]);
+
+  useEffect(() => {
+    if (pool.length < 2) {
+      onDone();
+      return;
+    }
+    speak("Ascolta, poi tocca la scena giusta", "sess_ascolta_tocca_scena");
+    setTimeout(() => speak(target!.testo, target!.slug), 1400);
+  }, [round]);
+
+  function pick(entry: PhraseEntry) {
+    if (picked || !target) return;
+    setPicked(entry.parola);
+    const correct = entry.parola === target.parola;
+    onAttempt(entry.parola, correct);
+    setTimeout(() => {
+      setPicked(null);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
+      else onDone();
+    }, 1100);
+  }
+
+  if (!target) return null;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.question}>Ascolta, poi tocca la scena giusta · {round + 1} di {totalRounds}</Text>
+      <Pressable style={styles.playBtn} onPress={() => speak(target.testo, target.slug)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <View style={styles.grid}>
+        {options.map((opt) => {
+          const entry = findWordEntry(opt.parola);
+          const state = picked === null ? null : opt.parola === picked;
+          const isTarget = opt.parola === target.parola;
+          const showCorrect = picked !== null && isTarget;
+          const showWrong = state === true && !isTarget;
+          return (
+            <Pressable
+              key={opt.parola}
+              onPress={() => pick(opt)}
+              style={[styles.tile, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
+            >
+              {entry && <WordVisual parola={entry.parola} emoji={entry.emoji} size={100} textStyle={styles.tileEmoji} />}
+              {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+/* ---------------- Completa la rima ----------------
+   L4b (Racconto in rima), nuovo gioco: la filastrocca si ferma prima dell'ultima parola,
+   il bambino tocca l'immagine giusta tra la parola-rima e 2 distrattori (che possono
+   appartenere ad altri fonemi, servono solo a non far rima — vedi findWordEntry). Usa
+   RHYMES (constants/phrases.ts): pilota sui 6 fonemi gratuiti, DA VALIDARE come il resto. */
+function CompletaLaRima({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const pool = RHYMES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  const { speak, speakWord } = useVoice();
+  const totalRounds = Math.min(pool.length, 2);
+  const rhyme = pool[round];
+
+  const options = useMemo(() => {
+    if (!rhyme) return [];
+    const words = [rhyme.parolaFinale, ...rhyme.distrattori].map(findWordEntry).filter((w): w is WordEntry => !!w);
+    return pickRandom(words, words.length);
+  }, [round]);
+
+  useEffect(() => {
+    if (pool.length === 0) {
+      onDone();
+      return;
+    }
+    speak(rhyme!.righe.join(" "), rhyme!.slug);
+  }, [round]);
+
+  function pick(word: WordEntry) {
+    if (picked || !rhyme) return;
+    setPicked(word.parola);
+    const correct = word.parola === rhyme.parolaFinale;
+    onAttempt(word.parola, correct);
+    if (correct) setTimeout(() => speakWord(word.parola), 400);
+    setTimeout(() => {
+      setPicked(null);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
+      else onDone();
+    }, 1300);
+  }
+
+  if (!rhyme) return null;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.question}>Ascolta la filastrocca e completa la rima</Text>
+      <Text style={ocaStyles.word}>{rhyme.righe.join(" ")}</Text>
+      <Pressable style={styles.recListenBtn} onPress={() => speak(rhyme.righe.join(" "), rhyme.slug)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <View style={styles.grid}>
+        {options.map((w) => {
+          const state = picked === null ? null : w.parola === picked;
+          const isTarget = w.parola === rhyme.parolaFinale;
+          const showCorrect = picked !== null && isTarget;
+          const showWrong = state === true && !isTarget;
+          return (
+            <Pressable
+              key={w.parola}
+              onPress={() => pick(w)}
+              style={[styles.tile, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
+            >
+              <WordVisual parola={w.parola} emoji={w.emoji} size={100} textStyle={styles.tileEmoji} />
+              <Text style={styles.tileWord}>{w.parola.toUpperCase()}</Text>
+              {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+/* ---------------- Filastrocca ----------------
+   L4b (Racconto in rima), ascolto/ripetizione: stesso "tocca per avanzare" già costruito per
+   l'Oca/Sequenze — nessuna scelta da sbagliare, solo ascolta e scopri come finisce. */
+function Filastrocca({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
+  const pool = RHYMES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const { speak, speakWord } = useVoice();
+  const totalRounds = Math.min(pool.length, 2);
+  const rhyme = pool[round];
+  const finalEntry = rhyme ? findWordEntry(rhyme.parolaFinale) : null;
+
+  useEffect(() => {
+    if (pool.length === 0) {
+      onDone();
+      return;
+    }
+    speak(rhyme!.righe.join(" "), rhyme!.slug);
+  }, [round]);
+
+  function reveal() {
+    if (revealed || !rhyme) return;
+    setRevealed(true);
+    speakWord(rhyme.parolaFinale);
+    setTimeout(() => {
+      setRevealed(false);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
+      else onDone();
+    }, 1500);
+  }
+
+  if (!rhyme) return null;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>Ascolta la filastrocca, poi tocca per scoprire come finisce</Text>
+      <Text style={ocaStyles.word}>{rhyme.righe.join(" ")}</Text>
+      {revealed && finalEntry && (
+        <WordVisual parola={finalEntry.parola} emoji={finalEntry.emoji} size={120} textStyle={styles.tileEmoji} imageMarginTop={10} />
+      )}
+      <Pressable style={[ocaStyles.sayBtn, revealed && ocaStyles.sayBtnCelebrating]} onPress={reveal} disabled={revealed}>
+        <Text style={styles.primaryBtnText}>{revealed ? "🎉" : "Come finisce? 🦜"}</Text>
+      </Pressable>
+      <Text style={styles.recCap}>Filastrocca {round + 1} di {totalRounds}</Text>
     </View>
   );
 }
