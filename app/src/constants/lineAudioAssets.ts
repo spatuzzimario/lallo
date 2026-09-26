@@ -20,6 +20,7 @@ export const LINE_AUDIO: Record<string, number> = {
   "sess_ascolta_ripeti": require("../../assets/audio/lines/sess_ascolta_ripeti.mp3"),
   "sess_ascolta_tocca_parola": require("../../assets/audio/lines/sess_ascolta_tocca_parola.mp3"),
   "sess_di_parola_oca": require("../../assets/audio/lines/sess_di_parola_oca.mp3"),
+  "sess_lallo_ti_ha_sentito": require("../../assets/audio/lines/sess_lallo_ti_ha_sentito.mp3"),
   "sess_livello_sbloccato": require("../../assets/audio/lines/sess_livello_sbloccato.mp3"),
   "sess_parole_dirette": require("../../assets/audio/lines/sess_parole_dirette.mp3"),
   "sess_ripeti_tocca_immagine": require("../../assets/audio/lines/sess_ripeti_tocca_immagine.mp3"),

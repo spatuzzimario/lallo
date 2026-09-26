@@ -813,7 +813,16 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   );
 }
 
-/* ---------------- Gioco dell'oca ---------------- */
+/* ---------------- Gioco dell'oca "ascolta e avanza" ----------------
+   Rework brief blocco B: è un gioco, non un giudice — la valutazione clinica della
+   pronuncia sui bambini 3-6 con difficoltà è inaffidabile. Qui c'è solo la modalità
+   "tocca per avanzare" (sempre disponibile, nessun bambino resta mai bloccato): il
+   bambino dice la parola da sé e poi tocca "Dillo!" per far avanzare il pappagallo, con
+   un momento di festa esplicito ("Lallo ti ha sentito! 🦜") invece di un avanzamento
+   silenzioso — mai un punteggio, mai "sbagliato". Il layer microfono on-device (che
+   sostituirà "Dillo!" con un vero riconoscimento vocale a soglia generosa, dietro il
+   consenso genitoriale) è un passo successivo, pianificato separatamente prima di
+   aggiungere una nuova dipendenza nativa. */
 function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
@@ -827,6 +836,8 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   const [pos, setPos] = useState(0);
   const current = words[pos];
   const { speak, speakWord } = useVoice();
+  const { playCorrect } = useFeedbackSounds();
+  const [celebrating, setCelebrating] = useState(false);
 
   useEffect(() => {
     speak("Dì la parola per far avanzare il pappagallo!", "sess_di_parola_oca");
@@ -834,15 +845,23 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   }, []);
 
   function advance() {
+    if (celebrating) return;
     onAttempt(current.parola, true);
-    speakWord(current.parola);
-    if (pos < 5) setPos(pos + 1);
-    else setTimeout(onDone, 600);
+    playCorrect();
+    setCelebrating(true);
+    speak("Lallo ti ha sentito! Bravissimo!", "sess_lallo_ti_ha_sentito");
+    setTimeout(() => {
+      setCelebrating(false);
+      if (pos < 5) setPos((p) => p + 1);
+      else onDone();
+    }, 1300);
   }
 
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
-      <Text style={styles.question}>Dì la parola per far avanzare il pappagallo!</Text>
+      <Text style={styles.question}>
+        {celebrating ? "Lallo ti ha sentito! 🦜" : "Dì la parola per far avanzare il pappagallo!"}
+      </Text>
       <View style={ocaStyles.path}>
         {words.map((_, i) => (
           <View key={i} style={[ocaStyles.cell, i === pos && ocaStyles.cellActive]}>
@@ -854,8 +873,8 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
         <WordVisual parola={current.parola} emoji={current.emoji} size={130} textStyle={ocaStyles.emoji} imageMarginTop={10} />
         <Text style={ocaStyles.word}>{current.parola}</Text>
       </Pressable>
-      <Pressable style={ocaStyles.sayBtn} onPress={advance}>
-        <Text style={styles.primaryBtnText}>🦜 Dillo!</Text>
+      <Pressable style={[ocaStyles.sayBtn, celebrating && ocaStyles.sayBtnCelebrating]} onPress={advance} disabled={celebrating}>
+        <Text style={styles.primaryBtnText}>{celebrating ? "🎉" : "🦜 Dillo!"}</Text>
       </Pressable>
       <Text style={styles.recCap}>Casella {pos + 1} di 6</Text>
     </View>
@@ -1005,6 +1024,7 @@ const ocaStyles = StyleSheet.create({
   sayBtn: {
     backgroundColor: "#137A6E", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 22, marginBottom: 10,
   },
+  sayBtnCelebrating: { backgroundColor: "#FFC53D" },
 });
 
 const seqStyles = StyleSheet.create({
