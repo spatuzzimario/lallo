@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { getLinkedTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
+import { ClinicalLevel, LEVEL_LABELS } from "../types/gamification";
 
 const COLORS = {
   bg: "#FFF8EE",
@@ -37,9 +38,9 @@ export function ParentDashboardScreen({ navigation }: any) {
     });
   }, [supabaseChildId]);
 
-  const focusSuggestion = useMemo<{ groupName: string; level: number; progress: number } | null>(() => {
+  const focusSuggestion = useMemo<{ groupName: string; level: ClinicalLevel; progress: number } | null>(() => {
     if (!profile) return null;
-    let lowest: { groupName: string; level: number; progress: number } | null = null;
+    let lowest: { groupName: string; level: ClinicalLevel; progress: number } | null = null;
     profile.phonemeGroups.forEach((group) => {
       group.levels.forEach((lvl) => {
         if (lvl.status !== "in_progress") return;
@@ -194,7 +195,7 @@ export function ParentDashboardScreen({ navigation }: any) {
         <View style={dashStyles.focusCard}>
           <Text style={dashStyles.focusLabel}>💡 Su cosa concentrarsi</Text>
           <Text style={dashStyles.focusText}>
-            {focusSuggestion.groupName} — livello {focusSuggestion.level} è al{" "}
+            {focusSuggestion.groupName} — {LEVEL_LABELS[focusSuggestion.level]} è al{" "}
             {Math.round(focusSuggestion.progress * 100)}%. Qualche minuto in più qui aiuta di più che altrove.
           </Text>
         </View>
@@ -208,7 +209,7 @@ export function ParentDashboardScreen({ navigation }: any) {
             const pct = lvl.starsPossible ? Math.round((lvl.starsEarned / lvl.starsPossible) * 100) : 0;
             return (
               <View key={lvl.level} style={dashStyles.levelRow}>
-                <Text style={dashStyles.levelLabel}>Livello {lvl.level}</Text>
+                <Text style={dashStyles.levelLabel}>{LEVEL_LABELS[lvl.level]}</Text>
                 <View style={dashStyles.barTrack}>
                   <View style={[dashStyles.barFill, { width: `${pct}%` }]} />
                 </View>

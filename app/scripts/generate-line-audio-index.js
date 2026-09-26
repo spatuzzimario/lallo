@@ -2,7 +2,7 @@
 // Rigenera src/constants/lineAudio.ts a partire dai file presenti in
 // assets/audio/lines/. Stesso motivo del generate-word-audio-index.js: require()
 // vuole percorsi statici e letterali. Qui la chiave è il nome del file (lo slug
-// scelto a mano quando si genera la riga, es. "tpl_caccia_r", "sess_livello2_diretto"),
+// scelto a mano quando si genera la riga, es. "tpl_caccia_r", "sess_parole_dirette"),
 // non una parola slugificata — i chiamanti passano lo slug esplicitamente.
 // Uso: node scripts/generate-line-audio-index.js
 const fs = require("fs");

@@ -6,6 +6,11 @@
 export interface WordEntry {
   parola: string;
   emoji: string;
+  // Complessità sillabica (brief aggiornamento livelli, L1/L2 §A) — non ancora popolato per
+  // nessuna parola: TODO esplicito, da taggare in un giro dedicato (a mano o validato da una
+  // logopedista, non un conteggio automatico non verificato). Finché manca, filterBySyllables
+  // sotto include comunque la parola invece di escluderla per un dato che non esiste.
+  syllables?: 1 | 2 | 3 | "4plus";
 }
 
 export interface PhonemeEntry {
@@ -169,6 +174,14 @@ export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, [WordEntry, WordEntry]>> 
   zeta: [w("zucca", "🎃"), w("buca", "🕳️")],
 };
 
+// Filtra per complessità sillabica (sotto-step L1/L2, brief aggiornamento livelli §A) — una
+// parola senza tag `syllables` resta inclusa: finché il word bank non è taggato, il filtro
+// non deve far sparire parole per un dato mancante (vedi nota su WordEntry.syllables).
+export function filterBySyllables(words: WordEntry[], complexity?: WordEntry["syllables"]): WordEntry[] {
+  if (complexity === undefined) return words;
+  return words.filter((w) => w.syllables === undefined || w.syllables === complexity);
+}
+
 export function wordsFor(key: PhonemeKey, position: "iniziale" | "mediana"): WordEntry[] {
   const entry = WORD_BANK[key];
   const primary = entry[position];
@@ -210,15 +223,14 @@ export function distractorPool(excludeKey: PhonemeKey, n: number): WordEntry[] {
   return pickRandom(pool, n);
 }
 
-// ---------- Livello 1 (Suono isolato) — sillabe consonante+vocale ----------
-// Introdotto con la scala a 7 livelli (settembre 2026, validata): far sentire/produrre il
-// suono in tutte le combinazioni sillabiche prima di passare alla parola. Ortografia
-// italiana verificabile a tavolino (dura/dolce, digrammi) — non serve una logopedista per
-// questo pezzo, a differenza delle frasi/racconti più sotto.
+// ---------- L0 (Suono isolato) — sillabe consonante+vocale ----------
+// Far sentire/produrre il suono in tutte le combinazioni sillabiche prima di passare alla
+// parola. Ortografia italiana verificabile a tavolino (dura/dolce, digrammi) — non serve una
+// logopedista per questo pezzo, a differenza delle frasi/racconti più sotto.
 // 4 categorie composite (cons_r, r_cons, s_cons, mnl_cons) restano vuote di proposito:
 // raggruppano più cluster consonantici diversi sotto un'unica chiave (es. cons_r copre
-// TR/DR/FR/GR/PR/BR), quindi non esiste un'unica "sillaba isolata" onesta da proporre —
-// il fallback in SessionScreen salta questi gruppi direttamente al livello 2.
+// TR/DR/FR/GR/PR/BR), quindi non esiste un'unica "sillaba isolata" onesta da proporre — il
+// fallback in SessionScreen (SillabeIsolate) salta questi gruppi direttamente a L1 (parola).
 export const SYLLABLES: Record<PhonemeKey, string[]> = {
   b: ["BA", "BE", "BI", "BO", "BU"],
   c: ["CA", "CO", "CU", "CHE", "CHI"],

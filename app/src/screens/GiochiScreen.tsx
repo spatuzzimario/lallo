@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium } from "../constants/wordBank";
-import { ClinicalLevel } from "../types/gamification";
+import { ClinicalLevel, LEVEL_ORDER, LEVEL_LABELS } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
 
 const C = {
@@ -12,10 +12,14 @@ const C = {
   jade: "#137A6E", jadeDeep: "#0E5C53", coral: "#FF6A4D", sun: "#FFC53D", mist: "#E4EFEA",
 };
 
+// "Più alto" = indice più avanti in LEVEL_ORDER, non il valore numerico più grande (gli id
+// sono stringhe, es. "L1-3" — niente più Math.max diretto sui livelli).
 function highestUnlockedLevel(levels?: { level: ClinicalLevel; status: string }[]): ClinicalLevel {
-  if (!levels) return 1;
-  const reached = levels.filter((l) => l.status !== "locked").map((l) => l.level);
-  return reached.length ? (Math.max(...reached) as ClinicalLevel) : 1;
+  if (!levels) return LEVEL_ORDER[0];
+  const reachedIdx = levels
+    .filter((l) => l.status !== "locked")
+    .map((l) => LEVEL_ORDER.indexOf(l.level));
+  return reachedIdx.length ? LEVEL_ORDER[Math.max(...reachedIdx)] : LEVEL_ORDER[0];
 }
 
 // Settembre 2026 (feedback): saluto, streak e ricompensa giornaliera si sono spostati sulla
@@ -73,7 +77,7 @@ export default function GiochiScreen({ navigation }: any) {
               {locked ? (
                 <Text style={styles.cardSub}>🔒 Premium</Text>
               ) : (
-                <Text style={styles.cardSub}>{started ? `Livello ${level}` : "Da iniziare"}</Text>
+                <Text style={styles.cardSub}>{started ? LEVEL_LABELS[level] : "Da iniziare"}</Text>
               )}
             </Pressable>
           );
