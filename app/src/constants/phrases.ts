@@ -44,6 +44,30 @@ export const PHRASES: Partial<Record<PhonemeKey, PhraseEntry[]>> = {
     { testo: "La donna legge un libro.", parola: "donna", slug: "frase_d_2" },
     { testo: "Il dottore visita i bambini.", parola: "dottore", slug: "frase_d_3" },
   ],
+  f: [
+    { testo: "La farfalla vola sul fiore.", parola: "farfalla", slug: "frase_f_0" },
+    { testo: "La foca nuota nel mare freddo.", parola: "foca", slug: "frase_f_1" },
+    { testo: "Il fungo cresce nel bosco.", parola: "fungo", slug: "frase_f_2" },
+    { testo: "La fata ha una bacchetta magica.", parola: "fata", slug: "frase_f_3" },
+  ],
+  g: [
+    { testo: "Il gatto dorme sul divano.", parola: "gatto", slug: "frase_g_0" },
+    { testo: "La gallina fa le uova.", parola: "gallina", slug: "frase_g_1" },
+    { testo: "Il gufo vola di notte.", parola: "gufo", slug: "frase_g_2" },
+    { testo: "Il gorilla è molto forte.", parola: "gorilla", slug: "frase_g_3" },
+  ],
+  gi: [
+    { testo: "La giraffa ha il collo lungo.", parola: "giraffa", slug: "frase_gi_0" },
+    { testo: "Il gelato si scioglie al sole.", parola: "gelato", slug: "frase_gi_1" },
+    { testo: "Il girasole guarda il sole.", parola: "girasole", slug: "frase_gi_2" },
+    { testo: "Il gigante ha scarpe enormi.", parola: "gigante", slug: "frase_gi_3" },
+  ],
+  gli: [
+    { testo: "Il coniglio salta nel prato.", parola: "coniglio", slug: "frase_gli_0" },
+    { testo: "La famiglia mangia insieme.", parola: "famiglia", slug: "frase_gli_1" },
+    { testo: "Il gatto dorme sulla paglia.", parola: "paglia", slug: "frase_gli_2" },
+    { testo: "La bottiglia è piena d'acqua.", parola: "bottiglia", slug: "frase_gli_3" },
+  ],
   m: [
     { testo: "La mamma mangia la mela.", parola: "mela", slug: "frase_m_0" },
     { testo: "Il mostro indossa un maglione.", parola: "maglione", slug: "frase_m_1" },
@@ -105,6 +129,22 @@ export const RHYMES: Partial<Record<PhonemeKey, RhymeEntry[]>> = {
   d: [
     { righe: ["Corriamo tutti nel prato,", "poi tiriamo il..."], parolaFinale: "dado", distrattori: ["luna", "torta"], slug: "rima_d_0" },
     { righe: ["Nell'erba striscia un serpente,", "in bocca sento un..."], parolaFinale: "dente", distrattori: ["sole", "pane"], slug: "rima_d_1" },
+  ],
+  f: [
+    { righe: ["Di notte il cielo è chiaro,", "sulla costa brilla il..."], parolaFinale: "faro", distrattori: ["luna", "pane"], slug: "rima_f_0" },
+    { righe: ["Stasera giochiamo a un bel gioco,", "accendiamo insieme il..."], parolaFinale: "fuoco", distrattori: ["sole", "torta"], slug: "rima_f_1" },
+  ],
+  g: [
+    { righe: ["Il cane oggi è un po' matto,", "rincorre per gioco il..."], parolaFinale: "gatto", distrattori: ["luna", "pane"], slug: "rima_g_0" },
+    { righe: ["In fondo alla valle c'è un lago,", "lì vive un potente..."], parolaFinale: "mago", distrattori: ["sole", "torta"], slug: "rima_g_1" },
+  ],
+  gi: [
+    { righe: ["Corriamo insieme nel prato,", "poi mangiamo un buon..."], parolaFinale: "gelato", distrattori: ["luna", "pane"], slug: "rima_gi_0" },
+    { righe: ["Il fuoco scalda un po',", "con gli amici faccio un bel..."], parolaFinale: "gioco", distrattori: ["sole", "torta"], slug: "rima_gi_1" },
+  ],
+  gli: [
+    { righe: ["La nonna mi dà sempre un buon consiglio,", "e mi accarezza il mio..."], parolaFinale: "coniglio", distrattori: ["sole", "torta"], slug: "rima_gli_0" },
+    { righe: ["Sulla spiaggia trovo una conchiglia,", "e la porto a casa alla mia..."], parolaFinale: "famiglia", distrattori: ["luna", "pane"], slug: "rima_gli_1" },
   ],
   m: [
     { righe: ["Sulla barca c'è una vela,", "e vicino c'è una..."], parolaFinale: "mela", distrattori: ["luna", "torta"], slug: "rima_m_0" },

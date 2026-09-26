@@ -59,6 +59,42 @@ export const STORIES: Partial<Record<PhonemeKey, Story>> = {
       { testo: "Il dottore lo rassicura: è normale, ne crescerà uno nuovo!", parola: "dottore", slug: "storia_d_3", image: require("../../assets/illustrations/racconti/scena_d_3.png") },
     ],
   },
+  f: {
+    title: "Fifi la farfalla",
+    scenes: [
+      { testo: "Fifi la farfalla vola leggera tra i fiori.", parola: "farfalla", slug: "storia_f_0", image: require("../../assets/illustrations/racconti/scena_f_0.png") },
+      { testo: "Si posa su un fungo colorato nel bosco.", parola: "fungo", slug: "storia_f_1", image: require("../../assets/illustrations/racconti/scena_f_1.png") },
+      { testo: "Incontra una fata che le regala polvere magica.", parola: "fata", slug: "storia_f_2", image: require("../../assets/illustrations/racconti/scena_f_2.png") },
+      { testo: "Alla sera vede accendersi il faro sulla scogliera.", parola: "faro", slug: "storia_f_3", image: require("../../assets/illustrations/racconti/scena_f_3.png") },
+    ],
+  },
+  g: {
+    title: "Gigi il gatto goloso",
+    scenes: [
+      { testo: "Gigi il gatto vive in una casa con un grande giardino.", parola: "gatto", slug: "storia_g_0", image: require("../../assets/illustrations/racconti/scena_g_0.png") },
+      { testo: "Ogni mattina insegue la gallina nel cortile.", parola: "gallina", slug: "storia_g_1", image: require("../../assets/illustrations/racconti/scena_g_1.png") },
+      { testo: "Di sera guarda il gufo volare sopra il tetto.", parola: "gufo", slug: "storia_g_2", image: require("../../assets/illustrations/racconti/scena_g_2.png") },
+      { testo: "Prima di dormire si nasconde in un morbido gomitolo di lana.", parola: "gomitolo", slug: "storia_g_3", image: require("../../assets/illustrations/racconti/scena_g_3.png") },
+    ],
+  },
+  gi: {
+    title: "Gio la giraffa",
+    scenes: [
+      { testo: "Gio la giraffa vive nella savana.", parola: "giraffa", slug: "storia_gi_0", image: require("../../assets/illustrations/racconti/scena_gi_0.png") },
+      { testo: "Ama guardare il girasole che segue il sole.", parola: "girasole", slug: "storia_gi_1", image: require("../../assets/illustrations/racconti/scena_gi_1.png") },
+      { testo: "Un giorno incontra un gigante gentile.", parola: "gigante", slug: "storia_gi_2", image: require("../../assets/illustrations/racconti/scena_gi_2.png") },
+      { testo: "Insieme mangiano un gelato fresco all'ombra.", parola: "gelato", slug: "storia_gi_3", image: require("../../assets/illustrations/racconti/scena_gi_3.png") },
+    ],
+  },
+  gli: {
+    title: "Coni il coniglietto",
+    scenes: [
+      { testo: "Coni il coniglietto vive con tutta la sua famiglia.", parola: "famiglia", slug: "storia_gli_0", image: require("../../assets/illustrations/racconti/scena_gli_0.png") },
+      { testo: "Ogni notte dorme su un letto di morbida paglia.", parola: "paglia", slug: "storia_gli_1", image: require("../../assets/illustrations/racconti/scena_gli_1.png") },
+      { testo: "Un giorno trova una bottiglia colorata nel prato.", parola: "bottiglia", slug: "storia_gli_2", image: require("../../assets/illustrations/racconti/scena_gli_2.png") },
+      { testo: "La sera indossa la sua maglia preferita e va a dormire.", parola: "maglia", slug: "storia_gli_3", image: require("../../assets/illustrations/racconti/scena_gli_3.png") },
+    ],
+  },
   m: {
     title: "Il compleanno di Marta la mucca",
     scenes: [
