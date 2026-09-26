@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
 import { PHRASES, RHYMES } from "../constants/phrases";
+import { STORIES } from "../constants/stories";
 import { ClinicalLevel, LevelProgress, LEVEL_LABELS, LEVEL_ORDER, LEVEL_POSITION } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
 
@@ -31,12 +32,12 @@ const WORD_LEVELS: ClinicalLevel[] = ["L1-1", "L1-2", "L1-3", "L1-4plus", "L2-1"
 // invece di sparire o di una restrizione inventata: sono esercizi già esistenti, nessuno ha
 // chiesto di toglierli.
 //
-// L3/L4b: Ripeti la frase/Indica la frase/Completa la rima/Filastrocca hanno contenuto reale
-// (PHRASES/RHYMES) solo per il pilota dei 6 fonemi gratuiti (m,n,p,t,l,s, brief aggiornamento
-// livelli) — per questo hanno un `contentCheck` in più, oltre al livello: senza, il nodo
-// L3/L4b resterebbe sbloccabile ma aprirebbe un esercizio che si autocompleta subito senza
-// contenuto, invece di semplicemente non offrirlo (vedi filtro in nodeGames sotto). "Racconta
-// la storia" (L4a) non è ancora costruito, resta fuori da questo elenco.
+// L3/L4b/L4a: Ripeti la frase/Indica la frase/Completa la rima/Filastrocca/Racconta la storia
+// hanno contenuto reale (PHRASES/RHYMES/STORIES) solo per il pilota dei 6 fonemi gratuiti
+// (m,n,p,t,l,s, brief aggiornamento livelli) — per questo hanno un `contentCheck` in più,
+// oltre al livello: senza, il nodo resterebbe sbloccabile ma aprirebbe un esercizio che si
+// autocompleta subito senza contenuto, invece di semplicemente non offrirlo (vedi filtro in
+// nodeGames sotto).
 const GAMES = [
   { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", icon: require("../../assets/icons/game_ripeti.png"), levels: WORD_LEVELS },
   { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_ascolta.png"), levels: WORD_LEVELS },
@@ -46,6 +47,11 @@ const GAMES = [
   { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", icon: require("../../assets/icons/game_coppie.png"), levels: WORD_LEVELS },
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_oca.png"), levels: WORD_LEVELS },
   { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4a"] as ClinicalLevel[] },
+  {
+    type: "racconta_storia", label: "Racconta la storia", meta: "Narrazione", bg: "#FFF3D6",
+    icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4a"] as ClinicalLevel[],
+    contentCheck: (key: PhonemeKey) => !!STORIES[key],
+  },
   {
     type: "ripeti_frase", label: "Ripeti la frase", meta: "Produzione", bg: "#E9F5F1",
     icon: require("../../assets/icons/game_ripeti.png"), levels: ["L3"] as ClinicalLevel[],

@@ -16,6 +16,7 @@ import {
   findWordEntry,
 } from "../constants/wordBank";
 import { PHRASES, RHYMES, PhraseEntry } from "../constants/phrases";
+import { STORIES } from "../constants/stories";
 import { getWordImage } from "../constants/wordImage";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
@@ -25,7 +26,7 @@ import { useOcaListening } from "../hooks/useOcaListening";
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
   | "ripeti" | "ascolta" | "sillabe"
-  | "ripeti_frase" | "indica_frase" | "completa_rima" | "filastrocca";
+  | "ripeti_frase" | "indica_frase" | "completa_rima" | "filastrocca" | "racconta_storia";
 
 // Illustrazione reale della parola quando disponibile (vedi assets/illustrations/parole/),
 // altrimenti l'emoji placeholder del word bank — copertura ancora parziale, generazione
@@ -198,6 +199,7 @@ export default function SessionScreen({ navigation, route }: any) {
             {exerciseType === "indica_frase" && "Indica la frase"}
             {exerciseType === "completa_rima" && "Completa la rima"}
             {exerciseType === "filastrocca" && "Filastrocca"}
+            {exerciseType === "racconta_storia" && "Racconta la storia"}
           </Text>
           {/* Rende visibile la difficoltà scelta: suono + livello clinico + posizione —
               prima non c'era modo di sapere, dentro l'esercizio, cosa si stava giocando. */}
@@ -239,6 +241,7 @@ export default function SessionScreen({ navigation, route }: any) {
         <CompletaLaRima phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "filastrocca" && <Filastrocca phonemeKey={phonemeKey} onDone={finishSession} />}
+      {exerciseType === "racconta_storia" && <RaccontaLaStoria phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "sillabe" && (
         <SillabeIsolate phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
@@ -1280,6 +1283,53 @@ function Filastrocca({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: (
     </View>
   );
 }
+
+/* ---------------- Racconta la storia ----------------
+   L4a (Racconto in prosa), blocco C del brief: ascolto passivo scena-per-scena con una
+   vera illustrazione dedicata per scena (non la carta-parola riusata) — a differenza di
+   Sequenze illustrate (ordinamento/tap), qui non c'è scelta da sbagliare, solo "tocca per
+   andare avanti" come Filastrocca. Usa STORIES (constants/stories.ts): pilota sui 6 fonemi
+   gratuiti, DA VALIDARE come il resto del word bank. */
+function RaccontaLaStoria({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
+  const story = STORIES[phonemeKey];
+  const [index, setIndex] = useState(0);
+  const { speak, speakWord } = useVoice();
+  const scene = story?.scenes[index];
+
+  useEffect(() => {
+    if (!story) {
+      onDone();
+      return;
+    }
+    speak(scene!.testo, scene!.slug);
+  }, [index]);
+
+  function next() {
+    if (!story || !scene) return;
+    speakWord(scene.parola);
+    if (index + 1 < story.scenes.length) setIndex((i) => i + 1);
+    else setTimeout(onDone, 900);
+  }
+
+  if (!story || !scene) return null;
+  const isLast = index + 1 === story.scenes.length;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>{story.title}</Text>
+      <Image source={scene.image} style={raccontoStyles.sceneImage} resizeMode="contain" />
+      <Text style={ocaStyles.word}>{scene.testo}</Text>
+      <Pressable style={ocaStyles.sayBtn} onPress={next}>
+        <Text style={styles.primaryBtnText}>{isLast ? "Fine della storia! 🎉" : "E poi? 🦜"}</Text>
+      </Pressable>
+      <Text style={styles.recCap}>Scena {index + 1} di {story.scenes.length}</Text>
+    </View>
+  );
+}
+
+const raccontoStyles = StyleSheet.create({
+  sceneImage: { width: 220, height: 220, marginVertical: 12 },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFF8EE", padding: 16 },
