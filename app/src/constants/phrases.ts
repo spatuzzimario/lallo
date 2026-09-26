@@ -92,6 +92,48 @@ export const PHRASES: Partial<Record<PhonemeKey, PhraseEntry[]>> = {
     { testo: "Il grillo canta di notte.", parola: "grillo", slug: "frase_cons_r_2" },
     { testo: "La principessa indossa una corona.", parola: "principessa", slug: "frase_cons_r_3" },
   ],
+  r_cons: [
+    { testo: "La tartaruga cammina piano.", parola: "tartaruga", slug: "frase_r_cons_0" },
+    { testo: "L'orso dorme nella tana.", parola: "orso", slug: "frase_r_cons_1" },
+    { testo: "Il verme striscia nella terra.", parola: "verme", slug: "frase_r_cons_2" },
+    { testo: "Le forbici tagliano la carta.", parola: "forbici", slug: "frase_r_cons_3" },
+  ],
+  s_cons: [
+    { testo: "La strega vola sulla scopa.", parola: "strega", slug: "frase_s_cons_0" },
+    { testo: "Lo scoiattolo raccoglie le noci.", parola: "scoiattolo", slug: "frase_s_cons_1" },
+    { testo: "La stella brilla di notte.", parola: "stella", slug: "frase_s_cons_2" },
+    { testo: "Il castello ha una torre alta.", parola: "castello", slug: "frase_s_cons_3" },
+  ],
+  sci_sce: [
+    { testo: "La scimmia salta tra i rami.", parola: "scimmia", slug: "frase_sci_sce_0" },
+    { testo: "Il pesce nuota nel mare.", parola: "pesce", slug: "frase_sci_sce_1" },
+    { testo: "Lo scivolo è nel parco giochi.", parola: "scivolo", slug: "frase_sci_sce_2" },
+    { testo: "La sciarpa è calda e morbida.", parola: "sciarpa", slug: "frase_sci_sce_3" },
+  ],
+  v: [
+    { testo: "La volpe corre nel bosco.", parola: "volpe", slug: "frase_v_0" },
+    { testo: "Il vulcano erutta fuoco.", parola: "vulcano", slug: "frase_v_1" },
+    { testo: "La vespa vola veloce.", parola: "vespa", slug: "frase_v_2" },
+    { testo: "Il violino suona dolce.", parola: "violino", slug: "frase_v_3" },
+  ],
+  z_dz: [
+    { testo: "Lo zaino è pieno di libri.", parola: "zaino", slug: "frase_z_dz_0" },
+    { testo: "La zanzara vola di notte.", parola: "zanzara", slug: "frase_z_dz_1" },
+    { testo: "Lo zero è un numero speciale.", parola: "zero", slug: "frase_z_dz_2" },
+    { testo: "La zebra ha le righe bianche e nere.", parola: "zebra", slug: "frase_z_dz_3" },
+  ],
+  zeta: [
+    { testo: "Lo zio racconta una storia.", parola: "zio", slug: "frase_zeta_0" },
+    { testo: "Lo zoo ha tanti animali.", parola: "zoo", slug: "frase_zeta_1" },
+    { testo: "La zucca è arancione.", parola: "zucca", slug: "frase_zeta_2" },
+    { testo: "La zattera galleggia sull'acqua.", parola: "zattera", slug: "frase_zeta_3" },
+  ],
+  z_ts: [
+    { testo: "La zucca cresce nell'orto.", parola: "zucca", slug: "frase_z_ts_0" },
+    { testo: "Sta' zitto, dice la maestra.", parola: "zitto", slug: "frase_z_ts_1" },
+    { testo: "Il gatto lecca la zampa.", parola: "zampa", slug: "frase_z_ts_2" },
+    { testo: "Lo zucchero è dolce.", parola: "zucchero", slug: "frase_z_ts_3" },
+  ],
   m: [
     { testo: "La mamma mangia la mela.", parola: "mela", slug: "frase_m_0" },
     { testo: "Il mostro indossa un maglione.", parola: "maglione", slug: "frase_m_1" },
@@ -185,6 +227,34 @@ export const RHYMES: Partial<Record<PhonemeKey, RhymeEntry[]>> = {
   cons_r: [
     { righe: ["Il cielo oggi è sereno,", "alla stazione arriva il..."], parolaFinale: "treno", distrattori: ["sole", "pane"], slug: "rima_cons_r_0" },
     { righe: ["Corriamo a perdere il fiato,", "stesi sull'erba c'è un bel..."], parolaFinale: "prato", distrattori: ["luna", "torta"], slug: "rima_cons_r_1" },
+  ],
+  r_cons: [
+    { righe: ["Sul tavolo c'è una torta,", "bussano piano alla..."], parolaFinale: "porta", distrattori: ["sole", "luna"], slug: "rima_r_cons_0" },
+    { righe: ["Chi non sta attento spesso perde,", "il prato è tutto..."], parolaFinale: "verde", distrattori: ["pane", "torta"], slug: "rima_r_cons_1" },
+  ],
+  s_cons: [
+    { righe: ["In salotto c'è una vecchia arpa,", "ai piedi porto la mia..."], parolaFinale: "scarpa", distrattori: ["luna", "pane"], slug: "rima_s_cons_0" },
+    { righe: ["La mia amica è tanto bella,", "lassù nel cielo c'è una..."], parolaFinale: "stella", distrattori: ["sole", "torta"], slug: "rima_s_cons_1" },
+  ],
+  sci_sce: [
+    { righe: ["Il fiore piano piano cresce,", "nell'acqua nuota un..."], parolaFinale: "pesce", distrattori: ["luna", "pane"], slug: "rima_sci_sce_0" },
+    { righe: ["Il nonno suona una vecchia arpa,", "per il freddo indosso la mia..."], parolaFinale: "sciarpa", distrattori: ["sole", "torta"], slug: "rima_sci_sce_1" },
+  ],
+  v: [
+    { righe: ["Accendiamo insieme una candela,", "la barca parte con la sua..."], parolaFinale: "vela", distrattori: ["sole", "pane"], slug: "rima_v_0" },
+    { righe: ["Il tempo oggi passa lento,", "fuori soffia forte il..."], parolaFinale: "vento", distrattori: ["luna", "torta"], slug: "rima_v_1" },
+  ],
+  z_dz: [
+    { righe: ["Oggi parte per la gita un bambino,", "sulle spalle porta il suo..."], parolaFinale: "zaino", distrattori: ["luna", "sole"], slug: "rima_z_dz_0" },
+    { righe: ["Il pane oggi costa un prezzo,", "lo dividiamo tutti a..."], parolaFinale: "mezzo", distrattori: ["sole", "torta"], slug: "rima_z_dz_1" },
+  ],
+  zeta: [
+    { righe: ["Il cane oggi corre come un pazzo,", "gioca felice con il..."], parolaFinale: "ragazzo", distrattori: ["sole", "luna"], slug: "rima_zeta_0" },
+    { righe: ["Questo cagnolino è tutto mio,", "me lo ha regalato lo..."], parolaFinale: "zio", distrattori: ["pane", "torta"], slug: "rima_zeta_1" },
+  ],
+  z_ts: [
+    { righe: ["Il nonno legge sempre la stampa,", "il cane si lecca la..."], parolaFinale: "zampa", distrattori: ["sole", "luna"], slug: "rima_z_ts_0" },
+    { righe: ["Il soldato sta tutto dritto,", "in classe bisogna stare..."], parolaFinale: "zitto", distrattori: ["pane", "torta"], slug: "rima_z_ts_1" },
   ],
   m: [
     { righe: ["Sulla barca c'è una vela,", "e vicino c'è una..."], parolaFinale: "mela", distrattori: ["luna", "torta"], slug: "rima_m_0" },

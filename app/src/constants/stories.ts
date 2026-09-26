@@ -131,6 +131,69 @@ export const STORIES: Partial<Record<PhonemeKey, Story>> = {
       { testo: "Alla sera vola sopra il castello della principessa.", parola: "principessa", slug: "storia_cons_r_3", image: require("../../assets/illustrations/racconti/scena_cons_r_3.png") },
     ],
   },
+  r_cons: {
+    title: "Tosca la tartaruga",
+    scenes: [
+      { testo: "Tosca la tartaruga cammina piano sul prato verde.", parola: "verde", slug: "storia_r_cons_0", image: require("../../assets/illustrations/racconti/scena_r_cons_0.png") },
+      { testo: "Un giorno bussa alla porta di un vecchio orso gentile.", parola: "porta", slug: "storia_r_cons_1", image: require("../../assets/illustrations/racconti/scena_r_cons_1.png") },
+      { testo: "L'orso le regala una sorpresa avvolta con un fiocco.", parola: "sorpresa", slug: "storia_r_cons_2", image: require("../../assets/illustrations/racconti/scena_r_cons_2.png") },
+      { testo: "Tosca ripone la sorpresa in una scatola di cartone.", parola: "cartone", slug: "storia_r_cons_3", image: require("../../assets/illustrations/racconti/scena_r_cons_3.png") },
+    ],
+  },
+  s_cons: {
+    title: "Stella la streghetta",
+    scenes: [
+      { testo: "Stella la streghetta vive in un castello sulla collina.", parola: "castello", slug: "storia_s_cons_0", image: require("../../assets/illustrations/racconti/scena_s_cons_0.png") },
+      { testo: "Il suo amico scoiattolo la aiuta a preparare pozioni.", parola: "scoiattolo", slug: "storia_s_cons_1", image: require("../../assets/illustrations/racconti/scena_s_cons_1.png") },
+      { testo: "Ogni notte guarda le stelle dalla finestra.", parola: "stella", slug: "storia_s_cons_2", image: require("../../assets/illustrations/racconti/scena_s_cons_2.png") },
+      { testo: "Prima di dormire mette le sue scarpe vicino al letto.", parola: "scarpa", slug: "storia_s_cons_3", image: require("../../assets/illustrations/racconti/scena_s_cons_3.png") },
+    ],
+  },
+  sci_sce: {
+    title: "Sci la scimmietta",
+    scenes: [
+      { testo: "Sci la scimmietta salta felice tra i rami degli alberi.", parola: "scimmia", slug: "storia_sci_sce_0", image: require("../../assets/illustrations/racconti/scena_sci_sce_0.png") },
+      { testo: "Un giorno scende veloce da un grande scivolo colorato.", parola: "scivolo", slug: "storia_sci_sce_1", image: require("../../assets/illustrations/racconti/scena_sci_sce_1.png") },
+      { testo: "Nel fiume vede nuotare un piccolo pesce argentato.", parola: "pesce", slug: "storia_sci_sce_2", image: require("../../assets/illustrations/racconti/scena_sci_sce_2.png") },
+      { testo: "Quando fa freddo si copre con una sciarpa calda.", parola: "sciarpa", slug: "storia_sci_sce_3", image: require("../../assets/illustrations/racconti/scena_sci_sce_3.png") },
+    ],
+  },
+  v: {
+    title: "Vale la volpe",
+    scenes: [
+      { testo: "Vale la volpe vive vicino a un vulcano addormentato.", parola: "vulcano", slug: "storia_v_0", image: require("../../assets/illustrations/racconti/scena_v_0.png") },
+      { testo: "Un giorno trova un violino abbandonato nel bosco.", parola: "violino", slug: "storia_v_1", image: require("../../assets/illustrations/racconti/scena_v_1.png") },
+      { testo: "Prova a suonarlo mentre una vespa le ronza intorno.", parola: "vespa", slug: "storia_v_2", image: require("../../assets/illustrations/racconti/scena_v_2.png") },
+      { testo: "Alla fine naviga sul mare con una barca a vela.", parola: "vela", slug: "storia_v_3", image: require("../../assets/illustrations/racconti/scena_v_3.png") },
+    ],
+  },
+  z_dz: {
+    title: "Zeno lo zebrino",
+    scenes: [
+      { testo: "Zeno lo zebrino vive nella savana con la sua mamma zebra.", parola: "zebra", slug: "storia_z_dz_0", image: require("../../assets/illustrations/racconti/scena_z_dz_0.png") },
+      { testo: "Ogni mattina prepara lo zaino per andare a scuola.", parola: "zaino", slug: "storia_z_dz_1", image: require("../../assets/illustrations/racconti/scena_z_dz_1.png") },
+      { testo: "Nel pomeriggio gioca vicino a una zolla di terra morbida.", parola: "zolla", slug: "storia_z_dz_2", image: require("../../assets/illustrations/racconti/scena_z_dz_2.png") },
+      { testo: "La sera scaccia una fastidiosa zanzara prima di dormire.", parola: "zanzara", slug: "storia_z_dz_3", image: require("../../assets/illustrations/racconti/scena_z_dz_3.png") },
+    ],
+  },
+  zeta: {
+    title: "Zaza la zebra allo zoo",
+    scenes: [
+      { testo: "Zaza la zebra vive felice allo zoo.", parola: "zoo", slug: "storia_zeta_0", image: require("../../assets/illustrations/racconti/scena_zeta_0.png") },
+      { testo: "Ogni giorno saluta lo zio guardiano gentile.", parola: "zio", slug: "storia_zeta_1", image: require("../../assets/illustrations/racconti/scena_zeta_1.png") },
+      { testo: "In autunno decora il recinto con una grande zucca.", parola: "zucca", slug: "storia_zeta_2", image: require("../../assets/illustrations/racconti/scena_zeta_2.png") },
+      { testo: "D'estate galleggia su una zattera nel laghetto dello zoo.", parola: "zattera", slug: "storia_zeta_3", image: require("../../assets/illustrations/racconti/scena_zeta_3.png") },
+    ],
+  },
+  z_ts: {
+    title: "Zizzi il topolino goloso",
+    scenes: [
+      { testo: "Zizzi il topolino adora lo zucchero dolce.", parola: "zucchero", slug: "storia_z_ts_0", image: require("../../assets/illustrations/racconti/scena_z_ts_0.png") },
+      { testo: "Un giorno trova una grande zucca nell'orto.", parola: "zucca", slug: "storia_z_ts_1", image: require("../../assets/illustrations/racconti/scena_z_ts_1.png") },
+      { testo: "Si nasconde zitto zitto per non farsi scoprire.", parola: "zitto", slug: "storia_z_ts_2", image: require("../../assets/illustrations/racconti/scena_z_ts_2.png") },
+      { testo: "Alla fine scappa veloce sulle sue piccole zampe.", parola: "zampa", slug: "storia_z_ts_3", image: require("../../assets/illustrations/racconti/scena_z_ts_3.png") },
+    ],
+  },
   m: {
     title: "Il compleanno di Marta la mucca",
     scenes: [
