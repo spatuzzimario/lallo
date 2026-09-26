@@ -29,13 +29,20 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Lallo usa il microfono per registrare la voce del bambino negli esercizi di pronuncia (Registratore, Parla con Lallo), solo dopo il consenso del genitore."
+          "microphonePermission": "Lallo usa il microfono per gli esercizi di pronuncia (Registratore, Parla con Lallo) e per riconoscere le parole dette nel Gioco dell'oca, solo dopo il consenso del genitore. Il riconoscimento vocale avviene sul dispositivo: l'audio non viene mai inviato a un server."
         }
       ],
       [
         "expo-image-picker",
         {
           "cameraPermission": "Lallo usa la fotocamera per l'Album, dove il bambino fotografa oggetti reali che corrispondono alle parole che sta imparando, solo dopo il consenso del genitore. Le foto restano solo su questo dispositivo."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Lallo usa il microfono per gli esercizi di pronuncia (Registratore, Parla con Lallo) e per riconoscere le parole dette nel Gioco dell'oca, solo dopo il consenso del genitore. Il riconoscimento vocale avviene sul dispositivo: l'audio non viene mai inviato a un server.",
+          "speechRecognitionPermission": "Lallo usa il riconoscimento vocale per capire quando il bambino ha detto la parola nel Gioco dell'oca — elaborato sul dispositivo, mai su un server."
         }
       ],
       "expo-notifications"

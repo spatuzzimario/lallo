@@ -18,6 +18,7 @@ import { getWordImage } from "../constants/wordImage";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
+import { useOcaListening } from "../hooks/useOcaListening";
 
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
@@ -212,7 +213,7 @@ export default function SessionScreen({ navigation, route }: any) {
         <CoppieMinime phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "oca" && (
-        <GiocoDellOca phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
+        <GiocoDellOca navigation={navigation} phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "sequenze" && <SequenzeIllustrate phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "ripeti" && (
@@ -815,16 +816,17 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
 
 /* ---------------- Gioco dell'oca "ascolta e avanza" ----------------
    Rework brief blocco B: è un gioco, non un giudice — la valutazione clinica della
-   pronuncia sui bambini 3-6 con difficoltà è inaffidabile. Qui c'è solo la modalità
-   "tocca per avanzare" (sempre disponibile, nessun bambino resta mai bloccato): il
-   bambino dice la parola da sé e poi tocca "Dillo!" per far avanzare il pappagallo, con
-   un momento di festa esplicito ("Lallo ti ha sentito! 🦜") invece di un avanzamento
-   silenzioso — mai un punteggio, mai "sbagliato". Il layer microfono on-device (che
-   sostituirà "Dillo!" con un vero riconoscimento vocale a soglia generosa, dietro il
-   consenso genitoriale) è un passo successivo, pianificato separatamente prima di
-   aggiungere una nuova dipendenza nativa. */
-function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
+   pronuncia sui bambini 3-6 con difficoltà è inaffidabile. Il tocco per avanzare resta
+   SEMPRE disponibile (nessun bambino resta mai bloccato dal microfono): il bambino dice
+   la parola da sé e poi tocca "Dillo!", con un momento di festa esplicito ("Lallo ti ha
+   sentito! 🦜") invece di un avanzamento silenzioso — mai un punteggio, mai "sbagliato".
+   Il microfono (riconoscimento vocale on-device, vedi useOcaListening) è solo un modo
+   più veloce di ottenere la stessa festa: soglia generosa (isReasonableAttempt), niente
+   giudizio sulla qualità della pronuncia, e attivo solo dopo il consenso genitoriale
+   (stesso gate/gioco di ruoli di Registratore più sopra) e solo se il device supporta
+   davvero il riconoscimento on-device (mai un fallback silenzioso al cloud, GDPR-K). */
+function GiocoDellOca({ navigation, phonemeKey, position, onAttempt, onDone }: {
+  navigation: any; phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const words = useMemo(() => {
@@ -838,24 +840,67 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   const { speak, speakWord } = useVoice();
   const { playCorrect } = useFeedbackSounds();
   const [celebrating, setCelebrating] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+
+  function celebrate() {
+    playCorrect();
+    setCelebrating(true);
+    speak("Lallo ti ha sentito! Bravissimo!", "sess_lallo_ti_ha_sentito");
+    setTimeout(() => {
+      setCelebrating(false);
+      setFailedAttempts(0);
+      if (pos < 5) setPos((p) => p + 1);
+      else onDone();
+    }, 1300);
+  }
+
+  const { status: micStatus, listen, cancel } = useOcaListening((matched) => {
+    if (matched) {
+      onAttempt(current.parola, true);
+      celebrate();
+    } else {
+      // Mai "sbagliato": un tentativo non riconosciuto resta silenzioso, il tocco per
+      // avanzare (sempre visibile) è già lì pronto — dopo 2 tentativi lo segnaliamo
+      // esplicitamente (vedi warnNote sotto), come richiesto dal brief.
+      setFailedAttempts((n) => n + 1);
+    }
+  });
 
   useEffect(() => {
     speak("Dì la parola per far avanzare il pappagallo!", "sess_di_parola_oca");
     if (current) setTimeout(() => speakWord(current.parola), 900);
   }, []);
 
-  function advance() {
+  useEffect(() => {
+    setFailedAttempts(0);
+  }, [pos]);
+
+  function tapAdvance() {
     if (celebrating) return;
+    if (micStatus === "listening") cancel();
     onAttempt(current.parola, true);
-    playCorrect();
-    setCelebrating(true);
-    speak("Lallo ti ha sentito! Bravissimo!", "sess_lallo_ti_ha_sentito");
-    setTimeout(() => {
-      setCelebrating(false);
-      if (pos < 5) setPos((p) => p + 1);
-      else onDone();
-    }, 1300);
+    celebrate();
   }
+
+  function tapMic() {
+    if (celebrating) return;
+    if (!hasConsent) {
+      navigation.navigate("MicConsent");
+      return;
+    }
+    if (micStatus === "listening") {
+      cancel();
+      return;
+    }
+    listen(current.parola);
+  }
+
+  // Senza consenso il microfono resta visibile ma bloccato (stesso linguaggio di
+  // Registratore: tocca per capire perché). Con consenso ma senza supporto reale
+  // all'on-device sul device, sparisce del tutto — non è una questione di permessi, resta
+  // solo il tocco per avanzare, senza un'icona bloccata che non si sbloccherà mai.
+  const showMic = !hasConsent || micStatus !== "unavailable";
 
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
@@ -873,9 +918,30 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
         <WordVisual parola={current.parola} emoji={current.emoji} size={130} textStyle={ocaStyles.emoji} imageMarginTop={10} />
         <Text style={ocaStyles.word}>{current.parola}</Text>
       </Pressable>
-      <Pressable style={[ocaStyles.sayBtn, celebrating && ocaStyles.sayBtnCelebrating]} onPress={advance} disabled={celebrating}>
-        <Text style={styles.primaryBtnText}>{celebrating ? "🎉" : "🦜 Dillo!"}</Text>
-      </Pressable>
+      {!hasConsent && showMic && (
+        <Text style={styles.warnNote}>Tocca il microfono per attivarlo: serve il consenso di un genitore.</Text>
+      )}
+      {failedAttempts >= 2 && !celebrating && (
+        <Text style={styles.warnNote}>Puoi anche toccare "Dillo!" per andare avanti 👇</Text>
+      )}
+      <View style={ocaStyles.btnRow}>
+        {showMic && (
+          <Pressable
+            style={[
+              styles.recMicBtn,
+              micStatus === "listening" && styles.recMicBtnActive,
+              !hasConsent && styles.recMicBtnLocked,
+            ]}
+            onPress={tapMic}
+            disabled={celebrating || micStatus === "checking"}
+          >
+            <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : micStatus === "listening" ? "⏺" : "🎤"}</Text>
+          </Pressable>
+        )}
+        <Pressable style={[ocaStyles.sayBtn, celebrating && ocaStyles.sayBtnCelebrating]} onPress={tapAdvance} disabled={celebrating}>
+          <Text style={styles.primaryBtnText}>{celebrating ? "🎉" : "🦜 Dillo!"}</Text>
+        </Pressable>
+      </View>
       <Text style={styles.recCap}>Casella {pos + 1} di 6</Text>
     </View>
   );
@@ -1025,6 +1091,7 @@ const ocaStyles = StyleSheet.create({
     backgroundColor: "#137A6E", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 22, marginBottom: 10,
   },
   sayBtnCelebrating: { backgroundColor: "#FFC53D" },
+  btnRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 10 },
 });
 
 const seqStyles = StyleSheet.create({
