@@ -68,6 +68,30 @@ export const PHRASES: Partial<Record<PhonemeKey, PhraseEntry[]>> = {
     { testo: "Il gatto dorme sulla paglia.", parola: "paglia", slug: "frase_gli_2" },
     { testo: "La bottiglia è piena d'acqua.", parola: "bottiglia", slug: "frase_gli_3" },
   ],
+  gn: [
+    { testo: "Il gnomo vive nel bosco.", parola: "gnomo", slug: "frase_gn_0" },
+    { testo: "Il ragno tesse la sua tela.", parola: "ragno", slug: "frase_gn_1" },
+    { testo: "Il cigno nuota nel lago.", parola: "cigno", slug: "frase_gn_2" },
+    { testo: "La montagna è coperta di neve.", parola: "montagna", slug: "frase_gn_3" },
+  ],
+  mnl_cons: [
+    { testo: "L'elefante cammina nel campo.", parola: "elefante", slug: "frase_mnl_cons_0" },
+    { testo: "Il cavaliere indossa un elmo.", parola: "elmo", slug: "frase_mnl_cons_1" },
+    { testo: "Il topo salta oltre il ponte.", parola: "ponte", slug: "frase_mnl_cons_2" },
+    { testo: "Il tempo vola veloce.", parola: "tempo", slug: "frase_mnl_cons_3" },
+  ],
+  r: [
+    { testo: "La rana salta nello stagno.", parola: "rana", slug: "frase_r_0" },
+    { testo: "Il razzo vola nello spazio.", parola: "razzo", slug: "frase_r_1" },
+    { testo: "La rosa è profumata.", parola: "rosa", slug: "frase_r_2" },
+    { testo: "Il robot cammina piano.", parola: "robot", slug: "frase_r_3" },
+  ],
+  cons_r: [
+    { testo: "Il treno corre veloce sui binari.", parola: "treno", slug: "frase_cons_r_0" },
+    { testo: "Il drago vola sopra il castello.", parola: "drago", slug: "frase_cons_r_1" },
+    { testo: "Il grillo canta di notte.", parola: "grillo", slug: "frase_cons_r_2" },
+    { testo: "La principessa indossa una corona.", parola: "principessa", slug: "frase_cons_r_3" },
+  ],
   m: [
     { testo: "La mamma mangia la mela.", parola: "mela", slug: "frase_m_0" },
     { testo: "Il mostro indossa un maglione.", parola: "maglione", slug: "frase_m_1" },
@@ -145,6 +169,22 @@ export const RHYMES: Partial<Record<PhonemeKey, RhymeEntry[]>> = {
   gli: [
     { righe: ["La nonna mi dà sempre un buon consiglio,", "e mi accarezza il mio..."], parolaFinale: "coniglio", distrattori: ["sole", "torta"], slug: "rima_gli_0" },
     { righe: ["Sulla spiaggia trovo una conchiglia,", "e la porto a casa alla mia..."], parolaFinale: "famiglia", distrattori: ["luna", "pane"], slug: "rima_gli_1" },
+  ],
+  gn: [
+    { righe: ["Ho un desiderio, ne ho proprio bisogno,", "stanotte lo vedrò nel mio..."], parolaFinale: "sogno", distrattori: ["sole", "pane"], slug: "rima_gn_0" },
+    { righe: ["Il mio migliore amico è il mio compagno,", "insieme ci laviamo nel..."], parolaFinale: "bagno", distrattori: ["luna", "torta"], slug: "rima_gn_1" },
+  ],
+  mnl_cons: [
+    { righe: ["In cima c'è un alto monte,", "e sotto scorre un fiume vicino al..."], parolaFinale: "ponte", distrattori: ["sole", "pane"], slug: "rima_mnl_cons_0" },
+    { righe: ["La lumaca cammina lenta lenta,", "fuori soffia forte il..."], parolaFinale: "vento", distrattori: ["sole", "torta"], slug: "rima_mnl_cons_1" },
+  ],
+  r: [
+    { righe: ["Ogni giorno della settimana,", "nello stagno gracida la..."], parolaFinale: "rana", distrattori: ["sole", "torta"], slug: "rima_r_0" },
+    { righe: ["La valigia oggi è vuota,", "la bici cammina sulla sua..."], parolaFinale: "ruota", distrattori: ["sole", "pane"], slug: "rima_r_1" },
+  ],
+  cons_r: [
+    { righe: ["Il cielo oggi è sereno,", "alla stazione arriva il..."], parolaFinale: "treno", distrattori: ["sole", "pane"], slug: "rima_cons_r_0" },
+    { righe: ["Corriamo a perdere il fiato,", "stesi sull'erba c'è un bel..."], parolaFinale: "prato", distrattori: ["luna", "torta"], slug: "rima_cons_r_1" },
   ],
   m: [
     { righe: ["Sulla barca c'è una vela,", "e vicino c'è una..."], parolaFinale: "mela", distrattori: ["luna", "torta"], slug: "rima_m_0" },

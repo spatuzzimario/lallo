@@ -95,6 +95,42 @@ export const STORIES: Partial<Record<PhonemeKey, Story>> = {
       { testo: "La sera indossa la sua maglia preferita e va a dormire.", parola: "maglia", slug: "storia_gli_3", image: require("../../assets/illustrations/racconti/scena_gli_3.png") },
     ],
   },
+  gn: {
+    title: "Gino lo gnomo",
+    scenes: [
+      { testo: "Gino lo gnomo vive in una casetta di legno sulla montagna.", parola: "gnomo", slug: "storia_gn_0", image: require("../../assets/illustrations/racconti/scena_gn_0.png") },
+      { testo: "Ogni giorno saluta il ragno che vive vicino alla porta.", parola: "ragno", slug: "storia_gn_1", image: require("../../assets/illustrations/racconti/scena_gn_1.png") },
+      { testo: "Un pomeriggio disegna un bel sogno colorato.", parola: "sogno", slug: "storia_gn_2", image: require("../../assets/illustrations/racconti/scena_gn_2.png") },
+      { testo: "Alla sera fa il bagno e va a dormire felice.", parola: "bagno", slug: "storia_gn_3", image: require("../../assets/illustrations/racconti/scena_gn_3.png") },
+    ],
+  },
+  mnl_cons: {
+    title: "Elmo l'elefantino",
+    scenes: [
+      { testo: "Elmo l'elefantino gioca felice nel campo verde.", parola: "campo", slug: "storia_mnl_cons_0", image: require("../../assets/illustrations/racconti/scena_mnl_cons_0.png") },
+      { testo: "Un giorno attraversa un vecchio ponte di legno.", parola: "ponte", slug: "storia_mnl_cons_1", image: require("../../assets/illustrations/racconti/scena_mnl_cons_1.png") },
+      { testo: "Sente soffiare un forte vento tra gli alberi.", parola: "vento", slug: "storia_mnl_cons_2", image: require("../../assets/illustrations/racconti/scena_mnl_cons_2.png") },
+      { testo: "Alla sera torna a casa, il tempo di dormire è arrivato.", parola: "tempo", slug: "storia_mnl_cons_3", image: require("../../assets/illustrations/racconti/scena_mnl_cons_3.png") },
+    ],
+  },
+  r: {
+    title: "Rocco il robot",
+    scenes: [
+      { testo: "Rocco il robot vive in una fabbrica di giocattoli.", parola: "robot", slug: "storia_r_0", image: require("../../assets/illustrations/racconti/scena_r_0.png") },
+      { testo: "Un giorno trova una rana che salta nel cortile.", parola: "rana", slug: "storia_r_1", image: require("../../assets/illustrations/racconti/scena_r_1.png") },
+      { testo: "Insieme guardano un razzo volare nel cielo stellato.", parola: "razzo", slug: "storia_r_2", image: require("../../assets/illustrations/racconti/scena_r_2.png") },
+      { testo: "Rocco regala alla rana una rosa rossa come ricordo.", parola: "rosa", slug: "storia_r_3", image: require("../../assets/illustrations/racconti/scena_r_3.png") },
+    ],
+  },
+  cons_r: {
+    title: "Dracorosso il draghetto",
+    scenes: [
+      { testo: "Dracorosso il draghetto vive vicino a un grande prato.", parola: "prato", slug: "storia_cons_r_0", image: require("../../assets/illustrations/racconti/scena_cons_r_0.png") },
+      { testo: "Ogni giorno guarda passare il treno in lontananza.", parola: "treno", slug: "storia_cons_r_1", image: require("../../assets/illustrations/racconti/scena_cons_r_1.png") },
+      { testo: "Ascolta cantare un grillo nascosto tra l'erba.", parola: "grillo", slug: "storia_cons_r_2", image: require("../../assets/illustrations/racconti/scena_cons_r_2.png") },
+      { testo: "Alla sera vola sopra il castello della principessa.", parola: "principessa", slug: "storia_cons_r_3", image: require("../../assets/illustrations/racconti/scena_cons_r_3.png") },
+    ],
+  },
   m: {
     title: "Il compleanno di Marta la mucca",
     scenes: [
