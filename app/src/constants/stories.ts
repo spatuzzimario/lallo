@@ -23,6 +23,42 @@ export interface Story {
 }
 
 export const STORIES: Partial<Record<PhonemeKey, Story>> = {
+  b: {
+    title: "Beba la balena",
+    scenes: [
+      { testo: "Beba la balena vive nel grande mare blu.", parola: "balena", slug: "storia_b_0", image: require("../../assets/illustrations/racconti/scena_b_0.png") },
+      { testo: "Un giorno vede passare una piccola barca a vela.", parola: "barca", slug: "storia_b_1", image: require("../../assets/illustrations/racconti/scena_b_1.png") },
+      { testo: "Sulla barca c'è un bambino con un berretto colorato.", parola: "berretto", slug: "storia_b_2", image: require("../../assets/illustrations/racconti/scena_b_2.png") },
+      { testo: "Beba saluta con la coda e il bambino sventola la bandiera.", parola: "bandiera", slug: "storia_b_3", image: require("../../assets/illustrations/racconti/scena_b_3.png") },
+    ],
+  },
+  c: {
+    title: "Coco il cavallo coraggioso",
+    scenes: [
+      { testo: "Coco il cavallo vive in una grande casa di campagna.", parola: "casa", slug: "storia_c_0", image: require("../../assets/illustrations/racconti/scena_c_0.png") },
+      { testo: "Ogni mattina mette un cappello per proteggersi dal sole.", parola: "cappello", slug: "storia_c_1", image: require("../../assets/illustrations/racconti/scena_c_1.png") },
+      { testo: "Un giorno incontra un coniglio che ha perso la strada.", parola: "coniglio", slug: "storia_c_2", image: require("../../assets/illustrations/racconti/scena_c_2.png") },
+      { testo: "Coco aiuta il coniglio a tornare a casa, felice in cuore.", parola: "cuore", slug: "storia_c_3", image: require("../../assets/illustrations/racconti/scena_c_3.png") },
+    ],
+  },
+  ci: {
+    title: "Cicci la cicogna",
+    scenes: [
+      { testo: "Cicci la cicogna vola nel cielo azzurro.", parola: "cielo", slug: "storia_ci_0", image: require("../../assets/illustrations/racconti/scena_ci_0.png") },
+      { testo: "Vede un cigno bianco nuotare nel lago.", parola: "cigno", slug: "storia_ci_1", image: require("../../assets/illustrations/racconti/scena_ci_1.png") },
+      { testo: "Poi si ferma a mangiare una dolce ciliegia.", parola: "ciliegia", slug: "storia_ci_2", image: require("../../assets/illustrations/racconti/scena_ci_2.png") },
+      { testo: "Alla sera torna al nido, pronta per la cena.", parola: "cena", slug: "storia_ci_3", image: require("../../assets/illustrations/racconti/scena_ci_3.png") },
+    ],
+  },
+  d: {
+    title: "Dado il draghetto",
+    scenes: [
+      { testo: "Dado il draghetto vive in un castello sulla montagna.", parola: "drago", slug: "storia_d_0", image: require("../../assets/illustrations/racconti/scena_d_0.png") },
+      { testo: "Ogni giorno gioca con un grande dado colorato.", parola: "dado", slug: "storia_d_1", image: require("../../assets/illustrations/racconti/scena_d_1.png") },
+      { testo: "Un giorno perde un dente e si spaventa un po'.", parola: "dente", slug: "storia_d_2", image: require("../../assets/illustrations/racconti/scena_d_2.png") },
+      { testo: "Il dottore lo rassicura: è normale, ne crescerà uno nuovo!", parola: "dottore", slug: "storia_d_3", image: require("../../assets/illustrations/racconti/scena_d_3.png") },
+    ],
+  },
   m: {
     title: "Il compleanno di Marta la mucca",
     scenes: [

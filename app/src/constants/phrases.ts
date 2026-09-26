@@ -20,6 +20,30 @@ export interface PhraseEntry {
 }
 
 export const PHRASES: Partial<Record<PhonemeKey, PhraseEntry[]>> = {
+  b: [
+    { testo: "La balena nuota nel mare.", parola: "balena", slug: "frase_b_0" },
+    { testo: "Il bambino gioca con la bambola.", parola: "bambola", slug: "frase_b_1" },
+    { testo: "La ballerina balla sul palco.", parola: "ballerina", slug: "frase_b_2" },
+    { testo: "Il burattino saluta tutti.", parola: "burattino", slug: "frase_b_3" },
+  ],
+  c: [
+    { testo: "Il cane corre nel prato.", parola: "cane", slug: "frase_c_0" },
+    { testo: "Il cavallo galoppa veloce.", parola: "cavallo", slug: "frase_c_1" },
+    { testo: "La coccinella vola sul fiore.", parola: "coccinella", slug: "frase_c_2" },
+    { testo: "Il cuoco prepara la torta.", parola: "cuoco", slug: "frase_c_3" },
+  ],
+  ci: [
+    { testo: "La ciliegia è dolce e rossa.", parola: "ciliegia", slug: "frase_ci_0" },
+    { testo: "Il cielo è azzurro oggi.", parola: "cielo", slug: "frase_ci_1" },
+    { testo: "La cicogna vola alta.", parola: "cicogna", slug: "frase_ci_2" },
+    { testo: "Il cigno nuota nel lago.", parola: "cigno", slug: "frase_ci_3" },
+  ],
+  d: [
+    { testo: "Il delfino salta fuori dall'acqua.", parola: "delfino", slug: "frase_d_0" },
+    { testo: "Il drago sputa fuoco.", parola: "drago", slug: "frase_d_1" },
+    { testo: "La donna legge un libro.", parola: "donna", slug: "frase_d_2" },
+    { testo: "Il dottore visita i bambini.", parola: "dottore", slug: "frase_d_3" },
+  ],
   m: [
     { testo: "La mamma mangia la mela.", parola: "mela", slug: "frase_m_0" },
     { testo: "Il mostro indossa un maglione.", parola: "maglione", slug: "frase_m_1" },
@@ -66,6 +90,22 @@ export interface RhymeEntry {
 }
 
 export const RHYMES: Partial<Record<PhonemeKey, RhymeEntry[]>> = {
+  b: [
+    { righe: ["Nel mare canta la sirena,", "e insieme a lei nuota la..."], parolaFinale: "balena", distrattori: ["luna", "torta"], slug: "rima_b_0" },
+    { righe: ["In spiaggia c'è tanta sabbia,", "il pappagallo vive in una..."], parolaFinale: "gabbia", distrattori: ["pane", "sole"], slug: "rima_b_1" },
+  ],
+  c: [
+    { righe: ["Nel piatto oggi non c'è pane,", "però c'è un osso per il mio..."], parolaFinale: "cane", distrattori: ["torta", "luna"], slug: "rima_c_0" },
+    { righe: ["Quando piove uso l'ombrello,", "per la testa metto il mio..."], parolaFinale: "cappello", distrattori: ["luna", "pane"], slug: "rima_c_1" },
+  ],
+  ci: [
+    { righe: ["Ogni sera prima di dormire,", "mangiamo tutti insieme la..."], parolaFinale: "cena", distrattori: ["luna", "sole"], slug: "rima_ci_0" },
+    { righe: ["In cielo brilla una stella,", "a colazione mangio una..."], parolaFinale: "ciambella", distrattori: ["pane", "luna"], slug: "rima_ci_1" },
+  ],
+  d: [
+    { righe: ["Corriamo tutti nel prato,", "poi tiriamo il..."], parolaFinale: "dado", distrattori: ["luna", "torta"], slug: "rima_d_0" },
+    { righe: ["Nell'erba striscia un serpente,", "in bocca sento un..."], parolaFinale: "dente", distrattori: ["sole", "pane"], slug: "rima_d_1" },
+  ],
   m: [
     { righe: ["Sulla barca c'è una vela,", "e vicino c'è una..."], parolaFinale: "mela", distrattori: ["luna", "torta"], slug: "rima_m_0" },
     { righe: ["Il garage è tutto vuoto,", "c'è soltanto la mia..."], parolaFinale: "moto", distrattori: ["pizza", "sedia"], slug: "rima_m_1" },
