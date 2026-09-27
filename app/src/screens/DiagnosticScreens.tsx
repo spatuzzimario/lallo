@@ -220,8 +220,8 @@ export function TrustStatScreen({ navigation, route }: any) {
 
 /* 6 — breve attesa "calcolo" poi riepilogo del piano proposto. GATING (punto 2, validato
    con Carlotta Canclini, logopedista, luglio 2026 — poi rivisto: modello parent-first,
-   vedi CLAUDE.md §1): il genitore sceglie i suoni e inizia subito, si parte dal livello 1
-   (suono isolato) su ciascun fonema — non è "a freddo" perché level 1 è il punto di
+   vedi CLAUDE.md §1): il genitore sceglie i suoni e inizia subito, si parte da L0
+   (suono isolato) su ciascun fonema — non è "a freddo" perché L0 è il punto di
    partenza corretto per qualsiasi fonema nuovo. Il logopedista resta un potenziamento
    opzionale (vedi TherapistLinkScreen/FindTherapistScreen), non un cancello. I suoni
    scelti diventano `parentReportedConcerns` (nota per un eventuale logopedista futuro da

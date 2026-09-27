@@ -13,15 +13,20 @@ import {
   distractorPool,
   MINIMAL_PAIRS,
   isPremium,
+  findWordEntry,
 } from "../constants/wordBank";
+import { PHRASES, RHYMES, PhraseEntry } from "../constants/phrases";
+import { STORIES } from "../constants/stories";
 import { getWordImage } from "../constants/wordImage";
 import { useGamificationStore } from "../store/useGamificationStore";
-import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS } from "../types/gamification";
+import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
+import { useOcaListening } from "../hooks/useOcaListening";
 
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
-  | "ripeti" | "ascolta" | "sillabe";
+  | "ripeti" | "ascolta" | "sillabe"
+  | "ripeti_frase" | "indica_frase" | "completa_rima" | "filastrocca" | "racconta_storia";
 
 // Illustrazione reale della parola quando disponibile (vedi assets/illustrations/parole/),
 // altrimenti l'emoji placeholder del word bank — copertura ancora parziale, generazione
@@ -38,7 +43,7 @@ function WordVisual({ parola, emoji, size, textStyle, imageMarginTop }: {
 // per fonema, integrati in-app e scaricabili on-demand per singolo pacchetto-fonema (non
 // tutta la libreria insieme, non link esterni a YouTube) — promemoria per il bambino, non
 // sostituto della spiegazione del logopedista in seduta. Non ancora implementato. Casa
-// naturale per questo: dentro SillabeIsolate (Livello 1), accanto alle 5 sillabe — è lì che
+// naturale per questo: dentro SillabeIsolate (L0), accanto alle 5 sillabe — è lì che
 // il genitore/founder ha in mente un bambino che fa vedere il labiale delle 5 varianti
 // vocaliche del suono, come rinforzo visivo prima di passare alla parola intera.
 
@@ -80,6 +85,7 @@ export default function SessionScreen({ navigation, route }: any) {
   const exerciseType = params.exerciseType ?? "caccia";
   const recordSession = useGamificationStore((s) => s.recordSession);
   const subscriptionActive = useGamificationStore((s) => !!s.profile?.subscriptionActive);
+  const triggerLalloCelebration = useGamificationStore((s) => s.triggerLalloCelebration);
   const meta = WORD_BANK[phonemeKey];
 
   // Gate centrale: qualunque schermata mandi qui un fonema premium senza abbonamento
@@ -144,11 +150,16 @@ export default function SessionScreen({ navigation, route }: any) {
       .profile?.phonemeGroups.find((g) => g.id === params.phonemeGroupId);
     const justMastered =
       !wasMastered && afterGroup?.levels.find((l) => l.level === params.level)?.status === "mastered";
-    const nextLevel = afterGroup?.levels.find((l) => l.level === (params.level + 1) as ClinicalLevel);
+    // Livello successivo = prossimo indice in LEVEL_ORDER, non più "params.level + 1"
+    // (aritmetica su stringhe: con id come "L1-1" produceva un id inesistente e la
+    // celebrazione di sblocco non compariva mai).
+    const nextLevelId = LEVEL_ORDER[LEVEL_ORDER.indexOf(params.level) + 1];
+    const nextLevel = afterGroup?.levels.find((l) => l.level === nextLevelId);
     const justUnlocked = justMastered && nextLevel?.status === "available";
 
     if (justUnlocked && nextLevel) {
       setCelebration({ level: nextLevel.level });
+      triggerLalloCelebration();
       return;
     }
     // goBack() invece di navigate("MainTabs"): l'unico modo per arrivare qui è da
@@ -186,11 +197,16 @@ export default function SessionScreen({ navigation, route }: any) {
             {exerciseType === "ripeti" && "Ripeti"}
             {exerciseType === "ascolta" && "Ascolta e scegli"}
             {exerciseType === "sillabe" && "Suono isolato"}
+            {exerciseType === "ripeti_frase" && "Ripeti la frase"}
+            {exerciseType === "indica_frase" && "Indica la frase"}
+            {exerciseType === "completa_rima" && "Completa la rima"}
+            {exerciseType === "filastrocca" && "Filastrocca"}
+            {exerciseType === "racconta_storia" && "Racconta la storia"}
           </Text>
           {/* Rende visibile la difficoltà scelta: suono + livello clinico + posizione —
               prima non c'era modo di sapere, dentro l'esercizio, cosa si stava giocando. */}
           <Text style={styles.subtitle}>
-            {meta.label} · Livello {params.level} · {LEVEL_LABELS[params.level]}
+            {meta.label} · {LEVEL_LABELS[params.level]}
           </Text>
         </View>
       </View>
@@ -208,7 +224,7 @@ export default function SessionScreen({ navigation, route }: any) {
         <CoppieMinime phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "oca" && (
-        <GiocoDellOca phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
+        <GiocoDellOca navigation={navigation} phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "sequenze" && <SequenzeIllustrate phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "ripeti" && (
@@ -217,6 +233,17 @@ export default function SessionScreen({ navigation, route }: any) {
       {exerciseType === "ascolta" && (
         <AscoltaEScegli phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
+      {exerciseType === "ripeti_frase" && (
+        <RipetiLaFrase phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "indica_frase" && (
+        <IndicaLaFrase phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "completa_rima" && (
+        <CompletaLaRima phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+      )}
+      {exerciseType === "filastrocca" && <Filastrocca phonemeKey={phonemeKey} onDone={finishSession} />}
+      {exerciseType === "racconta_storia" && <RaccontaLaStoria phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "sillabe" && (
         <SillabeIsolate phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
       )}
@@ -227,7 +254,7 @@ export default function SessionScreen({ navigation, route }: any) {
             <Image source={require("../../assets/icons/icon_celebration.png")} style={styles.celebrationEmoji} resizeMode="contain" />
             <Text style={styles.celebrationTitle}>Livello conquistato!</Text>
             <Text style={styles.celebrationText}>
-              Hai sbloccato il Livello {celebration.level} · {LEVEL_LABELS[celebration.level]} per il suono{" "}
+              Hai sbloccato {LEVEL_LABELS[celebration.level]} per il suono{" "}
               {meta.label}. Lo trovi nella mappa in Giochi.
             </Text>
             <Pressable style={styles.primaryBtn} onPress={() => navigation.goBack()}>
@@ -307,14 +334,14 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
-/* ---------------- Sillabe isolate (Livello 1) ----------------
-   Sostituisce i 2 giochi che c'erano prima al livello 1: qui non si sceglie tra esercizi,
+/* ---------------- Sillabe isolate (L0) ----------------
+   Sostituisce i 2 giochi che c'erano prima a questo livello: qui non si sceglie tra esercizi,
    si sentono/ripetono le 5 combinazioni sillabiche del suono (es. LA LE LI LO LU per la
    L) prima ancora di arrivare alla parola intera — il livello clinico "Suono isolato" del
    brief (§5). Ogni sillaba si pronuncia al tocco; quando sono state ascoltate tutte e 5 si
    passa in automatico. 4 categorie composite (cons_r, r_cons, s_cons, mnl_cons) non hanno
    una sillaba isolata onesta da proporre (raggruppano più cluster diversi, es. TR/DR/FR/
-   GR/PR/BR) — per queste il livello 1 si completa da solo e si passa dritti al livello 2
+   GR/PR/BR) — per queste L0 si completa da solo e si passa dritti a L1 (parola)
    (vedi commento su SYLLABLES in wordBank.ts). */
 function SillabeIsolate({ phonemeKey, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
@@ -326,7 +353,11 @@ function SillabeIsolate({ phonemeKey, onAttempt, onDone }: {
 
   useEffect(() => {
     if (syllables.length === 0) {
-      speak("Per questo suono si parte direttamente dal livello 2!", "sess_livello2_diretto");
+      // Testo senza riferimento a un numero di livello specifico (niente "livello 2"): con
+      // l'aggiornamento alla scala L0-L4b la frase era rimasta ancorata alla vecchia
+      // numerazione (era corretta quando "livello 2" = parola iniziale, ora è L1) — meglio
+      // una frase che resta vera anche se la scala cambia ancora.
+      speak("Per questo suono si parte direttamente dalle parole!", "sess_parole_dirette");
       onAttempt(phonemeKey, true);
       setTimeout(onDone, 1400);
       return;
@@ -348,7 +379,7 @@ function SillabeIsolate({ phonemeKey, onAttempt, onDone }: {
   if (syllables.length === 0) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text style={styles.question}>Si passa al livello 2… 🦜</Text>
+        <Text style={styles.question}>Si passa alle parole… 🦜</Text>
       </View>
     );
   }
@@ -387,15 +418,17 @@ const syllableStyles = StyleSheet.create({
 });
 
 /* ---------------- Memory ----------------
-   4 livelli di difficoltà legati al Livello clinico della sessione (scala 1-7, vedi
-   types/gamification.ts), con tabelloni crescenti da 6 a 16 carte — sempre un numero pari,
-   altrimenti le coppie non tornano: 6/8/12/16, non 6/9/12/15. */
-// La scala clinica va da 1 a 7 (vedi types/gamification.ts); qui la comprimiamo su 4 livelli
-// di difficoltà del tabellone (in numero di coppie), dal più facile (Livello 1-2) al più
-// difficile (Livello 7). 8 coppie al livello 7 è già il massimo di parole distinte che i
-// suoni più poveri riescono a offrire (es. Z sorda: solo 8 parole in tutto tra iniziale e
-// mediana, usate tutte senza scarto per la variazione tra un tentativo e l'altro).
-const MEMORY_PAIRS_BY_LEVEL: Record<ClinicalLevel, number> = { 1: 3, 2: 3, 3: 4, 4: 4, 5: 6, 6: 6, 7: 8 };
+   Difficoltà del tabellone (in numero di coppie) legata al sotto-step L1/L2 della sessione
+   (scala L0-L4b, vedi types/gamification.ts), da 6 a 12 carte — sempre un numero pari,
+   altrimenti le coppie non tornano. */
+// Solo gli 8 sotto-step "parola" hanno Memory (vedi LivelliScreen); il fallback `?? 3` in
+// MemoryGame copre gli altri livelli, che comunque non lo aprono mai. 6 coppie (12 carte) al
+// sotto-step più difficile è già tanto per i suoni più poveri (es. Z sorda: solo 8 parole in
+// tutto tra iniziale e mediana).
+const MEMORY_PAIRS_BY_LEVEL: Partial<Record<ClinicalLevel, number>> = {
+  "L1-1": 3, "L1-2": 3, "L1-3": 4, "L1-4plus": 4,
+  "L2-1": 4, "L2-2": 4, "L2-3": 6, "L2-4plus": 6,
+};
 
 function memoryCardWidth(totalCards: number): `${number}%` {
   if (totalCards <= 8) return "30%"; // 3 per riga
@@ -803,9 +836,19 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   );
 }
 
-/* ---------------- Gioco dell'oca ---------------- */
-function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
+/* ---------------- Gioco dell'oca "ascolta e avanza" ----------------
+   Rework brief blocco B: è un gioco, non un giudice — la valutazione clinica della
+   pronuncia sui bambini 3-6 con difficoltà è inaffidabile. Il tocco per avanzare resta
+   SEMPRE disponibile (nessun bambino resta mai bloccato dal microfono): il bambino dice
+   la parola da sé e poi tocca "Dillo!", con un momento di festa esplicito ("Lallo ti ha
+   sentito! 🦜") invece di un avanzamento silenzioso — mai un punteggio, mai "sbagliato".
+   Il microfono (riconoscimento vocale on-device, vedi useOcaListening) è solo un modo
+   più veloce di ottenere la stessa festa: soglia generosa (isReasonableAttempt), niente
+   giudizio sulla qualità della pronuncia, e attivo solo dopo il consenso genitoriale
+   (stesso gate/gioco di ruoli di Registratore più sopra) e solo se il device supporta
+   davvero il riconoscimento on-device (mai un fallback silenzioso al cloud, GDPR-K). */
+function GiocoDellOca({ navigation, phonemeKey, position, onAttempt, onDone }: {
+  navigation: any; phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const words = useMemo(() => {
@@ -817,22 +860,75 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
   const [pos, setPos] = useState(0);
   const current = words[pos];
   const { speak, speakWord } = useVoice();
+  const { playCorrect } = useFeedbackSounds();
+  const [celebrating, setCelebrating] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+
+  function celebrate() {
+    playCorrect();
+    setCelebrating(true);
+    speak("Lallo ti ha sentito! Bravissimo!", "sess_lallo_ti_ha_sentito");
+    setTimeout(() => {
+      setCelebrating(false);
+      setFailedAttempts(0);
+      if (pos < 5) setPos((p) => p + 1);
+      else onDone();
+    }, 1300);
+  }
+
+  const { status: micStatus, listen, cancel } = useOcaListening((matched) => {
+    if (matched) {
+      onAttempt(current.parola, true);
+      celebrate();
+    } else {
+      // Mai "sbagliato": un tentativo non riconosciuto resta silenzioso, il tocco per
+      // avanzare (sempre visibile) è già lì pronto — dopo 2 tentativi lo segnaliamo
+      // esplicitamente (vedi warnNote sotto), come richiesto dal brief.
+      setFailedAttempts((n) => n + 1);
+    }
+  });
 
   useEffect(() => {
     speak("Dì la parola per far avanzare il pappagallo!", "sess_di_parola_oca");
     if (current) setTimeout(() => speakWord(current.parola), 900);
   }, []);
 
-  function advance() {
+  useEffect(() => {
+    setFailedAttempts(0);
+  }, [pos]);
+
+  function tapAdvance() {
+    if (celebrating) return;
+    if (micStatus === "listening") cancel();
     onAttempt(current.parola, true);
-    speakWord(current.parola);
-    if (pos < 5) setPos(pos + 1);
-    else setTimeout(onDone, 600);
+    celebrate();
   }
+
+  function tapMic() {
+    if (celebrating) return;
+    if (!hasConsent) {
+      navigation.navigate("MicConsent");
+      return;
+    }
+    if (micStatus === "listening") {
+      cancel();
+      return;
+    }
+    listen(current.parola);
+  }
+
+  // Senza consenso il microfono resta visibile ma bloccato (stesso linguaggio di
+  // Registratore: tocca per capire perché). Con consenso ma senza supporto reale
+  // all'on-device sul device, sparisce del tutto — non è una questione di permessi, resta
+  // solo il tocco per avanzare, senza un'icona bloccata che non si sbloccherà mai.
+  const showMic = !hasConsent || micStatus !== "unavailable";
 
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
-      <Text style={styles.question}>Dì la parola per far avanzare il pappagallo!</Text>
+      <Text style={styles.question}>
+        {celebrating ? "Lallo ti ha sentito! 🦜" : "Dì la parola per far avanzare il pappagallo!"}
+      </Text>
       <View style={ocaStyles.path}>
         {words.map((_, i) => (
           <View key={i} style={[ocaStyles.cell, i === pos && ocaStyles.cellActive]}>
@@ -844,9 +940,30 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
         <WordVisual parola={current.parola} emoji={current.emoji} size={130} textStyle={ocaStyles.emoji} imageMarginTop={10} />
         <Text style={ocaStyles.word}>{current.parola}</Text>
       </Pressable>
-      <Pressable style={ocaStyles.sayBtn} onPress={advance}>
-        <Text style={styles.primaryBtnText}>🦜 Dillo!</Text>
-      </Pressable>
+      {!hasConsent && showMic && (
+        <Text style={styles.warnNote}>Tocca il microfono per attivarlo: serve il consenso di un genitore.</Text>
+      )}
+      {failedAttempts >= 2 && !celebrating && (
+        <Text style={styles.warnNote}>Puoi anche toccare "Dillo!" per andare avanti 👇</Text>
+      )}
+      <View style={ocaStyles.btnRow}>
+        {showMic && (
+          <Pressable
+            style={[
+              styles.recMicBtn,
+              micStatus === "listening" && styles.recMicBtnActive,
+              !hasConsent && styles.recMicBtnLocked,
+            ]}
+            onPress={tapMic}
+            disabled={celebrating || micStatus === "checking"}
+          >
+            <Text style={styles.recBtnText}>{!hasConsent ? "🔒" : micStatus === "listening" ? "⏺" : "🎤"}</Text>
+          </Pressable>
+        )}
+        <Pressable style={[ocaStyles.sayBtn, celebrating && ocaStyles.sayBtnCelebrating]} onPress={tapAdvance} disabled={celebrating}>
+          <Text style={styles.primaryBtnText}>{celebrating ? "🎉" : "🦜 Dillo!"}</Text>
+        </Pressable>
+      </View>
       <Text style={styles.recCap}>Casella {pos + 1} di 6</Text>
     </View>
   );
@@ -858,7 +975,7 @@ function GiocoDellOca({ phonemeKey, position, onAttempt, onDone }: {
 const STORY_CONNECTORS = ["Prima incontriamo", "Poi arriva", "E infine ecco"];
 
 /* ---------------- Sequenze illustrate ----------------
-   Livello 5, racconto: 3 parole vere del fonema in allenamento (stesso word bank/audio
+   L4a, racconto: 3 parole vere del fonema in allenamento (stesso word bank/audio
    già usato dagli altri giochi), non più un'unica storia fissa (pioggia/arcobaleno/sole)
    identica per ogni suono e slegata da quello in allenamento (bug segnalato). */
 function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
@@ -919,6 +1036,302 @@ function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; on
     </View>
   );
 }
+
+/* ---------------- Ripeti la frase ----------------
+   L3 (Frase), produzione: stesso schema di Ripeti/Registratore — ascolta la frase intera e
+   ripetila, tocco per avanzare (nessuna valutazione della pronuncia, brief blocco B). Usa
+   PHRASES (constants/phrases.ts): pilota sui 6 fonemi gratuiti per ora, vedi nota lì. Se il
+   fonema non ha ancora frasi, l'esercizio non va offerto da LivelliScreen (contentCheck) —
+   qui il controllo resta solo come difesa in profondità, come già per SillabeIsolate. */
+function RipetiLaFrase({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const pool = PHRASES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const { speak } = useVoice();
+  const totalRounds = Math.min(PRODUCTION_ROUNDS, pool.length);
+  const phrase: PhraseEntry | undefined = pool[round];
+  const wordEntry = phrase ? findWordEntry(phrase.parola) : null;
+
+  useEffect(() => {
+    if (pool.length === 0) {
+      onDone();
+      return;
+    }
+    speak(phrase!.testo, phrase!.slug);
+  }, [round]);
+
+  function next() {
+    if (!phrase) return;
+    onAttempt(phrase.parola, true);
+    if (round + 1 < totalRounds) setRound((r) => r + 1);
+    else onDone();
+  }
+
+  if (!phrase) return null;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>Ascolta la frase e ripetila ad alta voce</Text>
+      {wordEntry && (
+        <WordVisual parola={wordEntry.parola} emoji={wordEntry.emoji} size={140} textStyle={styles.recEmoji} imageMarginTop={16} />
+      )}
+      <Text style={ocaStyles.word}>{phrase.testo}</Text>
+      <Pressable style={styles.recListenBtn} onPress={() => speak(phrase.testo, phrase.slug)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <Pressable style={ocaStyles.sayBtn} onPress={next}>
+        <Text style={styles.primaryBtnText}>Fatto, ho ripetuto! 🦜</Text>
+      </Pressable>
+      <Text style={styles.recCap}>Frase {round + 1} di {totalRounds}</Text>
+    </View>
+  );
+}
+
+/* ---------------- Indica la frase ----------------
+   L3 (Frase), discriminazione (nuovo gioco, brief blocco A): il bambino sente una frase e
+   tocca, tra 2-3 scene, quella giusta — la "scena" riusa l'immagine/emoji già esistente
+   della parola-chiave della frase (nessuna nuova illustrazione richiesta, vedi nota di
+   scoping). Richiede almeno 2 frasi per il fonema (contentCheck in LivelliScreen). */
+function IndicaLaFrase({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const pool = PHRASES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  const { speak } = useVoice();
+  const totalRounds = Math.min(PRODUCTION_ROUNDS, pool.length);
+  const target: PhraseEntry | undefined = pool[round];
+
+  const options = useMemo(() => {
+    if (!target) return [];
+    const others = pool.filter((p) => p.parola !== target.parola);
+    const distractors = pickRandom(others, Math.min(2, others.length));
+    return pickRandom([target, ...distractors], distractors.length + 1);
+  }, [round]);
+
+  useEffect(() => {
+    if (pool.length < 2) {
+      onDone();
+      return;
+    }
+    speak("Ascolta, poi tocca la scena giusta", "sess_ascolta_tocca_scena");
+    setTimeout(() => speak(target!.testo, target!.slug), 1400);
+  }, [round]);
+
+  function pick(entry: PhraseEntry) {
+    if (picked || !target) return;
+    setPicked(entry.parola);
+    const correct = entry.parola === target.parola;
+    onAttempt(entry.parola, correct);
+    setTimeout(() => {
+      setPicked(null);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
+      else onDone();
+    }, 1100);
+  }
+
+  if (!target) return null;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.question}>Ascolta, poi tocca la scena giusta · {round + 1} di {totalRounds}</Text>
+      <Pressable style={styles.playBtn} onPress={() => speak(target.testo, target.slug)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <View style={styles.grid}>
+        {options.map((opt) => {
+          const entry = findWordEntry(opt.parola);
+          const state = picked === null ? null : opt.parola === picked;
+          const isTarget = opt.parola === target.parola;
+          const showCorrect = picked !== null && isTarget;
+          const showWrong = state === true && !isTarget;
+          return (
+            <Pressable
+              key={opt.parola}
+              onPress={() => pick(opt)}
+              style={[styles.tile, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
+            >
+              {entry && <WordVisual parola={entry.parola} emoji={entry.emoji} size={100} textStyle={styles.tileEmoji} />}
+              {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+/* ---------------- Completa la rima ----------------
+   L4b (Racconto in rima), nuovo gioco: la filastrocca si ferma prima dell'ultima parola,
+   il bambino tocca l'immagine giusta tra la parola-rima e 2 distrattori (che possono
+   appartenere ad altri fonemi, servono solo a non far rima — vedi findWordEntry). Usa
+   RHYMES (constants/phrases.ts): pilota sui 6 fonemi gratuiti, DA VALIDARE come il resto. */
+function CompletaLaRima({ phonemeKey, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+}) {
+  const pool = RHYMES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  const { speak, speakWord } = useVoice();
+  const totalRounds = Math.min(pool.length, 2);
+  const rhyme = pool[round];
+
+  const options = useMemo(() => {
+    if (!rhyme) return [];
+    const words = [rhyme.parolaFinale, ...rhyme.distrattori].map(findWordEntry).filter((w): w is WordEntry => !!w);
+    return pickRandom(words, words.length);
+  }, [round]);
+
+  useEffect(() => {
+    if (pool.length === 0) {
+      onDone();
+      return;
+    }
+    speak(rhyme!.righe.join(" "), rhyme!.slug);
+  }, [round]);
+
+  function pick(word: WordEntry) {
+    if (picked || !rhyme) return;
+    setPicked(word.parola);
+    const correct = word.parola === rhyme.parolaFinale;
+    onAttempt(word.parola, correct);
+    if (correct) setTimeout(() => speakWord(word.parola), 400);
+    setTimeout(() => {
+      setPicked(null);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
+      else onDone();
+    }, 1300);
+  }
+
+  if (!rhyme) return null;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.question}>Ascolta la filastrocca e completa la rima</Text>
+      <Text style={ocaStyles.word}>{rhyme.righe.join(" ")}</Text>
+      <Pressable style={styles.recListenBtn} onPress={() => speak(rhyme.righe.join(" "), rhyme.slug)}>
+        <Text style={styles.recBtnText}>▶</Text>
+      </Pressable>
+      <View style={styles.grid}>
+        {options.map((w) => {
+          const state = picked === null ? null : w.parola === picked;
+          const isTarget = w.parola === rhyme.parolaFinale;
+          const showCorrect = picked !== null && isTarget;
+          const showWrong = state === true && !isTarget;
+          return (
+            <Pressable
+              key={w.parola}
+              onPress={() => pick(w)}
+              style={[styles.tile, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
+            >
+              <WordVisual parola={w.parola} emoji={w.emoji} size={100} textStyle={styles.tileEmoji} />
+              <Text style={styles.tileWord}>{w.parola.toUpperCase()}</Text>
+              {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
+              {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+/* ---------------- Filastrocca ----------------
+   L4b (Racconto in rima), ascolto/ripetizione: stesso "tocca per avanzare" già costruito per
+   l'Oca/Sequenze — nessuna scelta da sbagliare, solo ascolta e scopri come finisce. */
+function Filastrocca({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
+  const pool = RHYMES[phonemeKey] ?? [];
+  const [round, setRound] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const { speak, speakWord } = useVoice();
+  const totalRounds = Math.min(pool.length, 2);
+  const rhyme = pool[round];
+  const finalEntry = rhyme ? findWordEntry(rhyme.parolaFinale) : null;
+
+  useEffect(() => {
+    if (pool.length === 0) {
+      onDone();
+      return;
+    }
+    speak(rhyme!.righe.join(" "), rhyme!.slug);
+  }, [round]);
+
+  function reveal() {
+    if (revealed || !rhyme) return;
+    setRevealed(true);
+    speakWord(rhyme.parolaFinale);
+    setTimeout(() => {
+      setRevealed(false);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
+      else onDone();
+    }, 1500);
+  }
+
+  if (!rhyme) return null;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>Ascolta la filastrocca, poi tocca per scoprire come finisce</Text>
+      <Text style={ocaStyles.word}>{rhyme.righe.join(" ")}</Text>
+      {revealed && finalEntry && (
+        <WordVisual parola={finalEntry.parola} emoji={finalEntry.emoji} size={120} textStyle={styles.tileEmoji} imageMarginTop={10} />
+      )}
+      <Pressable style={[ocaStyles.sayBtn, revealed && ocaStyles.sayBtnCelebrating]} onPress={reveal} disabled={revealed}>
+        <Text style={styles.primaryBtnText}>{revealed ? "🎉" : "Come finisce? 🦜"}</Text>
+      </Pressable>
+      <Text style={styles.recCap}>Filastrocca {round + 1} di {totalRounds}</Text>
+    </View>
+  );
+}
+
+/* ---------------- Racconta la storia ----------------
+   L4a (Racconto in prosa), blocco C del brief: ascolto passivo scena-per-scena con una
+   vera illustrazione dedicata per scena (non la carta-parola riusata) — a differenza di
+   Sequenze illustrate (ordinamento/tap), qui non c'è scelta da sbagliare, solo "tocca per
+   andare avanti" come Filastrocca. Usa STORIES (constants/stories.ts): pilota sui 6 fonemi
+   gratuiti, DA VALIDARE come il resto del word bank. */
+function RaccontaLaStoria({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
+  const story = STORIES[phonemeKey];
+  const [index, setIndex] = useState(0);
+  const { speak, speakWord } = useVoice();
+  const scene = story?.scenes[index];
+
+  useEffect(() => {
+    if (!story) {
+      onDone();
+      return;
+    }
+    speak(scene!.testo, scene!.slug);
+  }, [index]);
+
+  function next() {
+    if (!story || !scene) return;
+    speakWord(scene.parola);
+    if (index + 1 < story.scenes.length) setIndex((i) => i + 1);
+    else setTimeout(onDone, 900);
+  }
+
+  if (!story || !scene) return null;
+  const isLast = index + 1 === story.scenes.length;
+
+  return (
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={styles.question}>{story.title}</Text>
+      <Image source={scene.image} style={raccontoStyles.sceneImage} resizeMode="contain" />
+      <Text style={ocaStyles.word}>{scene.testo}</Text>
+      <Pressable style={ocaStyles.sayBtn} onPress={next}>
+        <Text style={styles.primaryBtnText}>{isLast ? "Fine della storia! 🎉" : "E poi? 🦜"}</Text>
+      </Pressable>
+      <Text style={styles.recCap}>Scena {index + 1} di {story.scenes.length}</Text>
+    </View>
+  );
+}
+
+const raccontoStyles = StyleSheet.create({
+  sceneImage: { width: 220, height: 220, marginVertical: 12 },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFF8EE", padding: 16 },
@@ -995,6 +1408,8 @@ const ocaStyles = StyleSheet.create({
   sayBtn: {
     backgroundColor: "#137A6E", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 22, marginBottom: 10,
   },
+  sayBtnCelebrating: { backgroundColor: "#FFC53D" },
+  btnRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 10 },
 });
 
 const seqStyles = StyleSheet.create({

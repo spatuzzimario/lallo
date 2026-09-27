@@ -56,7 +56,7 @@ import MicConsentScreen from "./src/screens/MicConsentScreen";
 // (creazione abbonamenti su App Store Connect/Play Console, progetto RevenueCat).
 
 import { useGamificationStore } from "./src/store/useGamificationStore";
-import { ChildProfile } from "./src/types/gamification";
+import { ChildProfile, LEVEL_ORDER, LEVEL_LABELS } from "./src/types/gamification";
 import { configurePurchases, getCustomerInfo, hasPremiumEntitlement, addCustomerInfoListener } from "./src/api/purchases";
 
 const Stack = createNativeStackNavigator();
@@ -95,12 +95,12 @@ const seedProfile: ChildProfile = {
       name: "Suono R",
       islandAsset: "island_r",
       unlockedByTherapist: true,
-      levels: [1, 2, 3, 4, 5].map((level) => ({
-        level: level as any,
-        status: level <= 3 ? "in_progress" : "locked",
+      levels: LEVEL_ORDER.map((level, idx) => ({
+        level,
+        status: (idx <= 2 ? "in_progress" : "locked") as any,
         masteryThreshold: 0.75,
-        starsEarned: level === 1 ? 6 : level === 2 ? 3 : 0,
-        starsPossible: level === 1 ? 9 : level === 2 ? 9 : 0,
+        starsEarned: idx === 0 ? 6 : idx === 1 ? 3 : 0,
+        starsPossible: idx === 0 ? 9 : idx === 1 ? 9 : 0,
       })),
     },
   ],
@@ -112,8 +112,8 @@ const seedProfile: ChildProfile = {
       phonemeGroupId: "r",
       phonemeLabel: "R",
       position: "iniziale",
-      level: 3,
-      levelRangeLabel: "livello 3",
+      level: "L1-3",
+      levelRangeLabel: LEVEL_LABELS["L1-3"],
     },
     {
       id: "today-2",
@@ -122,8 +122,8 @@ const seedProfile: ChildProfile = {
       phonemeGroupId: "r",
       phonemeLabel: "R",
       position: "mediana",
-      level: 3,
-      levelRangeLabel: "livello 3",
+      level: "L2-1",
+      levelRangeLabel: LEVEL_LABELS["L2-1"],
     },
     {
       id: "today-3",
@@ -132,8 +132,8 @@ const seedProfile: ChildProfile = {
       phonemeGroupId: "r",
       phonemeLabel: "R",
       position: "iniziale",
-      level: 2,
-      levelRangeLabel: "livello 2–3",
+      level: "L1-2",
+      levelRangeLabel: LEVEL_LABELS["L1-2"],
     },
   ],
 };

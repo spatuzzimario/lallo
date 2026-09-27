@@ -1,27 +1,55 @@
-// Scala clinica a 7 livelli (validata, settembre 2026 — sostituisce la precedente a 5
-// livelli): separa posizione (iniziale/mediana) e complessità (parola/frase) invece di
-// unirle in un'unica scala lineare. Il logopedista continua ad assegnare fonema e livello
-// di partenza; qui cambia solo la granularità dei livelli stessi.
-export type ClinicalLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+// Scala clinica L0-L4b (aggiornamento settembre 2026 — sostituisce la precedente scala
+// numerica 1-7): il livello incorpora sia la posizione del fonema (L1 iniziale, L2 mediana)
+// sia, dentro L1/L2, un sotto-step di complessità sillabica (1 → 2 → 3 → 4+ sillabe), reso
+// come id composto (es. "L1-2") invece che come struttura annidata — resta un unico percorso
+// lineare per fonema, la stessa forma di array di prima (vedi LEVEL_ORDER). L3 (frase) non è
+// più diviso per posizione; L4a/L4b sono il racconto in prosa/rima. Vale per ogni fonema,
+// semplice o gruppo consonantico (/tr/, /gn/...): nessun trattamento speciale, stessa scala.
+export type ClinicalLevel =
+  | "L0"
+  | "L1-1" | "L1-2" | "L1-3" | "L1-4plus"
+  | "L2-1" | "L2-2" | "L2-3" | "L2-4plus"
+  | "L3" | "L4a" | "L4b";
+
+// Ordine di progressione per fonema — sostituisce l'aritmetica su id numerici (level+1,
+// Math.max) usata prima per "livello successivo"/"livello più alto raggiunto", che con id
+// testuali non è più possibile: si cerca l'indice in questo array.
+export const LEVEL_ORDER: ClinicalLevel[] = [
+  "L0",
+  "L1-1", "L1-2", "L1-3", "L1-4plus",
+  "L2-1", "L2-2", "L2-3", "L2-4plus",
+  "L3", "L4a", "L4b",
+];
 
 export const LEVEL_LABELS: Record<ClinicalLevel, string> = {
-  1: "Suono isolato",
-  2: "Parola iniziale",
-  3: "Frase iniziale",
-  4: "Parola mediana",
-  5: "Frase mediana",
-  6: "Racconto",
-  7: "Racconto in rima",
+  "L0": "Suono isolato",
+  "L1-1": "Parola iniziale · 1 sillaba",
+  "L1-2": "Parola iniziale · 2 sillabe",
+  "L1-3": "Parola iniziale · 3 sillabe",
+  "L1-4plus": "Parola iniziale · 4+ sillabe",
+  "L2-1": "Parola mediana · 1 sillaba",
+  "L2-2": "Parola mediana · 2 sillabe",
+  "L2-3": "Parola mediana · 3 sillabe",
+  "L2-4plus": "Parola mediana · 4+ sillabe",
+  "L3": "Frase",
+  "L4a": "Racconto",
+  "L4b": "Racconto in rima",
 };
 
-// Posizione implicita nel livello stesso (prima era una scelta indipendente dal livello,
-// applicata a tutta la mappa di un fonema) — i livelli 1/6/7 non hanno una posizione
-// singola (1 = sillaba isolata, 6/7 = racconto che combina entrambe le posizioni).
+// Posizione implicita nel livello stesso: solo gli 8 sotto-step di L1/L2 ne hanno una — L0
+// (sillaba isolata), L3 (frase) e L4a/L4b (racconto) non usano/combinano la posizione.
 export const LEVEL_POSITION: Partial<Record<ClinicalLevel, "iniziale" | "mediana">> = {
-  2: "iniziale",
-  3: "iniziale",
-  4: "mediana",
-  5: "mediana",
+  "L1-1": "iniziale", "L1-2": "iniziale", "L1-3": "iniziale", "L1-4plus": "iniziale",
+  "L2-1": "mediana", "L2-2": "mediana", "L2-3": "mediana", "L2-4plus": "mediana",
+};
+
+// Complessità sillabica implicita nel livello, stesso principio di LEVEL_POSITION — solo per
+// gli 8 sotto-step di L1/L2. Usata per filtrare il word bank una volta che le parole avranno
+// un tag `syllables` (vedi WordEntry in wordBank.ts): finché il tag manca su una parola, il
+// filtro la ignora (nessuna parola esclusa per un dato mancante, non un dato inventato).
+export const LEVEL_SYLLABLES: Partial<Record<ClinicalLevel, 1 | 2 | 3 | "4plus">> = {
+  "L1-1": 1, "L1-2": 2, "L1-3": 3, "L1-4plus": "4plus",
+  "L2-1": 1, "L2-2": 2, "L2-3": 3, "L2-4plus": "4plus",
 };
 
 export interface PhonemeGroup {
@@ -46,7 +74,8 @@ export interface AssignedExercise {
   exerciseLabel: string; // es. "Caccia al suono"
   phonemeGroupId: string;
   phonemeLabel: string; // es. "R"
-  position: "iniziale" | "mediana";
+  // Assente per i livelli senza posizione (L0, L3, L4a, L4b) — vedi LEVEL_POSITION.
+  position?: "iniziale" | "mediana";
   level: ClinicalLevel;
   levelRangeLabel: string; // es. "livello 3" oppure "livello 2-3" per discriminazione
 }

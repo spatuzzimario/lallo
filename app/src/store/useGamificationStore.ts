@@ -6,6 +6,8 @@ import {
   SessionLogEntry,
   StreakState,
   LevelProgress,
+  LEVEL_ORDER,
+  LEVEL_LABELS,
 } from "../types/gamification";
 import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
 import { getHunger } from "../constants/lalloPet";
@@ -15,6 +17,13 @@ import { requestReminderPermission, scheduleNextReminder, cancelReminders } from
 interface GamificationStore {
   profile: ChildProfile | null;
   setProfile: (p: ChildProfile) => void;
+  // Segnale effimero (non persistito, non parte del profilo salvato): SessionScreen lo
+  // accende quando un livello si sblocca proprio ora, LalloScreen lo consuma alla prossima
+  // apertura per far festeggiare Lallo — così la festa non è legata a stare già su quella
+  // schermata nel momento esatto dello sblocco.
+  pendingLalloCelebration: boolean;
+  triggerLalloCelebration: () => void;
+  consumeLalloCelebration: () => void;
   recordSession: (result: SessionResult) => void;
   assignPlan: (phonemeGroupId: string, groupName: string, level: LevelProgress["level"]) => void;
   setParentReportedConcerns: (concerns: string[]) => void;
@@ -61,9 +70,9 @@ export function getDayStreak(sessionLog: SessionLogEntry[]): number {
 }
 
 function freshLevels(): LevelProgress[] {
-  return [1, 2, 3, 4, 5, 6, 7].map((level) => ({
-    level: level as LevelProgress["level"],
-    status: (level === 1 ? "available" : "locked") as LevelProgress["status"],
+  return LEVEL_ORDER.map((level, idx) => ({
+    level,
+    status: (idx === 0 ? "available" : "locked") as LevelProgress["status"],
     masteryThreshold: MASTERY_DEFAULT_THRESHOLD,
     starsEarned: 0,
     starsPossible: 0,
@@ -143,6 +152,10 @@ function updateLevelProgress(
 export const useGamificationStore = create<GamificationStore>((set, get) => ({
   profile: null,
   setProfile: (p) => set({ profile: p }),
+
+  pendingLalloCelebration: false,
+  triggerLalloCelebration: () => set({ pendingLalloCelebration: true }),
+  consumeLalloCelebration: () => set({ pendingLalloCelebration: false }),
 
   recordSession: (result: SessionResult) => {
     const profile = get().profile;
@@ -263,13 +276,9 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         name: groupName,
         islandAsset: "",
         unlockedByTherapist: true,
-        levels: [1, 2, 3, 4, 5, 6, 7].map((l) => ({
-          level: l as LevelProgress["level"],
-          status: (l === level ? "available" : "locked") as LevelProgress["status"],
-          masteryThreshold: 0.75,
-          starsEarned: 0,
-          starsPossible: 0,
-        })),
+        levels: freshLevels().map((l) =>
+          l.level === level ? { ...l, status: "available" as const } : l
+        ),
       };
       set({
         profile: {
@@ -402,7 +411,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
 
   // Avvia il piano self-directed (nessun logopedista collegato) al termine dello screener.
   // Decisione parent-first (validata luglio 2026): niente più anteprima bloccata — il
-  // genitore sceglie i suoni, si parte subito al livello 1 (suono isolato), che è il punto
+  // genitore sceglie i suoni, si parte subito da L0 (suono isolato), che è il punto
   // di partenza corretto per QUALSIASI fonema nuovo, indipendentemente dall'età/vocabolario.
   // unlockedByTherapist resta false, ma da qui in poi (vedi recordSession) non è più quello
   // a decidere se si avanza al livello successivo — solo la soglia di mastery lo è. Il
@@ -430,8 +439,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         phonemeGroupId: firstKey,
         phonemeLabel: firstLabel,
         position: "iniziale",
-        level: 1,
-        levelRangeLabel: "livello 1",
+        level: "L1-1",
+        levelRangeLabel: LEVEL_LABELS["L1-1"],
       },
       {
         id: `self-${firstKey}-memory`,
@@ -440,8 +449,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         phonemeGroupId: firstKey,
         phonemeLabel: firstLabel,
         position: "iniziale",
-        level: 1,
-        levelRangeLabel: "livello 1",
+        level: "L1-1",
+        levelRangeLabel: LEVEL_LABELS["L1-1"],
       },
     ];
 

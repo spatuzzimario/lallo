@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WORD_BANK, PHONEME_ORDER, PhonemeKey } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
-import { ClinicalLevel, LEVEL_LABELS } from "../types/gamification";
+import { ClinicalLevel, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
 
 // NOTA ARCHITETTURALE: in un vero prodotto B2B2C il logopedista avrebbe
 // quasi certamente un portale/login separato dal device del bambino, non
@@ -18,7 +18,7 @@ export default function TherapistAssignScreen({ navigation }: any) {
   const profile = useGamificationStore((s) => s.profile);
   const assignPlan = useGamificationStore((s) => s.assignPlan);
   const [phoneme, setPhoneme] = useState<PhonemeKey>("r");
-  const [level, setLevel] = useState<ClinicalLevel>(1);
+  const [level, setLevel] = useState<ClinicalLevel>(LEVEL_ORDER[0]);
 
   const meta = WORD_BANK[phoneme];
   // Suoni segnalati dal genitore in onboarding (vedi punto 6, feedback clinico luglio 2026):
@@ -32,7 +32,7 @@ export default function TherapistAssignScreen({ navigation }: any) {
 
   function handleAssign() {
     assignPlan(phoneme, `Suono ${meta.label}`, level);
-    Alert.alert("Piano assegnato ✓", `${meta.label} · livello ${level} (${LEVEL_LABELS[level]}) sbloccato per il bambino.`, [
+    Alert.alert("Piano assegnato ✓", `${meta.label} · ${LEVEL_LABELS[level]} sbloccato per il bambino.`, [
       { text: "OK", onPress: () => navigation.navigate("WorldMap") },
     ]);
   }
@@ -78,9 +78,9 @@ export default function TherapistAssignScreen({ navigation }: any) {
 
       <Text style={styles.fieldLabel}>LIVELLO</Text>
       <View style={styles.chipRow}>
-        {[1, 2, 3, 4, 5].map((l) => (
-          <Pressable key={l} onPress={() => setLevel(l as ClinicalLevel)} style={[styles.chip, level === l && styles.chipSelected]}>
-            <Text style={[styles.chipText, level === l && styles.chipTextSelected]}>{l} · {LEVEL_LABELS[l as ClinicalLevel]}</Text>
+        {LEVEL_ORDER.map((l) => (
+          <Pressable key={l} onPress={() => setLevel(l)} style={[styles.chip, level === l && styles.chipSelected]}>
+            <Text style={[styles.chipText, level === l && styles.chipTextSelected]}>{LEVEL_LABELS[l]}</Text>
           </Pressable>
         ))}
       </View>
