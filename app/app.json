@@ -10,7 +10,10 @@
     "backgroundColor": "#FBF6EE",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lallo.app"
+      "bundleIdentifier": "com.lallo.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +23,13 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.lallo.app"
+      "package": "com.lallo.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,6 +48,12 @@
         }
       ],
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1c0c18ea-f37e-45b8-9b32-01620ddaf6a5"
+      }
+    },
+    "owner": "mr.vertigo"
   }
 }
