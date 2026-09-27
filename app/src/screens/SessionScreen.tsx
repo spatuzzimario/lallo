@@ -85,6 +85,7 @@ export default function SessionScreen({ navigation, route }: any) {
   const exerciseType = params.exerciseType ?? "caccia";
   const recordSession = useGamificationStore((s) => s.recordSession);
   const subscriptionActive = useGamificationStore((s) => !!s.profile?.subscriptionActive);
+  const triggerLalloCelebration = useGamificationStore((s) => s.triggerLalloCelebration);
   const meta = WORD_BANK[phonemeKey];
 
   // Gate centrale: qualunque schermata mandi qui un fonema premium senza abbonamento
@@ -158,6 +159,7 @@ export default function SessionScreen({ navigation, route }: any) {
 
     if (justUnlocked && nextLevel) {
       setCelebration({ level: nextLevel.level });
+      triggerLalloCelebration();
       return;
     }
     // goBack() invece di navigate("MainTabs"): l'unico modo per arrivare qui è da

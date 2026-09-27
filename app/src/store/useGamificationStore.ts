@@ -17,6 +17,13 @@ import { requestReminderPermission, scheduleNextReminder, cancelReminders } from
 interface GamificationStore {
   profile: ChildProfile | null;
   setProfile: (p: ChildProfile) => void;
+  // Segnale effimero (non persistito, non parte del profilo salvato): SessionScreen lo
+  // accende quando un livello si sblocca proprio ora, LalloScreen lo consuma alla prossima
+  // apertura per far festeggiare Lallo — così la festa non è legata a stare già su quella
+  // schermata nel momento esatto dello sblocco.
+  pendingLalloCelebration: boolean;
+  triggerLalloCelebration: () => void;
+  consumeLalloCelebration: () => void;
   recordSession: (result: SessionResult) => void;
   assignPlan: (phonemeGroupId: string, groupName: string, level: LevelProgress["level"]) => void;
   setParentReportedConcerns: (concerns: string[]) => void;
@@ -145,6 +152,10 @@ function updateLevelProgress(
 export const useGamificationStore = create<GamificationStore>((set, get) => ({
   profile: null,
   setProfile: (p) => set({ profile: p }),
+
+  pendingLalloCelebration: false,
+  triggerLalloCelebration: () => set({ pendingLalloCelebration: true }),
+  consumeLalloCelebration: () => set({ pendingLalloCelebration: false }),
 
   recordSession: (result: SessionResult) => {
     const profile = get().profile;

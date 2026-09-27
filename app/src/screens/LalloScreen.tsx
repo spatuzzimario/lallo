@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Text, Image, Pressable, Animated, PanResponder, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import * as Sharing from "expo-sharing";
+import { File, Paths } from "expo-file-system";
 import {
   useAudioRecorder,
   useAudioRecorderState,
@@ -14,6 +17,7 @@ import { useGamificationStore, getDayStreak } from "../store/useGamificationStor
 import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LalloMood } from "../constants/lalloPet";
 import { getWordImage } from "../constants/wordImage";
 import { useVoice } from "../hooks/useVoice";
+import { useLalloMachine } from "../hooks/useLalloMachine";
 
 // Presentazione lunga di Lallo, sentita/vista solo la prima volta che si apre questa tab
 // (settembre 2026, feedback: "Lallo si presenta solo la prima volta, poi solo le
@@ -48,12 +52,14 @@ const POKE_REACTIONS = [
 ];
 
 // NOTA SU COSA È REALMENTE FATTIBILE QUI (senza asset di animazione veri): Lallo non ha
-// fotogrammi disegnati per masticare/parlare come un vero personaggio animato (servirebbe
-// uno sprite sheet o un'animazione Lottie/Spine appositi, non ancora prodotti) — quello che
-// c'è sotto è un'illusione di vita costruita SOLO con l'Animated API nativa sulle 3
-// immagini statiche già esistenti (felice/neutro/affamato): un piccolo dondolio continuo
-// (idle), una reazione "boing" al tocco diretto, e una reazione più marcata quando viene
-// sfamato. È un buon compromesso per l'MVP, non un vero personaggio animato frame-by-frame.
+// fotogrammi disegnati per masticare/parlare come un vero personaggio animato — servirebbe
+// un rig vettoriale Rive (vedi brief "companion interattivo"), non ancora prodotto. Quello
+// che c'è sotto è un'illusione di vita costruita SOLO con l'Animated API nativa sulle 3
+// immagini statiche già esistenti (felice/neutro/affamato), ma pilotata da useLalloMachine
+// invece che da chiamate dirette: gli stessi nomi di stato/trigger (poke, feed, listenStart,
+// repeat, celebrate...) sono quelli che passeremo alla state machine del file .riv quando
+// sarà pronto — quel giorno cambia solo il componente che ascolta lo stato, non chi lo
+// aziona (feed(), startRecording(), ecc. restano identici).
 export default function LalloScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
@@ -61,7 +67,10 @@ export default function LalloScreen({ navigation }: any) {
   const talkToLallo = useGamificationStore((s) => s.talkToLallo);
   const markIntroSeen = useGamificationStore((s) => s.markIntroSeen);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+  const pendingCelebration = useGamificationStore((s) => s.pendingLalloCelebration);
+  const consumeLalloCelebration = useGamificationStore((s) => s.consumeLalloCelebration);
   const { speak } = useVoice();
+  const { state: lalloState, fire } = useLalloMachine();
 
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -85,6 +94,18 @@ export default function LalloScreen({ navigation }: any) {
   // sente la presentazione lunga invece della riga breve sull'umore.
   useFocusEffect(
     useCallback(() => {
+      // Un livello sbloccato altrove (vedi SessionScreen.finishSession) ha la precedenza su
+      // intro/battuta d'umore: è il momento più importante per far festeggiare Lallo, non va
+      // perso dietro al testo di benvenuto.
+      if (useGamificationStore.getState().pendingLalloCelebration) {
+        setShowIntro(false);
+        fire("celebrate");
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        speak("Evviva! Hai sbloccato un nuovo livello, sono così fiero di te!", "lallo_celebra_sblocco");
+        consumeLalloCelebration();
+        return;
+      }
+
       const seen = useGamificationStore.getState().profile?.introsSeen.lallo;
       if (!seen) {
         setShowIntro(true);
@@ -98,10 +119,12 @@ export default function LalloScreen({ navigation }: any) {
     }, [mood])
   );
 
-  // --- Lallo "vivo": dondolio continuo + reazione al tocco diretto + reazione al pasto ---
+  // --- Lallo "vivo": dondolio idle continuo + reazioni pilotate da useLalloMachine ---
   const bob = useRef(new Animated.Value(0)).current;
   const petScale = useRef(new Animated.Value(1)).current;
-  const petRotate = useRef(new Animated.Value(0)).current;
+  const petRotate = useRef(new Animated.Value(0)).current; // scatto "boing" (tocco) e wiggle (ripeti)
+  const petTilt = useRef(new Animated.Value(0)).current; // inclinazione della testa in ascolto, distinta dal boing
+  const petOpacity = useRef(new Animated.Value(1)).current; // appannamento quando si addormenta
   const petBoxRef = useRef<View>(null);
 
   useEffect(() => {
@@ -116,32 +139,74 @@ export default function LalloScreen({ navigation }: any) {
   }, []);
   const bobTranslate = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
 
-  function pokeLallo() {
-    const reaction = POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)];
-    speak(reaction.text, reaction.slug);
-    Animated.sequence([
-      Animated.timing(petScale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
-      Animated.spring(petRotate, { toValue: 1, useNativeDriver: true, friction: 3 }),
-      Animated.spring(petRotate, { toValue: -1, useNativeDriver: true, friction: 3 }),
-      Animated.parallel([
-        Animated.spring(petRotate, { toValue: 0, useNativeDriver: true }),
-        Animated.spring(petScale, { toValue: 1, useNativeDriver: true }),
-      ]),
-    ]).start();
-  }
+  // Un solo effetto ad ascoltare lo stato della machine, invece di funzioni chiamate a mano
+  // sparse nei vari handler: quando arriverà il rig Rive vero, questo è il punto che verrà
+  // sostituito da fireState()/setBooleanState() sulla state machine del file .riv — gli
+  // handler sotto (pokeLallo, feed, ecc.) restano identici, chiamano solo fire().
+  useEffect(() => {
+    switch (lalloState) {
+      case "poked": {
+        const reaction = POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)];
+        speak(reaction.text, reaction.slug);
+        Animated.sequence([
+          Animated.timing(petScale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
+          Animated.spring(petRotate, { toValue: 1, useNativeDriver: true, friction: 3 }),
+          Animated.spring(petRotate, { toValue: -1, useNativeDriver: true, friction: 3 }),
+          Animated.parallel([
+            Animated.spring(petRotate, { toValue: 0, useNativeDriver: true }),
+            Animated.spring(petScale, { toValue: 1, useNativeDriver: true }),
+          ]),
+        ]).start();
+        break;
+      }
+      case "fed":
+        Animated.sequence([
+          Animated.timing(petScale, { toValue: 1.25, duration: 150, useNativeDriver: true }),
+          Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
+        ]).start();
+        break;
+      case "listening":
+        Animated.spring(petTilt, { toValue: 1, useNativeDriver: true, friction: 5 }).start();
+        break;
+      case "repeating":
+        Animated.sequence([
+          Animated.timing(petRotate, { toValue: 0.6, duration: 90, useNativeDriver: true }),
+          Animated.timing(petRotate, { toValue: -0.6, duration: 90, useNativeDriver: true }),
+          Animated.timing(petRotate, { toValue: 0.6, duration: 90, useNativeDriver: true }),
+          Animated.spring(petRotate, { toValue: 0, useNativeDriver: true }),
+        ]).start();
+        break;
+      case "celebrating":
+        Animated.sequence([
+          Animated.spring(petScale, { toValue: 1.35, useNativeDriver: true, friction: 3 }),
+          Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
+          Animated.spring(petScale, { toValue: 1.2, useNativeDriver: true, friction: 3 }),
+          Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
+        ]).start();
+        break;
+      case "sleepy":
+        Animated.timing(petOpacity, { toValue: 0.55, duration: 900, useNativeDriver: true }).start();
+        break;
+      case "idle":
+        Animated.parallel([
+          Animated.spring(petTilt, { toValue: 0, useNativeDriver: true }),
+          Animated.timing(petOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+        ]).start();
+        break;
+    }
+  }, [lalloState]);
 
-  function eatReaction() {
-    Animated.sequence([
-      Animated.timing(petScale, { toValue: 1.25, duration: 150, useNativeDriver: true }),
-      Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
-    ]).start();
+  function pokeLallo() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    fire("poke");
   }
 
   function feed(food: string) {
     feedLallo();
     setJustFed(food);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     speak("Mmm, che buono! Grazie!", "lallo_grazie_cibo");
-    eatReaction();
+    fire("feed");
     setTimeout(() => setJustFed(null), 1200);
   }
 
@@ -173,11 +238,13 @@ export default function LalloScreen({ navigation }: any) {
     setRecordedUri(null);
     await recorder.prepareToRecordAsync();
     recorder.record();
+    fire("listenStart");
   }
 
   async function stopRecording() {
     await recorder.stop();
     setRecordedUri(recorder.uri);
+    fire("listenStop");
   }
 
   function repeatAsParrot() {
@@ -186,13 +253,36 @@ export default function LalloScreen({ navigation }: any) {
     player.setPlaybackRate(1.6);
     player.seekTo(0);
     player.play();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     talkToLallo();
-    eatReaction();
+    fire("repeat");
+  }
+
+  // "Salva clip" (brief §4/§6.4): copia la registrazione in una posizione stabile e apre il
+  // foglio di condivisione nativo — è quel tap, più la scelta successiva nel foglio di
+  // sistema (salva su file/foto, oppure condividi), il "gesto esplicito del genitore"
+  // richiesto: nessun caricamento automatico, nessuna clip pubblica di default, e non lascia
+  // mai questo dispositivo se non per scelta di chi tiene in mano il telefono in quel momento.
+  async function saveClip() {
+    if (!recordedUri) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const source = new File(recordedUri);
+      const dest = new File(Paths.cache, `lallo-clip-${Date.now()}.m4a`);
+      await source.copy(dest);
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(dest.uri, { mimeType: "audio/m4a", dialogTitle: "Salva o condividi la clip di Lallo" });
+      }
+    } catch {
+      // Silenzioso: se il salvataggio fallisce non blocchiamo l'esperienza del bambino, si
+      // può sempre riprovare toccando di nuovo il pulsante.
+    }
   }
 
   if (!profile) return null;
 
   const petRotateDeg = petRotate.interpolate({ inputRange: [-1, 1], outputRange: ["-6deg", "6deg"] });
+  const petTiltDeg = petTilt.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "14deg"] });
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
@@ -218,14 +308,31 @@ export default function LalloScreen({ navigation }: any) {
               source={MOOD_IMAGES[mood]}
               style={[
                 styles.petImage,
-                { transform: [{ translateY: bobTranslate }, { scale: petScale }, { rotate: petRotateDeg }] },
+                {
+                  opacity: petOpacity,
+                  transform: [
+                    { translateY: bobTranslate },
+                    { scale: petScale },
+                    { rotate: petRotateDeg },
+                    { rotate: petTiltDeg },
+                  ],
+                },
               ]}
               resizeMode="contain"
             />
           </Pressable>
         </View>
-        <Text style={styles.moodTitle}>{moodCopy.title}</Text>
-        <Text style={styles.moodSub}>{moodCopy.sub}</Text>
+        {lalloState === "sleepy" ? (
+          <>
+            <Text style={styles.moodTitle}>😴 Lallo si è addormentato</Text>
+            <Text style={styles.moodSub}>Toccalo per svegliarlo!</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.moodTitle}>{moodCopy.title}</Text>
+            <Text style={styles.moodSub}>{moodCopy.sub}</Text>
+          </>
+        )}
         <View style={styles.hungerTrack}>
           <View style={[styles.hungerFill, { width: `${hunger}%` }, hunger < 33 && styles.hungerFillLow]} />
         </View>
@@ -276,6 +383,14 @@ export default function LalloScreen({ navigation }: any) {
           >
             <Text style={styles.micBtnText}>🦜</Text>
           </Pressable>
+          <Pressable
+            style={[styles.saveBtn, !recordedUri && { opacity: 0.35 }]}
+            onPress={saveClip}
+            disabled={!recordedUri}
+            accessibilityLabel="Salva o condividi la clip"
+          >
+            <Text style={styles.micBtnText}>💾</Text>
+          </Pressable>
         </View>
         <Text style={styles.talkCap}>
           {!hasConsent
@@ -283,7 +398,7 @@ export default function LalloScreen({ navigation }: any) {
             : recorderState.isRecording
             ? "Sto registrando… tocca di nuovo per fermare"
             : recordedUri
-            ? "Tocca il pappagallo per sentirlo ripetere!"
+            ? "Tocca il pappagallo per sentirlo ripetere, o 💾 per salvarla!"
             : "Tocca il microfono e digli qualcosa"}
         </Text>
       </View>
@@ -396,6 +511,7 @@ const styles = StyleSheet.create({
   micBtnActive: { backgroundColor: "#E84B30" },
   micBtnLocked: { backgroundColor: "#B0A99A" },
   parrotBtn: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.jade, alignItems: "center", justifyContent: "center" },
+  saveBtn: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.jadeDeep, alignItems: "center", justifyContent: "center" },
   micBtnText: { fontSize: 26, color: "#fff" },
   talkCap: { textAlign: "center", fontSize: 12, color: C.inkSoft, marginTop: 12 },
   warnNote: { textAlign: "center", fontSize: 11, color: "#B08900", fontStyle: "italic", marginBottom: 10 },

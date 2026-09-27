@@ -105,6 +105,7 @@ export const LINE_AUDIO: Record<string, number> = {
   "frase_zeta_2": require("../../assets/audio/lines/frase_zeta_2.mp3"),
   "frase_zeta_3": require("../../assets/audio/lines/frase_zeta_3.mp3"),
   "giochi_scegli_suono": require("../../assets/audio/lines/giochi_scegli_suono.mp3"),
+  "lallo_celebra_sblocco": require("../../assets/audio/lines/lallo_celebra_sblocco.mp3"),
   "lallo_grazie_cibo": require("../../assets/audio/lines/lallo_grazie_cibo.mp3"),
   "lallo_ha_fame": require("../../assets/audio/lines/lallo_ha_fame.mp3"),
   "lallo_intro": require("../../assets/audio/lines/lallo_intro.mp3"),
