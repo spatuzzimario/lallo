@@ -1,65 +1,75 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { RiveRef } from "rive-react-native";
 
-// Stati di reazione di Lallo — i nomi sono pensati per restare identici quando arriverà il
-// rig Rive vero (vedi brief "companion interattivo"): oggi guidano solo le animazioni
-// Animated del placeholder in LalloScreen, ma saranno gli stessi trigger passati alla
-// state machine del file .riv, così quel giorno cambia solo chi ascolta fire(), non chi
-// lo chiama in giro per l'app.
-export type LalloState = "idle" | "poked" | "fed" | "listening" | "repeating" | "celebrating" | "sleepy";
-export type LalloTrigger = "poke" | "feed" | "listenStart" | "listenStop" | "repeat" | "celebrate";
-
-const TRIGGER_TO_STATE: Record<LalloTrigger, LalloState> = {
-  poke: "poked",
-  feed: "fed",
-  listenStart: "listening",
-  listenStop: "idle",
-  repeat: "repeating",
-  celebrate: "celebrating",
-};
-
-// Stati "reattivi": tornano da soli a idle dopo un po'. listening invece resta finché non
-// arriva esplicitamente listenStop (la registrazione può durare quanto vuole il bambino).
-const AUTO_RETURN_MS: Partial<Record<LalloState, number>> = {
-  poked: 900,
-  fed: 1200,
-  repeating: 1800,
-  celebrating: 2400,
-};
+// Nomi dell'artboard/state machine e degli input della state machine: sono il "contratto"
+// stabile deciso col rig .riv (vedi lallo-companion/plan.md) — vanno tenuti identici a quelli
+// dentro app/assets/lallo.riv. Se il rig viene rigenerato con nomi diversi, va aggiornato solo
+// qui, non nei punti dell'app che chiamano fireTouch()/fireFeed()/ecc.
+export const LALLO_STATE_MACHINE = "LalloStateMachine";
 
 const SLEEPY_AFTER_MS = 60_000; // inattività su questa schermata prima che Lallo si addormenti
 
-export function useLalloMachine() {
-  const [state, setState] = useState<LalloState>("idle");
-  const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+// Pilota la state machine del rig Rive di Lallo: espone verbi semplici (fireTouch, fireFeed,
+// setListening, ecc.) invece di far conoscere ai chiamanti i nomi esatti degli input Rive.
+// L'unico stato che serve tenere anche lato JS è "sta dormendo", perché la UI intorno al rig
+// (il titolo "Lallo si è addormentato") deve saperlo per cambiare testo.
+export function useLalloMachine(riveRef: React.RefObject<RiveRef | null>) {
+  const [isSleepy, setIsSleepy] = useState(false);
   const sleepyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const armSleepyTimer = useCallback(() => {
     if (sleepyTimer.current) clearTimeout(sleepyTimer.current);
-    sleepyTimer.current = setTimeout(() => setState("sleepy"), SLEEPY_AFTER_MS);
-  }, []);
+    sleepyTimer.current = setTimeout(() => {
+      setIsSleepy(true);
+      riveRef.current?.setInputState(LALLO_STATE_MACHINE, "boolSleepy", true);
+    }, SLEEPY_AFTER_MS);
+  }, [riveRef]);
 
   useEffect(() => {
     armSleepyTimer();
     return () => {
       if (sleepyTimer.current) clearTimeout(sleepyTimer.current);
-      if (returnTimer.current) clearTimeout(returnTimer.current);
     };
   }, [armSleepyTimer]);
 
-  const fire = useCallback(
-    (trigger: LalloTrigger) => {
-      if (returnTimer.current) clearTimeout(returnTimer.current);
-      const nextState = TRIGGER_TO_STATE[trigger];
-      setState(nextState);
-      armSleepyTimer(); // qualunque interazione rimanda il sonno
+  // Qualunque interazione sveglia Lallo e rimanda il sonno, come da contratto (vedi plan.md,
+  // "Da sapere per l'integrazione"): il rig si riaddormenta da solo a fine reazione se
+  // boolSleepy è rimasto true, quindi va sempre riportato a false prima di ogni trigger.
+  const wake = useCallback(() => {
+    setIsSleepy((was) => {
+      if (was) riveRef.current?.setInputState(LALLO_STATE_MACHINE, "boolSleepy", false);
+      return false;
+    });
+    armSleepyTimer();
+  }, [riveRef, armSleepyTimer]);
 
-      const autoReturn = AUTO_RETURN_MS[nextState];
-      if (autoReturn) {
-        returnTimer.current = setTimeout(() => setState("idle"), autoReturn);
-      }
+  const fireTouch = useCallback(() => {
+    wake();
+    riveRef.current?.fireState(LALLO_STATE_MACHINE, "trigTouch");
+  }, [riveRef, wake]);
+
+  const fireFeed = useCallback(() => {
+    wake();
+    riveRef.current?.fireState(LALLO_STATE_MACHINE, "trigFeed");
+  }, [riveRef, wake]);
+
+  const fireRepeat = useCallback(() => {
+    wake();
+    riveRef.current?.fireState(LALLO_STATE_MACHINE, "trigRepeat");
+  }, [riveRef, wake]);
+
+  const fireCelebrate = useCallback(() => {
+    wake();
+    riveRef.current?.fireState(LALLO_STATE_MACHINE, "trigCelebrate");
+  }, [riveRef, wake]);
+
+  const setListening = useCallback(
+    (value: boolean) => {
+      wake();
+      riveRef.current?.setInputState(LALLO_STATE_MACHINE, "boolListening", value);
     },
-    [armSleepyTimer]
+    [riveRef, wake]
   );
 
-  return { state, fire };
+  return { isSleepy, fireTouch, fireFeed, fireRepeat, fireCelebrate, setListening };
 }

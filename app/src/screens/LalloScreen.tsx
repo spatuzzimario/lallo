@@ -13,8 +13,9 @@ import {
   requestRecordingPermissionsAsync,
   setAudioModeAsync,
 } from "expo-audio";
+import Rive, { Fit, RiveRef } from "rive-react-native";
 import { useGamificationStore, getDayStreak } from "../store/useGamificationStore";
-import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LalloMood } from "../constants/lalloPet";
+import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS } from "../constants/lalloPet";
 import { getWordImage } from "../constants/wordImage";
 import { useVoice } from "../hooks/useVoice";
 import { useLalloMachine } from "../hooks/useLalloMachine";
@@ -34,12 +35,6 @@ const C = {
   ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC", mist: "#E4EFEA",
 };
 
-const MOOD_IMAGES: Record<LalloMood, any> = {
-  felice: require("../../assets/lallo-splash.png"),
-  neutro: require("../../assets/lallo-pet-neutro.png"),
-  affamato: require("../../assets/lallo-pet-affamato.png"),
-};
-
 // Frasi di reazione al tocco diretto su Lallo (stile Talking Tom, "poke") — non è mai la
 // stessa per non stancare, e restano generiche/allegre, mai un vero dialogo intelligente:
 // qui è solo audio preregistrato/di sistema, nessuna AI che genera risposte.
@@ -51,15 +46,12 @@ const POKE_REACTIONS = [
   { text: "Ahah, di nuovo!", slug: "lallo_poke_5" },
 ];
 
-// NOTA SU COSA È REALMENTE FATTIBILE QUI (senza asset di animazione veri): Lallo non ha
-// fotogrammi disegnati per masticare/parlare come un vero personaggio animato — servirebbe
-// un rig vettoriale Rive (vedi brief "companion interattivo"), non ancora prodotto. Quello
-// che c'è sotto è un'illusione di vita costruita SOLO con l'Animated API nativa sulle 3
-// immagini statiche già esistenti (felice/neutro/affamato), ma pilotata da useLalloMachine
-// invece che da chiamate dirette: gli stessi nomi di stato/trigger (poke, feed, listenStart,
-// repeat, celebrate...) sono quelli che passeremo alla state machine del file .riv quando
-// sarà pronto — quel giorno cambia solo il componente che ascolta lo stato, non chi lo
-// aziona (feed(), startRecording(), ecc. restano identici).
+// Lallo è un rig Rive vero (app/assets/lallo.riv, vedi lallo-companion/plan.md per il
+// contratto della state machine): niente più immagini statiche o Animated API per "far finta"
+// che sia vivo, il rig gestisce da solo idle/coccola/nutrito/ascolta/ripete/festeggia/sonno.
+// useLalloMachine (src/hooks/useLalloMachine.ts) è il ponte tra i gesti del bambino qui sotto
+// (pokeLallo, feed, ecc.) e gli input della state machine — non conosce l'hunger/mood testuale
+// qui sopra, che resta solo testo + barra fame, non un aspetto visivo diverso del rig.
 export default function LalloScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
@@ -70,7 +62,8 @@ export default function LalloScreen({ navigation }: any) {
   const pendingCelebration = useGamificationStore((s) => s.pendingLalloCelebration);
   const consumeLalloCelebration = useGamificationStore((s) => s.consumeLalloCelebration);
   const { speak } = useVoice();
-  const { state: lalloState, fire } = useLalloMachine();
+  const riveRef = useRef<RiveRef>(null);
+  const { isSleepy, fireTouch, fireFeed, fireRepeat, fireCelebrate, setListening } = useLalloMachine(riveRef);
 
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -99,7 +92,7 @@ export default function LalloScreen({ navigation }: any) {
       // perso dietro al testo di benvenuto.
       if (useGamificationStore.getState().pendingLalloCelebration) {
         setShowIntro(false);
-        fire("celebrate");
+        fireCelebrate();
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         speak("Evviva! Hai sbloccato un nuovo livello, sono così fiero di te!", "lallo_celebra_sblocco");
         consumeLalloCelebration();
@@ -119,86 +112,15 @@ export default function LalloScreen({ navigation }: any) {
     }, [mood])
   );
 
-  // --- Lallo "vivo": dondolio idle continuo + reazioni pilotate da useLalloMachine ---
-  const bob = useRef(new Animated.Value(0)).current;
-  const petScale = useRef(new Animated.Value(1)).current;
-  const petRotate = useRef(new Animated.Value(0)).current; // scatto "boing" (tocco) e wiggle (ripeti)
-  const petTilt = useRef(new Animated.Value(0)).current; // inclinazione della testa in ascolto, distinta dal boing
-  const petOpacity = useRef(new Animated.Value(1)).current; // appannamento quando si addormenta
   const petBoxRef = useRef<View>(null);
 
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bob, { toValue: 1, duration: 1400, useNativeDriver: true }),
-        Animated.timing(bob, { toValue: 0, duration: 1400, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, []);
-  const bobTranslate = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
-
-  // Un solo effetto ad ascoltare lo stato della machine, invece di funzioni chiamate a mano
-  // sparse nei vari handler: quando arriverà il rig Rive vero, questo è il punto che verrà
-  // sostituito da fireState()/setBooleanState() sulla state machine del file .riv — gli
-  // handler sotto (pokeLallo, feed, ecc.) restano identici, chiamano solo fire().
-  useEffect(() => {
-    switch (lalloState) {
-      case "poked": {
-        const reaction = POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)];
-        speak(reaction.text, reaction.slug);
-        Animated.sequence([
-          Animated.timing(petScale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
-          Animated.spring(petRotate, { toValue: 1, useNativeDriver: true, friction: 3 }),
-          Animated.spring(petRotate, { toValue: -1, useNativeDriver: true, friction: 3 }),
-          Animated.parallel([
-            Animated.spring(petRotate, { toValue: 0, useNativeDriver: true }),
-            Animated.spring(petScale, { toValue: 1, useNativeDriver: true }),
-          ]),
-        ]).start();
-        break;
-      }
-      case "fed":
-        Animated.sequence([
-          Animated.timing(petScale, { toValue: 1.25, duration: 150, useNativeDriver: true }),
-          Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
-        ]).start();
-        break;
-      case "listening":
-        Animated.spring(petTilt, { toValue: 1, useNativeDriver: true, friction: 5 }).start();
-        break;
-      case "repeating":
-        Animated.sequence([
-          Animated.timing(petRotate, { toValue: 0.6, duration: 90, useNativeDriver: true }),
-          Animated.timing(petRotate, { toValue: -0.6, duration: 90, useNativeDriver: true }),
-          Animated.timing(petRotate, { toValue: 0.6, duration: 90, useNativeDriver: true }),
-          Animated.spring(petRotate, { toValue: 0, useNativeDriver: true }),
-        ]).start();
-        break;
-      case "celebrating":
-        Animated.sequence([
-          Animated.spring(petScale, { toValue: 1.35, useNativeDriver: true, friction: 3 }),
-          Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
-          Animated.spring(petScale, { toValue: 1.2, useNativeDriver: true, friction: 3 }),
-          Animated.spring(petScale, { toValue: 1, useNativeDriver: true, friction: 3 }),
-        ]).start();
-        break;
-      case "sleepy":
-        Animated.timing(petOpacity, { toValue: 0.55, duration: 900, useNativeDriver: true }).start();
-        break;
-      case "idle":
-        Animated.parallel([
-          Animated.spring(petTilt, { toValue: 0, useNativeDriver: true }),
-          Animated.timing(petOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
-        ]).start();
-        break;
-    }
-  }, [lalloState]);
-
+  // Reazione al tocco diretto: la battuta parlata resta gestita qui (il rig non sa quale
+  // frase dire), l'animazione del boing/risata la fa il rig con fireTouch().
   function pokeLallo() {
+    const reaction = POKE_REACTIONS[Math.floor(Math.random() * POKE_REACTIONS.length)];
+    speak(reaction.text, reaction.slug);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    fire("poke");
+    fireTouch();
   }
 
   function feed(food: string) {
@@ -206,7 +128,7 @@ export default function LalloScreen({ navigation }: any) {
     setJustFed(food);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     speak("Mmm, che buono! Grazie!", "lallo_grazie_cibo");
-    fire("feed");
+    fireFeed();
     setTimeout(() => setJustFed(null), 1200);
   }
 
@@ -238,13 +160,13 @@ export default function LalloScreen({ navigation }: any) {
     setRecordedUri(null);
     await recorder.prepareToRecordAsync();
     recorder.record();
-    fire("listenStart");
+    setListening(true);
   }
 
   async function stopRecording() {
     await recorder.stop();
     setRecordedUri(recorder.uri);
-    fire("listenStop");
+    setListening(false);
   }
 
   function repeatAsParrot() {
@@ -255,7 +177,7 @@ export default function LalloScreen({ navigation }: any) {
     player.play();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     talkToLallo();
-    fire("repeat");
+    fireRepeat();
   }
 
   // "Salva clip" (brief §4/§6.4): copia la registrazione in una posizione stabile e apre il
@@ -281,9 +203,6 @@ export default function LalloScreen({ navigation }: any) {
 
   if (!profile) return null;
 
-  const petRotateDeg = petRotate.interpolate({ inputRange: [-1, 1], outputRange: ["-6deg", "6deg"] });
-  const petTiltDeg = petTilt.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "14deg"] });
-
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
       <View style={styles.header}>
@@ -304,25 +223,18 @@ export default function LalloScreen({ navigation }: any) {
       <View style={styles.petCard}>
         <View ref={petBoxRef} collapsable={false}>
           <Pressable onPress={pokeLallo}>
-            <Animated.Image
-              source={MOOD_IMAGES[mood]}
-              style={[
-                styles.petImage,
-                {
-                  opacity: petOpacity,
-                  transform: [
-                    { translateY: bobTranslate },
-                    { scale: petScale },
-                    { rotate: petRotateDeg },
-                    { rotate: petTiltDeg },
-                  ],
-                },
-              ]}
-              resizeMode="contain"
+            <Rive
+              ref={riveRef}
+              source={require("../../assets/lallo.riv")}
+              artboardName="Lallo"
+              stateMachineName="LalloStateMachine"
+              autoplay
+              fit={Fit.Contain}
+              style={styles.petImage}
             />
           </Pressable>
         </View>
-        {lalloState === "sleepy" ? (
+        {isSleepy ? (
           <>
             <Text style={styles.moodTitle}>😴 Lallo si è addormentato</Text>
             <Text style={styles.moodSub}>Toccalo per svegliarlo!</Text>
