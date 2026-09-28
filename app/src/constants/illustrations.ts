@@ -323,6 +323,7 @@ export const WORD_ILLUSTRATIONS: Record<string, ImageSourcePropType> = {
   "nocciolina": require("../../assets/illustrations/parole/nocciolina.png"),
   "noce": require("../../assets/illustrations/parole/noce.png"),
   "nonna": require("../../assets/illustrations/parole/nonna.png"),
+  "nonno": require("../../assets/illustrations/parole/nonno.png"),
   "notte": require("../../assets/illustrations/parole/notte.png"),
   "numero": require("../../assets/illustrations/parole/numero.png"),
   "nuoto": require("../../assets/illustrations/parole/nuoto.png"),
