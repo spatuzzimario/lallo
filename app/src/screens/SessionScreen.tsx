@@ -215,7 +215,7 @@ export default function SessionScreen({ navigation, route }: any) {
         <CacciaAlSuono phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "memory" && (
-        <MemoryGame phonemeKey={phonemeKey} level={params.level} onAttempt={logAttempt} onDone={finishSession} />
+        <MemoryGame phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "registratore" && (
         <Registratore navigation={navigation} phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
@@ -418,39 +418,31 @@ const syllableStyles = StyleSheet.create({
 });
 
 /* ---------------- Memory ----------------
-   Difficoltà del tabellone (in numero di coppie) legata al sotto-step L1/L2 della sessione
-   (scala L0-L4b, vedi types/gamification.ts), da 6 a 12 carte — sempre un numero pari,
-   altrimenti le coppie non tornano. */
-// Solo gli 8 sotto-step "parola" hanno Memory (vedi LivelliScreen); il fallback `?? 3` in
-// MemoryGame copre gli altri livelli, che comunque non lo aprono mai. 6 coppie (12 carte) al
-// sotto-step più difficile è già tanto per i suoni più poveri (es. Z sorda: solo 8 parole in
-// tutto tra iniziale e mediana).
-const MEMORY_PAIRS_BY_LEVEL: Partial<Record<ClinicalLevel, number>> = {
-  "L1-1": 3, "L1-2": 3, "L1-3": 4, "L1-4plus": 4,
-  "L2-1": 4, "L2-2": 4, "L2-3": 6, "L2-4plus": 6,
-};
+   3 partite a difficoltà crescente per la stessa sessione (brief riorganizzazione livelli,
+   settembre 2026): 3 → 6 → 9 coppie, cioè 6 → 12 → 18 carte. Il pool è quello della sola
+   posizione in allenamento (iniziale per Livello 2, mediana per Livello 3) — prima pescava
+   iniziale+mediana insieme, ma i due livelli vanno tenuti separati come gli altri giochi. */
+const MEMORY_TIERS = [3, 6, 9]; // coppie per partita
 
 function memoryCardWidth(totalCards: number): `${number}%` {
   if (totalCards <= 8) return "30%"; // 3 per riga
   if (totalCards === 12) return "22%"; // 4 per riga
-  return "18%"; // 16 carte, 5 per riga
+  return "18%"; // 18 carte, 5 per riga
 }
 
-function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; level: ClinicalLevel;
+function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
   onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const meta = WORD_BANK[phonemeKey];
-  const pairCount = MEMORY_PAIRS_BY_LEVEL[level] ?? 3;
   const [round, setRound] = useState(0);
+  const pairCount = MEMORY_TIERS[Math.min(round, MEMORY_TIERS.length - 1)];
   const cards = useMemo(() => {
-    // iniziale + mediana insieme: alcuni suoni non hanno abbastanza parole in una sola
-    // posizione per i livelli più alti (fino a 8 parole distinte).
-    const pool = allWordsFor(phonemeKey);
+    const pool = wordsFor(phonemeKey, position);
     const chosen = pickRandom(pool, Math.min(pairCount, pool.length));
     const doubled = chosen.flatMap((w) => [w, w]);
     return pickRandom(doubled, doubled.length).map((w, idx) => ({ ...w, uid: `${w.parola}-${idx}` }));
-  }, [phonemeKey, pairCount, round]);
+  }, [phonemeKey, position, pairCount, round]);
   const totalMatches = Math.min(pairCount, cards.length / 2);
 
   const [flipped, setFlipped] = useState<string[]>([]);
@@ -462,7 +454,7 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
 
   useEffect(() => {
     speak(`Trova le coppie con il suono ${meta.label}`, `tpl_memory_${phonemeKey}`);
-  }, [pairCount]);
+  }, [round]);
 
   function handleFlip(card: typeof cards[number]) {
     if (flipped.includes(card.uid) || matched.includes(card.parola)) return;
@@ -477,7 +469,19 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
       setFlipped((f) => f.filter((u) => u !== firstUid && u !== card.uid));
       setMatched((m) => {
         const next = [...m, card.parola];
-        if (next.length === totalMatches) setTimeout(onDone, 900);
+        if (next.length === totalMatches) {
+          setTimeout(() => {
+            if (round + 1 < MEMORY_TIERS.length) {
+              setFlipped([]);
+              setMatched([]);
+              setMismatched([]);
+              setFirstUid(null);
+              setRound((r) => r + 1);
+            } else {
+              onDone();
+            }
+          }, 900);
+        }
         return next;
       });
     } else {
@@ -495,7 +499,7 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.question}>
-        Trova le coppie con {meta.label} · {cards.length} carte 🦜
+        Trova le coppie con {meta.label} · {cards.length} carte · partita {round + 1} di {MEMORY_TIERS.length} 🦜
       </Text>
       <ScrollView contentContainerStyle={styles.memGrid}>
         {cards.map((c) => {
@@ -525,9 +529,6 @@ function MemoryGame({ phonemeKey, level, onAttempt, onDone }: {
           );
         })}
       </ScrollView>
-      <Pressable style={styles.secondaryBtn} onPress={() => { setFlipped([]); setMatched([]); setMismatched([]); setFirstUid(null); setRound((r) => r + 1); }}>
-        <Text style={styles.secondaryBtnText}>🔀 Nuove carte</Text>
-      </Pressable>
     </View>
   );
 }
@@ -753,24 +754,36 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
 }
 
 /* ---------------- Coppie minime ----------------
-   3 round che alternano quale delle due parole della coppia è il target, invece di una
-   singola domanda — più pratica per sessione, in linea con gli altri esercizi. Auto-avanza
-   dopo ogni risposta, niente più tap manuale su "Fatto". */
+   Cicla su più coppie nella stessa sessione (brief riorganizzazione livelli, settembre 2026:
+   "almeno 4 coppie diverse, 5 partite a coppia") — 5 round che alternano quale delle due
+   parole della coppia è il target, poi si passa alla coppia successiva. Funziona già con una
+   sola coppia curata (5 round su quella) e scala da sola quando arriveranno le altre 3 per
+   fonema, senza bisogno di un altro cambio di codice. Auto-avanza dopo ogni risposta, niente
+   tap manuale su "Fatto". */
+const COPPIE_ROUNDS_PER_PAIR = 5;
+const COPPIE_MAX_PAIRS = 4;
+
 function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const curated = MINIMAL_PAIRS[phonemeKey];
-  // Le 4 categorie composite/cluster (cons_r, r_cons, s_cons, mnl_cons) non hanno una
-  // coppia minima curata (vedi nota in wordBank.ts) — invece di mostrare sempre "sole/sale"
-  // di un suono non pertinente, si pescano due parole reali e diverse del fonema stesso.
-  const pair = useMemo<[WordEntry, WordEntry]>(() => {
-    if (curated) return curated;
-    const pool = allWordsFor(phonemeKey);
-    const [a, b] = pickRandom(pool, 2);
-    return [a, b ?? a];
-  }, [phonemeKey, curated]);
   const meta = WORD_BANK[phonemeKey];
+  // Le 4 categorie composite/cluster (cons_r, r_cons, s_cons, mnl_cons) non hanno coppie
+  // minime curate (vedi nota in wordBank.ts) — invece di mostrare sempre "sole/sale" di un
+  // suono non pertinente, si pescano fino a 4 coppie reali e distinte dal word bank stesso.
+  const pairs = useMemo<[WordEntry, WordEntry][]>(() => {
+    if (curated && curated.length) return curated.slice(0, COPPIE_MAX_PAIRS);
+    const pool = allWordsFor(phonemeKey);
+    const shuffled = pickRandom(pool, Math.min(pool.length, COPPIE_MAX_PAIRS * 2));
+    const generated: [WordEntry, WordEntry][] = [];
+    for (let i = 0; i + 1 < shuffled.length && generated.length < COPPIE_MAX_PAIRS; i += 2) {
+      generated.push([shuffled[i], shuffled[i + 1]]);
+    }
+    return generated.length ? generated : [[pool[0], pool[0]]];
+  }, [phonemeKey, curated]);
+  const totalRounds = pairs.length * COPPIE_ROUNDS_PER_PAIR;
   const [round, setRound] = useState(0);
+  const pair = pairs[Math.floor(round / COPPIE_ROUNDS_PER_PAIR)];
   const target = pair[round % 2];
   const [picked, setPicked] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
@@ -796,7 +809,7 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
     setTimeout(() => speakWord(word.parola), 700);
     setTimeout(() => {
       setPicked(null);
-      if (round + 1 < PRODUCTION_ROUNDS) setRound((r) => r + 1);
+      if (round + 1 < totalRounds) setRound((r) => r + 1);
       else onDone();
     }, 1100);
   }
@@ -804,9 +817,9 @@ function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.question}>
-        Ascolta, poi tocca la parola che hai sentito · {round + 1} di {PRODUCTION_ROUNDS}
+        Ascolta, poi tocca la parola che hai sentito · {round + 1} di {totalRounds}
       </Text>
-      {!MINIMAL_PAIRS[phonemeKey] && (
+      {!curated && (
         <Text style={styles.warnNote}>Coppia di esempio — da personalizzare per {meta.label}</Text>
       )}
       <Pressable style={styles.playBtn} onPress={playTarget}>

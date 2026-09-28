@@ -146,32 +146,36 @@ export const WORD_BANK: Record<PhonemeKey, PhonemeEntry> = {
 // (categorie a suono singolo). Le 4 categorie composite/cluster (cons_r, r_cons, s_cons,
 // mnl_cons: TR/DR/FR..., -RT-/-RD-..., ST/SP/SC..., -MP-/-NT-/-LC-...) raggruppano più
 // suoni diversi e non hanno un'unica coppia minima onesta da proporre — per quelle
-// CoppieMinime (SessionScreen.tsx) pesca invece due parole reali del fonema stesso dal
-// word bank, invece di ricadere sempre sulla stessa coppia "sole/sale" di un suono non
-// pertinente (bug segnalato: la coppia doveva riguardare il suono in allenamento).
+// CoppieMinime (SessionScreen.tsx) pesca invece parole reali del fonema stesso dal word
+// bank, invece di ricadere sempre sulla stessa coppia "sole/sale" di un suono non pertinente.
+// Ogni fonema ha un ARRAY di coppie (brief riorganizzazione livelli, settembre 2026: "almeno
+// 4 coppie diverse, 5 partite a coppia") — oggi ne è curata solo una per fonema, le altre
+// arrivano nei prossimi giri di generazione contenuto insieme all'espansione del word bank.
+// CoppieMinime cicla su quante coppie sono disponibili, quindi funziona già con 1 e scala
+// automaticamente a 4 senza bisogno di un altro cambio di codice.
 // DA VALIDARE con un logopedista prima di uso clinico reale, come il resto del word bank.
-export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, [WordEntry, WordEntry]>> = {
-  s: [w("sole", "☀️"), w("sale", "🧂")],
-  z_ts: [w("razzo", "🚀"), w("riso", "🍚")],
-  r: [w("rana", "🐸"), w("lana", "🧶")],
-  l: [w("luna", "🌙"), w("una", "1️⃣")],
-  t: [w("tana", "🕳️"), w("dado", "🎲")],
-  c: [w("cane", "🐶"), w("pane", "🍞")],
-  p: [w("palla", "⚽"), w("balla", "💃")],
-  b: [w("barca", "⛵"), w("marca", "🏷️")],
-  ci: [w("cielo", "☁️"), w("gelo", "🥶")],
-  d: [w("dente", "🦷"), w("gente", "🧑‍🤝‍🧑")],
-  f: [w("faro", "🗼"), w("caro", "💛")],
-  g: [w("gatto", "🐱"), w("matto", "🌀")],
-  gi: [w("gelo", "🥶"), w("cielo", "☁️")],
-  gli: [w("paglia", "🌾"), w("palla", "⚽")],
-  gn: [w("bagno", "🛁"), w("banco", "🪑")],
-  m: [w("mano", "✋"), w("nano", "🧙")],
-  n: [w("naso", "👃"), w("vaso", "🏺")],
-  sci_sce: [w("pesce", "🐟"), w("cece", "🫘")],
-  v: [w("vento", "💨"), w("cento", "💯")],
-  z_dz: [w("zero", "0️⃣"), w("vero", "✅")],
-  zeta: [w("zucca", "🎃"), w("buca", "🕳️")],
+export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, Array<[WordEntry, WordEntry]>>> = {
+  s: [[w("sole", "☀️"), w("sale", "🧂")]],
+  z_ts: [[w("razzo", "🚀"), w("riso", "🍚")]],
+  r: [[w("rana", "🐸"), w("lana", "🧶")]],
+  l: [[w("luna", "🌙"), w("una", "1️⃣")]],
+  t: [[w("tana", "🕳️"), w("dado", "🎲")]],
+  c: [[w("cane", "🐶"), w("pane", "🍞")]],
+  p: [[w("palla", "⚽"), w("balla", "💃")]],
+  b: [[w("barca", "⛵"), w("marca", "🏷️")]],
+  ci: [[w("cielo", "☁️"), w("gelo", "🥶")]],
+  d: [[w("dente", "🦷"), w("gente", "🧑‍🤝‍🧑")]],
+  f: [[w("faro", "🗼"), w("caro", "💛")]],
+  g: [[w("gatto", "🐱"), w("matto", "🌀")]],
+  gi: [[w("gelo", "🥶"), w("cielo", "☁️")]],
+  gli: [[w("paglia", "🌾"), w("palla", "⚽")]],
+  gn: [[w("bagno", "🛁"), w("banco", "🪑")]],
+  m: [[w("mano", "✋"), w("nano", "🧙")]],
+  n: [[w("naso", "👃"), w("vaso", "🏺")]],
+  sci_sce: [[w("pesce", "🐟"), w("cece", "🫘")]],
+  v: [[w("vento", "💨"), w("cento", "💯")]],
+  z_dz: [[w("zero", "0️⃣"), w("vero", "✅")]],
+  zeta: [[w("zucca", "🎃"), w("buca", "🕳️")]],
 };
 
 // Cerca una parola per testo in TUTTO il word bank, a prescindere dal fonema — serve alle
