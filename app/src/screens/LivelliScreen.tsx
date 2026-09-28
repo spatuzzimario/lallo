@@ -38,7 +38,7 @@ const WORD_LEVELS: ClinicalLevel[] = ["L1", "L2"];
 // il nodo resterebbe sbloccabile ma aprirebbe un esercizio che si autocompleta subito senza
 // contenuto, invece di semplicemente non offrirlo (vedi filtro in nodeGames sotto).
 const GAMES = [
-  { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", icon: require("../../assets/icons/game_ripeti.png"), levels: WORD_LEVELS },
+  { type: "ripeti", label: "Ripeti", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_ripeti.png"), levels: WORD_LEVELS },
   { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_ascolta.png"), levels: WORD_LEVELS },
   { type: "memory", label: "Memory", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_memory.png"), levels: WORD_LEVELS },
   { type: "caccia", label: "Caccia al suono", meta: "Discriminazione", bg: "#FDECE7", icon: require("../../assets/icons/game_caccia.png"), levels: WORD_LEVELS },

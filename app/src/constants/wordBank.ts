@@ -148,34 +148,47 @@ export const WORD_BANK: Record<PhonemeKey, PhonemeEntry> = {
 // suoni diversi e non hanno un'unica coppia minima onesta da proporre — per quelle
 // CoppieMinime (SessionScreen.tsx) pesca invece parole reali del fonema stesso dal word
 // bank, invece di ricadere sempre sulla stessa coppia "sole/sale" di un suono non pertinente.
-// Ogni fonema ha un ARRAY di coppie (brief riorganizzazione livelli, settembre 2026: "almeno
-// 4 coppie diverse, 5 partite a coppia") — oggi ne è curata solo una per fonema, le altre
-// arrivano nei prossimi giri di generazione contenuto insieme all'espansione del word bank.
-// CoppieMinime cicla su quante coppie sono disponibili, quindi funziona già con 1 e scala
-// automaticamente a 4 senza bisogno di un altro cambio di codice.
+//
+// Per posizione (settembre 2026 — prima era un unico pool generico riusato identico a
+// Livello 1 e Livello 2, che mostrava per esempio "bagno/banco" anche al nodo "Parola
+// iniziale" pur avendo GN in mezzo alla parola, non all'inizio): ogni coppia dichiara ora
+// esplicitamente se la parola bersaglio ha il fonema in posizione iniziale o mediana, e
+// CoppieMinime pesca solo dal pool del livello aperto. GN, SCI/SCE e la Z sorda (z_ts) non
+// avevano ancora una coppia iniziale vera (quella esistente aveva il fonema in mezzo, es.
+// "pesce" ha SCE mediana) — aggiunta qui usando le poche parole iniziali reali di questi
+// fonemi (gn: solo gnomo/gnocchi/gnu esistono in italiano comune). GLI non ha invece
+// NESSUNA parola iniziale possibile in italiano (il digramma non apre mai una parola comune,
+// vedi WORD_BANK.gli.iniziale=[]): resta solo mediana, per costruzione linguistica, non per
+// contenuto mancante da curare.
+//
+// Ogni posizione ha un ARRAY di coppie (brief riorganizzazione livelli, settembre 2026:
+// "almeno 4 coppie diverse, 5 partite a coppia") — oggi ne è curata solo una per
+// fonema/posizione, le altre arrivano nei prossimi giri di generazione contenuto insieme
+// all'espansione del word bank. CoppieMinime cicla su quante coppie sono disponibili, quindi
+// funziona già con 1 e scala automaticamente a 4 senza bisogno di un altro cambio di codice.
 // DA VALIDARE con un logopedista prima di uso clinico reale, come il resto del word bank.
-export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, Array<[WordEntry, WordEntry]>>> = {
-  s: [[w("sole", "☀️"), w("sale", "🧂")]],
-  z_ts: [[w("razzo", "🚀"), w("riso", "🍚")]],
-  r: [[w("rana", "🐸"), w("lana", "🧶")]],
-  l: [[w("luna", "🌙"), w("una", "1️⃣")]],
-  t: [[w("tana", "🕳️"), w("dado", "🎲")]],
-  c: [[w("cane", "🐶"), w("pane", "🍞")]],
-  p: [[w("palla", "⚽"), w("balla", "💃")]],
-  b: [[w("barca", "⛵"), w("marca", "🏷️")]],
-  ci: [[w("cielo", "☁️"), w("gelo", "🥶")]],
-  d: [[w("dente", "🦷"), w("gente", "🧑‍🤝‍🧑")]],
-  f: [[w("faro", "🗼"), w("caro", "💛")]],
-  g: [[w("gatto", "🐱"), w("matto", "🌀")]],
-  gi: [[w("gelo", "🥶"), w("cielo", "☁️")]],
-  gli: [[w("paglia", "🌾"), w("palla", "⚽")]],
-  gn: [[w("bagno", "🛁"), w("banco", "🪑")]],
-  m: [[w("mano", "✋"), w("nano", "🧙")]],
-  n: [[w("naso", "👃"), w("vaso", "🏺")]],
-  sci_sce: [[w("pesce", "🐟"), w("cece", "🫘")]],
-  v: [[w("vento", "💨"), w("cento", "💯")]],
-  z_dz: [[w("zero", "0️⃣"), w("vero", "✅")]],
-  zeta: [[w("zucca", "🎃"), w("buca", "🕳️")]],
+export const MINIMAL_PAIRS: Partial<Record<PhonemeKey, Partial<Record<"iniziale" | "mediana", Array<[WordEntry, WordEntry]>>>>> = {
+  s: { iniziale: [[w("sole", "☀️"), w("sale", "🧂")]], mediana: [[w("naso", "👃"), w("nano", "🧙")]] },
+  z_ts: { iniziale: [[w("zitto", "🤫"), w("dito", "☝️")]], mediana: [[w("razzo", "🚀"), w("riso", "🍚")]] },
+  r: { iniziale: [[w("rana", "🐸"), w("lana", "🧶")]], mediana: [[w("torre", "🏰"), w("torta", "🎂")]] },
+  l: { iniziale: [[w("luna", "🌙"), w("una", "1️⃣")]], mediana: [[w("mela", "🍎"), w("neve", "❄️")]] },
+  t: { iniziale: [[w("tana", "🕳️"), w("dado", "🎲")]], mediana: [[w("latte", "🥛"), w("lago", "🏞️")]] },
+  c: { iniziale: [[w("cane", "🐶"), w("pane", "🍞")]], mediana: [[w("baco", "🐛"), w("bacio", "💋")]] },
+  p: { iniziale: [[w("palla", "⚽"), w("balla", "💃")]], mediana: [[w("topo", "🐭"), w("toro", "🐂")]] },
+  b: { iniziale: [[w("barca", "⛵"), w("marca", "🏷️")]], mediana: [[w("gabbia", "🦜"), w("gamba", "🦵")]] },
+  ci: { iniziale: [[w("cielo", "☁️"), w("gelo", "🥶")]], mediana: [[w("faccia", "😊"), w("vacca", "🐄")]] },
+  d: { iniziale: [[w("dente", "🦷"), w("gente", "🧑‍🤝‍🧑")]], mediana: [[w("radio", "📻"), w("raggio", "☀️")]] },
+  f: { iniziale: [[w("faro", "🗼"), w("caro", "💛")]], mediana: [[w("giraffa", "🦒"), w("giacca", "🧥")]] },
+  g: { iniziale: [[w("gatto", "🐱"), w("matto", "🌀")]], mediana: [[w("mago", "🧙"), w("mano", "✋")]] },
+  gi: { iniziale: [[w("gelo", "🥶"), w("cielo", "☁️")]], mediana: [[w("valigia", "🧳"), w("vaniglia", "🍦")]] },
+  gli: { mediana: [[w("paglia", "🌾"), w("palla", "⚽")]] },
+  gn: { iniziale: [[w("gnomo", "🧙‍♂️"), w("nonno", "👴")]], mediana: [[w("bagno", "🛁"), w("banco", "🪑")]] },
+  m: { iniziale: [[w("mano", "✋"), w("nano", "🧙")]], mediana: [[w("gomma", "🧽"), w("gonna", "👗")]] },
+  n: { iniziale: [[w("naso", "👃"), w("vaso", "🏺")]], mediana: [[w("luna", "🌙"), w("lupo", "🐺")]] },
+  sci_sce: { iniziale: [[w("sciarpa", "🧣"), w("scarpa", "👟")]], mediana: [[w("pesce", "🐟"), w("cece", "🫘")]] },
+  v: { iniziale: [[w("vento", "💨"), w("cento", "💯")]], mediana: [[w("neve", "❄️"), w("nonna", "👵")]] },
+  z_dz: { iniziale: [[w("zero", "0️⃣"), w("vero", "✅")]], mediana: [[w("orzo", "🌾"), w("orso", "🐻")]] },
+  zeta: { iniziale: [[w("zucca", "🎃"), w("buca", "🕳️")]], mediana: [[w("pazzo", "🤪"), w("matto", "🌀")]] },
 };
 
 // Cerca una parola per testo in TUTTO il word bank, a prescindere dal fonema — serve alle

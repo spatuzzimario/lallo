@@ -221,14 +221,14 @@ export default function SessionScreen({ navigation, route }: any) {
         <Registratore navigation={navigation} phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "coppie" && (
-        <CoppieMinime phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+        <CoppieMinime phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "oca" && (
         <GiocoDellOca navigation={navigation} phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "sequenze" && <SequenzeIllustrate phonemeKey={phonemeKey} onDone={finishSession} />}
       {exerciseType === "ripeti" && (
-        <Ripeti phonemeKey={phonemeKey} onAttempt={logAttempt} onDone={finishSession} />
+        <Ripeti phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
       )}
       {exerciseType === "ascolta" && (
         <AscoltaEScegli phonemeKey={phonemeKey} position={position} onAttempt={logAttempt} onDone={finishSession} />
@@ -612,16 +612,19 @@ function Registratore({ navigation, phonemeKey, position, onAttempt, onDone }: {
 }
 
 /* ---------------- Ripeti ----------------
-   Sfoglia TUTTE le parole del fonema (iniziale + mediana insieme, brief: farle vedere
-   tutte) una alla volta: immagine grande, il modello audio parte da solo, il bambino
-   ripete ad alta voce. Avanzamento sempre manuale (freccia) — niente registrazione né
+   Sfoglia le parole del fonema alla posizione del livello aperto (solo iniziali a Livello 1,
+   solo mediane a Livello 2 — prima mostrava sempre TUTTE le parole del fonema a prescindere
+   dal livello, una scelta di un brief precedente poi corretta: il livello deve mantenere la
+   promessa del suo nome) una alla volta: immagine grande, il modello audio parte da solo, il
+   bambino ripete ad alta voce. Avanzamento sempre manuale (freccia) — niente registrazione né
    valutazione automatica della pronuncia: l'app non può "capire" se il bambino ha
    ripetuto bene (vedi CLAUDE.md §10, nessun ASR/scoring automatico sul bambino). */
-function Ripeti({ phonemeKey, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+function Ripeti({ phonemeKey, position, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
+  onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
   const meta = WORD_BANK[phonemeKey];
-  const words = useMemo(() => allWordsFor(phonemeKey), [phonemeKey]);
+  const words = useMemo(() => wordsFor(phonemeKey, position), [phonemeKey, position]);
   const [idx, setIdx] = useState(0);
   const word = words[idx];
   const { speak, speakWord } = useVoice();
@@ -651,7 +654,7 @@ function Ripeti({ phonemeKey, onAttempt, onDone }: {
       <WordVisual parola={word.parola} emoji={word.emoji} size={170} textStyle={styles.recEmoji} imageMarginTop={10} />
       <Text style={styles.recWord}>{word.parola}</Text>
       <Text style={styles.recMeta}>
-        {meta.label} · parola {idx + 1} di {words.length}
+        {meta.label} · {position} · parola {idx + 1} di {words.length}
       </Text>
       <View style={styles.recRow}>
         <Pressable style={styles.recListenBtn} onPress={() => speakWord(word.parola)}>
@@ -763,24 +766,27 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
 const COPPIE_ROUNDS_PER_PAIR = 5;
 const COPPIE_MAX_PAIRS = 4;
 
-function CoppieMinime({ phonemeKey, onAttempt, onDone }: {
-  phonemeKey: PhonemeKey; onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
+function CoppieMinime({ phonemeKey, position, onAttempt, onDone }: {
+  phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
+  onAttempt: (word: string, correct: boolean) => void; onDone: () => void;
 }) {
-  const curated = MINIMAL_PAIRS[phonemeKey];
+  const curated = MINIMAL_PAIRS[phonemeKey]?.[position];
   const meta = WORD_BANK[phonemeKey];
   // Le 4 categorie composite/cluster (cons_r, r_cons, s_cons, mnl_cons) non hanno coppie
   // minime curate (vedi nota in wordBank.ts) — invece di mostrare sempre "sole/sale" di un
-  // suono non pertinente, si pescano fino a 4 coppie reali e distinte dal word bank stesso.
+  // suono non pertinente, si pescano fino a 4 coppie reali e distinte dal word bank stesso,
+  // filtrate sulla stessa posizione del livello aperto (prima pescavano da tutto il word
+  // bank, mischiando parole iniziali e mediane indipendentemente dal livello).
   const pairs = useMemo<[WordEntry, WordEntry][]>(() => {
     if (curated && curated.length) return curated.slice(0, COPPIE_MAX_PAIRS);
-    const pool = allWordsFor(phonemeKey);
+    const pool = wordsFor(phonemeKey, position);
     const shuffled = pickRandom(pool, Math.min(pool.length, COPPIE_MAX_PAIRS * 2));
     const generated: [WordEntry, WordEntry][] = [];
     for (let i = 0; i + 1 < shuffled.length && generated.length < COPPIE_MAX_PAIRS; i += 2) {
       generated.push([shuffled[i], shuffled[i + 1]]);
     }
     return generated.length ? generated : [[pool[0], pool[0]]];
-  }, [phonemeKey, curated]);
+  }, [phonemeKey, position, curated]);
   const totalRounds = pairs.length * COPPIE_ROUNDS_PER_PAIR;
   const [round, setRound] = useState(0);
   const pair = pairs[Math.floor(round / COPPIE_ROUNDS_PER_PAIR)];
