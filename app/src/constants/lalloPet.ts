@@ -27,4 +27,13 @@ export const LALLO_MOOD_COPY: Record<LalloMood, { title: string; sub: string }> 
 // niente nuove immagini per questo, riusa quelle già fatte per gli esercizi.
 // Solo frutta, verdura e cereali — niente carne né pesce: Lallo è un pappagallo, non un
 // onnivoro (salame e sugo tolti dopo il feedback: biologicamente sbagliati per l'animale).
-export const LALLO_FOODS = ["banana", "arancia", "pera", "carota", "riso", "ananas", "pisello"];
+// Ridotti da 7 a 4 (feedback settembre 2026): i comandi ora stanno in una colonna stretta
+// a fianco di Lallo, non in una griglia sotto — "riso" resta perché la ciotola di riso è
+// visivamente il cibo più simile a una ciotola di semi, il pasto "vero" di un pappagallo.
+export const LALLO_FOODS = ["riso", "banana", "carota", "pisello"];
+
+// Il cibo preferito di Lallo: dargli questo invece degli altri fa scattare la reazione di
+// festa (trigCelebrate) invece della reazione normale di pasto (trigFeed) — stesso trigger
+// già usato per festeggiare uno sblocco di livello (vedi LalloScreen), qui riusato per
+// rendere il feeding un po' più sorprendente senza inventare un nuovo stato nel rig.
+export const LALLO_CELEBRATE_FOODS = ["riso"];

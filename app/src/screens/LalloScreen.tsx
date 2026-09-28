@@ -15,7 +15,7 @@ import {
 } from "expo-audio";
 import Rive, { Fit, RiveRef } from "rive-react-native";
 import { useGamificationStore, getDayStreak } from "../store/useGamificationStore";
-import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS } from "../constants/lalloPet";
+import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LALLO_CELEBRATE_FOODS } from "../constants/lalloPet";
 import { getWordImage } from "../constants/wordImage";
 import { useVoice } from "../hooks/useVoice";
 import { useLalloMachine } from "../hooks/useLalloMachine";
@@ -58,10 +58,12 @@ export default function LalloScreen({ navigation }: any) {
   // Rive non rispetta in modo affidabile uno style width/height come farebbe una <Image>, e
   // senza un vincolo numerico si espande trascinando con sé petCard, spingendo il resto della
   // schermata fuori vista (regressione osservata su device dopo l'integrazione del rig).
-  // Quadrato come l'artboard, ~80% della larghezza schermo, con un tetto per tablet/schermi
-  // molto larghi — responsive tra iPhone piccoli e grandi senza deformarsi (Fit.Contain).
+  // Quadrato come l'artboard, responsive tra iPhone piccoli e grandi senza deformarsi
+  // (Fit.Contain). Il riquadro di Lallo ora condivide la riga con la colonna dei comandi a
+  // destra (COMMAND_COL_WIDTH), quindi la taglia si calcola sullo spazio che resta dopo aver
+  // tolto il padding della schermata, il gap tra i due, e il padding/bordo interni di petCard.
   const { width: screenWidth } = useWindowDimensions();
-  const petSize = Math.min(screenWidth * 0.8, 380);
+  const petSize = Math.min(Math.max(screenWidth - 160, 160), 300);
   const profile = useGamificationStore((s) => s.profile);
   const feedLallo = useGamificationStore((s) => s.feedLallo);
   const talkToLallo = useGamificationStore((s) => s.talkToLallo);
@@ -121,6 +123,12 @@ export default function LalloScreen({ navigation }: any) {
   );
 
   const petBoxRef = useRef<View>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  // La ScrollView esterna intercetta il gesto di trascinamento prima che arrivi al tile di
+  // cibo (bug segnalato: il drag-and-drop non funzionava mai) — si disabilita lo scroll per
+  // tutta la durata di un trascinamento, così il PanResponder del tile resta l'unico a
+  // gestire il gesto (vedi anche onStartShouldSetPanResponderCapture in DraggableFood sotto).
+  const [isDraggingFood, setIsDraggingFood] = useState(false);
 
   // Reazione al tocco diretto: la battuta parlata resta gestita qui (il rig non sa quale
   // frase dire), l'animazione del boing/risata la fa il rig con fireTouch().
@@ -134,9 +142,15 @@ export default function LalloScreen({ navigation }: any) {
   function feed(food: string) {
     feedLallo();
     setJustFed(food);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    speak("Mmm, che buono! Grazie!", "lallo_grazie_cibo");
-    fireFeed();
+    if (LALLO_CELEBRATE_FOODS.includes(food)) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      speak("Evviva, il mio preferito! Grazie!", "lallo_cibo_preferito");
+      fireCelebrate();
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      speak("Mmm, che buono! Grazie!", "lallo_grazie_cibo");
+      fireFeed();
+    }
     setTimeout(() => setJustFed(null), 1200);
   }
 
@@ -215,7 +229,12 @@ export default function LalloScreen({ navigation }: any) {
     // ScrollView come rete di sicurezza: anche se il rig Rive o un telefono piccolo fanno
     // eccedere l'altezza disponibile, il resto della schermata (cibi, microfono) resta
     // sempre raggiungibile scorrendo, invece di sparire oltre il bordo di una View fissa.
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.screenContent, { paddingTop: insets.top + 16 }]}>
+    <ScrollView
+      ref={scrollRef}
+      style={styles.screen}
+      contentContainerStyle={[styles.screenContent, { paddingTop: insets.top + 16 }]}
+      scrollEnabled={!isDraggingFood}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Lallo</Text>
         {dayStreak > 0 && (
@@ -231,55 +250,55 @@ export default function LalloScreen({ navigation }: any) {
         </View>
       )}
 
-      <View style={styles.petCard}>
-        <View ref={petBoxRef} collapsable={false} style={{ width: petSize, height: petSize }}>
-          <Pressable onPress={pokeLallo} style={{ width: petSize, height: petSize }}>
-            <Rive
-              ref={riveRef}
-              source={require("../../assets/lallo.riv")}
-              artboardName="Lallo"
-              stateMachineName="LalloStateMachine"
-              autoplay
-              fit={Fit.Contain}
-              style={{ width: petSize, height: petSize }}
-            />
-          </Pressable>
-        </View>
-        {isSleepy ? (
-          <>
-            <Text style={styles.moodTitle}>😴 Lallo si è addormentato</Text>
-            <Text style={styles.moodSub}>Toccalo per svegliarlo!</Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.moodTitle}>{moodCopy.title}</Text>
-            <Text style={styles.moodSub}>{moodCopy.sub}</Text>
-          </>
-        )}
-        <View style={styles.hungerTrack}>
-          <View style={[styles.hungerFill, { width: `${hunger}%` }, hunger < 33 && styles.hungerFillLow]} />
-        </View>
-      </View>
-
-      <Pressable style={styles.playBtn} onPress={() => navigation.navigate("Giochi")}>
-        <Text style={styles.playBtnText}>🎮 Vai a giocare con Lallo!</Text>
-      </Pressable>
-
       <Text style={styles.sectionLabel}>TRASCINA UN CIBO SU LALLO PER SFAMARLO</Text>
-      <View style={styles.foodRow}>
-        {LALLO_FOODS.map((food) => {
-          const img = getWordImage(food);
-          return (
-            <DraggableFood
-              key={food}
-              food={food}
-              img={img}
-              justFed={justFed === food}
-              lalloRef={petBoxRef}
-              onFeed={feed}
-            />
-          );
-        })}
+      <View style={styles.petRow}>
+        <View style={styles.petCard}>
+          <View ref={petBoxRef} collapsable={false} style={{ width: petSize, height: petSize }}>
+            <Pressable onPress={pokeLallo} style={{ width: petSize, height: petSize }}>
+              <Rive
+                ref={riveRef}
+                source={require("../../assets/lallo.riv")}
+                artboardName="Lallo"
+                stateMachineName="LalloStateMachine"
+                autoplay
+                fit={Fit.Contain}
+                style={{ width: petSize, height: petSize }}
+              />
+            </Pressable>
+          </View>
+          {isSleepy ? (
+            <>
+              <Text style={styles.moodTitle}>😴 Lallo si è addormentato</Text>
+              <Text style={styles.moodSub}>Toccalo per svegliarlo!</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.moodTitle}>{moodCopy.title}</Text>
+              <Text style={styles.moodSub}>{moodCopy.sub}</Text>
+            </>
+          )}
+          <View style={styles.hungerTrack}>
+            <View style={[styles.hungerFill, { width: `${hunger}%` }, hunger < 33 && styles.hungerFillLow]} />
+          </View>
+        </View>
+
+        <View style={styles.commandCol}>
+          {LALLO_FOODS.map((food) => {
+            const img = getWordImage(food);
+            return (
+              <DraggableFood
+                key={food}
+                food={food}
+                img={img}
+                justFed={justFed === food}
+                lalloRef={petBoxRef}
+                onFeed={feed}
+                onDragStart={() => setIsDraggingFood(true)}
+                onDragEnd={() => setIsDraggingFood(false)}
+              />
+            );
+          })}
+        </View>
       </View>
 
       <Text style={styles.sectionLabel}>PARLA CON LALLO</Text>
@@ -325,6 +344,10 @@ export default function LalloScreen({ navigation }: any) {
             : "Tocca il microfono e digli qualcosa"}
         </Text>
       </View>
+
+      <Pressable style={styles.playBtn} onPress={() => navigation.navigate("Giochi")}>
+        <Text style={styles.playBtnText}>🎮 Vai a giocare con Lallo!</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -334,8 +357,15 @@ export default function LalloScreen({ navigation }: any) {
 // Babel non ancora configurato, PanResponder invece è già incluso in React Native). Un tap
 // secco (senza trascinamento) sfama comunque Lallo subito, come prima — il drag è
 // l'interazione "divertente" in più, non sostituisce il tap per chi fatica a trascinare.
-function DraggableFood({ food, img, justFed, lalloRef, onFeed }: {
-  food: string; img: any; justFed: boolean; lalloRef: React.RefObject<View | null>; onFeed: (food: string) => void;
+// onDragStart/onDragEnd avvisano LalloScreen di disabilitare lo scroll della ScrollView
+// esterna per la durata del gesto: senza, il riconoscitore di scroll della ScrollView vince
+// la responder chain sul trascinamento verticale e il drag non parte mai (bug segnalato —
+// il tile si limitava a scorrere via con la pagina). onStartShouldSetPanResponderCapture
+// (fase di cattura, prima che lo scroll possa reclamare il gesto) è la parte che risolve il
+// bug; onDragStart/onDragEnd è il completamento robusto per i trascinamenti più lunghi.
+function DraggableFood({ food, img, justFed, lalloRef, onFeed, onDragStart, onDragEnd }: {
+  food: string; img: any; justFed: boolean; lalloRef: React.RefObject<View | null>;
+  onFeed: (food: string) => void; onDragStart: () => void; onDragEnd: () => void;
 }) {
   const pan = useRef(new Animated.ValueXY()).current;
   const scale = useRef(new Animated.Value(1)).current;
@@ -344,13 +374,18 @@ function DraggableFood({ food, img, justFed, lalloRef, onFeed }: {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderGrant: () => {
         setDragging(true);
+        onDragStart();
         Animated.spring(scale, { toValue: 1.15, useNativeDriver: false }).start();
       },
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
       onPanResponderRelease: (_evt, gestureState) => {
         setDragging(false);
+        onDragEnd();
         Animated.spring(scale, { toValue: 1, useNativeDriver: false }).start();
         Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
 
@@ -366,6 +401,12 @@ function DraggableFood({ food, img, justFed, lalloRef, onFeed }: {
             if (overThePet) onFeed(food);
           });
         }
+      },
+      onPanResponderTerminate: () => {
+        setDragging(false);
+        onDragEnd();
+        Animated.spring(scale, { toValue: 1, useNativeDriver: false }).start();
+        Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
       },
     })
   ).current;
@@ -404,12 +445,16 @@ const styles = StyleSheet.create({
   introText: { fontSize: 13, color: C.ink, lineHeight: 19 },
   playBtn: {
     backgroundColor: C.coral, borderRadius: 16, paddingVertical: 14, alignItems: "center",
-    marginBottom: 18, shadowColor: C.coral, shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3,
+    marginTop: 8, shadowColor: C.coral, shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3,
   },
   playBtnText: { color: "#fff", fontSize: 15.5, fontWeight: "800" },
+  // petRow affianca il riquadro di Lallo (petCard, flex:1) e la colonna dei comandi
+  // (commandCol, larghezza fissa) — i comandi stanno "sulla destra del riquadro di Lallo"
+  // invece che in una fila sotto (feedback settembre 2026).
+  petRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 18 },
   petCard: {
-    backgroundColor: "#fff", borderRadius: 20, borderWidth: 1.5, borderColor: C.line,
-    alignItems: "center", padding: 16, marginBottom: 18,
+    flex: 1, backgroundColor: "#fff", borderRadius: 20, borderWidth: 1.5, borderColor: C.line,
+    alignItems: "center", padding: 16,
   },
   moodTitle: { fontSize: 17, fontWeight: "800", color: C.ink, marginTop: 6 },
   moodSub: { fontSize: 12.5, color: C.inkSoft, marginTop: 2, marginBottom: 12 },
@@ -417,7 +462,7 @@ const styles = StyleSheet.create({
   hungerFill: { height: "100%", backgroundColor: C.jade, borderRadius: 999 },
   hungerFillLow: { backgroundColor: C.coral },
   sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.5, color: C.inkSoft, marginBottom: 10 },
-  foodRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 18 },
+  commandCol: { width: 76, alignItems: "center", gap: 10 },
   foodTile: {
     width: 64, height: 64, borderRadius: 16, borderWidth: 1.5, borderColor: C.line,
     backgroundColor: "#fff", alignItems: "center", justifyContent: "center",
