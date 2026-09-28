@@ -327,6 +327,7 @@ export const WORD_AUDIO: Record<string, number> = {
   "nocciolina": require("../../assets/audio/parole/nocciolina.mp3"),
   "noce": require("../../assets/audio/parole/noce.mp3"),
   "nonna": require("../../assets/audio/parole/nonna.mp3"),
+  "nonno": require("../../assets/audio/parole/nonno.mp3"),
   "notte": require("../../assets/audio/parole/notte.mp3"),
   "nu": require("../../assets/audio/parole/nu.mp3"),
   "numero": require("../../assets/audio/parole/numero.mp3"),
