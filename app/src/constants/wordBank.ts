@@ -6,10 +6,10 @@
 export interface WordEntry {
   parola: string;
   emoji: string;
-  // Complessità sillabica (brief aggiornamento livelli, L1/L2 §A) — non ancora popolato per
-  // nessuna parola: TODO esplicito, da taggare in un giro dedicato (a mano o validato da una
-  // logopedista, non un conteggio automatico non verificato). Finché manca, filterBySyllables
-  // sotto include comunque la parola invece di escluderla per un dato che non esiste.
+  // Complessità sillabica — non ancora popolato per nessuna parola e senza alcun consumer
+  // (era usato solo dai sotto-step L1/L2 di una scala precedente, rimossi: vedi
+  // types/gamification.ts). TODO esplicito se servirà in futuro: da taggare in un giro
+  // dedicato, a mano o validato da una logopedista, non con un conteggio automatico.
   syllables?: 1 | 2 | 3 | "4plus";
 }
 
@@ -190,14 +190,6 @@ export function findWordEntry(parola: string): WordEntry | null {
     if (found) return found;
   }
   return null;
-}
-
-// Filtra per complessità sillabica (sotto-step L1/L2, brief aggiornamento livelli §A) — una
-// parola senza tag `syllables` resta inclusa: finché il word bank non è taggato, il filtro
-// non deve far sparire parole per un dato mancante (vedi nota su WordEntry.syllables).
-export function filterBySyllables(words: WordEntry[], complexity?: WordEntry["syllables"]): WordEntry[] {
-  if (complexity === undefined) return words;
-  return words.filter((w) => w.syllables === undefined || w.syllables === complexity);
 }
 
 export function wordsFor(key: PhonemeKey, position: "iniziale" | "mediana"): WordEntry[] {

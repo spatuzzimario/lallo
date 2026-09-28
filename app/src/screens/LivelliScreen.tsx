@@ -14,11 +14,10 @@ const C = {
   jade: "#137A6E", jadeDeep: "#0E5C53", coral: "#FF6A4D", sun: "#FFC53D", mist: "#E4EFEA",
 };
 
-// Gli 8 sotto-step "parola" (L1 iniziale + L2 mediana, complessità sillabica 1→2→3→4+, brief
-// aggiornamento livelli §A): i giochi che operano su singole parole (tutti tranne Sequenze,
-// che è racconto) si applicano identici a ciascuno — il sotto-step filtra QUALI parole
-// arrivano al gioco (vedi wordsForLevel), non cambia il gioco stesso.
-const WORD_LEVELS: ClinicalLevel[] = ["L1-1", "L1-2", "L1-3", "L1-4plus", "L2-1", "L2-2", "L2-3", "L2-4plus"];
+// L1 (parola iniziale) e L2 (parola mediana): i giochi che operano su singole parole si
+// applicano identici a entrambi — è la posizione (LEVEL_POSITION) a filtrare quali parole
+// arrivano al gioco, non il gioco stesso.
+const WORD_LEVELS: ClinicalLevel[] = ["L1", "L2"];
 
 // Ogni gioco dichiara a quali livelli clinici si applica (brief aggiornamento livelli §A) —
 // usato per filtrare cosa mostrare quando si apre un nodo della mappa. "Ripeti con Lallo"
@@ -32,12 +31,12 @@ const WORD_LEVELS: ClinicalLevel[] = ["L1-1", "L1-2", "L1-3", "L1-4plus", "L2-1"
 // invece di sparire o di una restrizione inventata: sono esercizi già esistenti, nessuno ha
 // chiesto di toglierli.
 //
-// L3/L4b/L4a: Ripeti la frase/Indica la frase/Completa la rima/Filastrocca/Racconta la storia
-// hanno contenuto reale (PHRASES/RHYMES/STORIES) solo per il pilota dei 6 fonemi gratuiti
-// (m,n,p,t,l,s, brief aggiornamento livelli) — per questo hanno un `contentCheck` in più,
-// oltre al livello: senza, il nodo resterebbe sbloccabile ma aprirebbe un esercizio che si
-// autocompleta subito senza contenuto, invece di semplicemente non offrirlo (vedi filtro in
-// nodeGames sotto).
+// L3 (Frase) e L4 (Racconto — prosa e rima insieme, più giochi sotto lo stesso nodo): Ripeti
+// la frase/Indica la frase/Completa la rima/Filastrocca/Racconta la storia hanno contenuto
+// reale (PHRASES/RHYMES/STORIES) solo per il pilota dei 6 fonemi gratuiti (m,n,p,t,l,s, brief
+// aggiornamento livelli) — per questo hanno un `contentCheck` in più, oltre al livello: senza,
+// il nodo resterebbe sbloccabile ma aprirebbe un esercizio che si autocompleta subito senza
+// contenuto, invece di semplicemente non offrirlo (vedi filtro in nodeGames sotto).
 const GAMES = [
   { type: "ripeti", label: "Ripeti", meta: "Produzione · tutte le parole", bg: "#E9F5F1", icon: require("../../assets/icons/game_ripeti.png"), levels: WORD_LEVELS },
   { type: "ascolta", label: "Ascolta e scegli", meta: "Discriminazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_ascolta.png"), levels: WORD_LEVELS },
@@ -46,10 +45,10 @@ const GAMES = [
   { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_registratore.png"), levels: WORD_LEVELS },
   { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", icon: require("../../assets/icons/game_coppie.png"), levels: WORD_LEVELS },
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_oca.png"), levels: WORD_LEVELS },
-  { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4a"] as ClinicalLevel[] },
+  { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4"] as ClinicalLevel[] },
   {
     type: "racconta_storia", label: "Racconta la storia", meta: "Narrazione", bg: "#FFF3D6",
-    icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4a"] as ClinicalLevel[],
+    icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4"] as ClinicalLevel[],
     contentCheck: (key: PhonemeKey) => !!STORIES[key],
   },
   {
@@ -64,36 +63,19 @@ const GAMES = [
   },
   {
     type: "completa_rima", label: "Completa la rima", meta: "Discriminazione", bg: "#FDECE7",
-    icon: require("../../assets/icons/game_coppie.png"), levels: ["L4b"] as ClinicalLevel[],
+    icon: require("../../assets/icons/game_coppie.png"), levels: ["L4"] as ClinicalLevel[],
     contentCheck: (key: PhonemeKey) => (RHYMES[key]?.length ?? 0) > 0,
   },
   {
     type: "filastrocca", label: "Filastrocca", meta: "Narrazione", bg: "#FFF3D6",
-    icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4b"] as ClinicalLevel[],
+    icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4"] as ClinicalLevel[],
     contentCheck: (key: PhonemeKey) => (RHYMES[key]?.length ?? 0) > 0,
   },
 ] as const;
 
-// Etichetta compatta per il cerchietto del nodo — gli id L1-*/L2-* mostrano solo il numero di
-// sillabe (il gruppo L1/L2 è già nell'intestazione di sezione, vedi renderLevels).
+// Etichetta compatta per il cerchietto del nodo.
 const NODE_SHORT_LABEL: Record<ClinicalLevel, string> = {
-  "L0": "0",
-  "L1-1": "1", "L1-2": "2", "L1-3": "3", "L1-4plus": "4+",
-  "L2-1": "1", "L2-2": "2", "L2-3": "3", "L2-4plus": "4+",
-  "L3": "F", "L4a": "R", "L4b": "R+",
-};
-
-// Chiave di raggruppamento visivo: L1-*/L2-* condividono un'intestazione di sezione
-// ("Livello 1 · Parola iniziale"), gli altri livelli restano singoli.
-function levelGroupKey(level: ClinicalLevel): string {
-  if (level.startsWith("L1-")) return "L1";
-  if (level.startsWith("L2-")) return "L2";
-  return level;
-}
-
-const GROUP_HEADER_LABEL: Record<string, string> = {
-  L1: "Livello 1 · Parola iniziale",
-  L2: "Livello 2 · Parola mediana",
+  "L0": "0", "L1": "1", "L2": "2", "L3": "F", "L4": "R",
 };
 
 function freshLevelsForDisplay(): LevelProgress[] {
@@ -174,18 +156,8 @@ export default function LivelliScreen({ navigation, route }: any) {
               (g.levels as readonly ClinicalLevel[]).includes(lvl.level) &&
               (!("contentCheck" in g) || (g as { contentCheck: (key: PhonemeKey) => boolean }).contentCheck(phonemeKey))
           );
-          const groupKey = levelGroupKey(lvl.level);
-          const prevGroupKey = idx > 0 ? levelGroupKey(levels[idx - 1].level) : null;
-          const groupHeader = groupKey !== prevGroupKey ? GROUP_HEADER_LABEL[groupKey] : null;
-          // Dentro un gruppo (L1/L2) il nodo mostra solo la parte di complessità sillabica
-          // ("2 sillabe"): il resto ("Parola iniziale") è già nell'intestazione di sezione.
-          const isGrouped = groupKey === "L1" || groupKey === "L2";
-          const nodeDetailLabel = isGrouped
-            ? LEVEL_LABELS[lvl.level].split(" · ")[1] ?? LEVEL_LABELS[lvl.level]
-            : LEVEL_LABELS[lvl.level];
           return (
             <View key={lvl.level}>
-              {groupHeader && <Text style={styles.groupHeader}>{groupHeader}</Text>}
               <Pressable
                 onPress={() => tapNode(lvl)}
                 disabled={locked}
@@ -195,7 +167,7 @@ export default function LivelliScreen({ navigation, route }: any) {
                   <Text style={styles.nodeText}>{locked ? "🔒" : mastered ? "⭐" : NODE_SHORT_LABEL[lvl.level]}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.nodeLabel, locked && styles.nodeLabelLocked]}>{nodeDetailLabel}</Text>
+                  <Text style={[styles.nodeLabel, locked && styles.nodeLabelLocked]}>{LEVEL_LABELS[lvl.level]}</Text>
                   {!locked && lvl.starsPossible > 0 && (
                     <Text style={styles.nodeSub}>
                       {lvl.starsEarned}/{lvl.starsPossible} ⭐ {mastered ? "· conquistato" : ""}
@@ -252,7 +224,6 @@ const styles = StyleSheet.create({
   pathHeaderSub: { fontSize: 11.5, color: C.inkSoft, marginTop: 2 },
   chevron: { fontSize: 18, color: C.line },
   map: { marginTop: 4 },
-  groupHeader: { fontSize: 12.5, fontWeight: "800", color: C.jadeDeep, marginTop: 10, marginBottom: 4, marginLeft: 2 },
   nodeRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 },
   node: {
     width: 44, height: 44, borderRadius: 22, backgroundColor: C.jade,

@@ -112,8 +112,8 @@ const seedProfile: ChildProfile = {
       phonemeGroupId: "r",
       phonemeLabel: "R",
       position: "iniziale",
-      level: "L1-3",
-      levelRangeLabel: LEVEL_LABELS["L1-3"],
+      level: "L1",
+      levelRangeLabel: LEVEL_LABELS["L1"],
     },
     {
       id: "today-2",
@@ -122,8 +122,8 @@ const seedProfile: ChildProfile = {
       phonemeGroupId: "r",
       phonemeLabel: "R",
       position: "mediana",
-      level: "L2-1",
-      levelRangeLabel: LEVEL_LABELS["L2-1"],
+      level: "L2",
+      levelRangeLabel: LEVEL_LABELS["L2"],
     },
     {
       id: "today-3",
@@ -132,8 +132,8 @@ const seedProfile: ChildProfile = {
       phonemeGroupId: "r",
       phonemeLabel: "R",
       position: "iniziale",
-      level: "L1-2",
-      levelRangeLabel: LEVEL_LABELS["L1-2"],
+      level: "L1",
+      levelRangeLabel: LEVEL_LABELS["L1"],
     },
   ],
 };

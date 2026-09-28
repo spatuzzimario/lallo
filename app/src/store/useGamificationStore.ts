@@ -439,8 +439,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         phonemeGroupId: firstKey,
         phonemeLabel: firstLabel,
         position: "iniziale",
-        level: "L1-1",
-        levelRangeLabel: LEVEL_LABELS["L1-1"],
+        level: "L1",
+        levelRangeLabel: LEVEL_LABELS["L1"],
       },
       {
         id: `self-${firstKey}-memory`,
@@ -449,8 +449,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         phonemeGroupId: firstKey,
         phonemeLabel: firstLabel,
         position: "iniziale",
-        level: "L1-1",
-        levelRangeLabel: LEVEL_LABELS["L1-1"],
+        level: "L1",
+        levelRangeLabel: LEVEL_LABELS["L1"],
       },
     ];
 
