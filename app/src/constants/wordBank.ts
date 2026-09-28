@@ -3,6 +3,8 @@
 // tipizzato per l'app React Native. DA VALIDARE con un logopedista prima
 // di uso clinico reale — vedi nota in word-bank.json.
 
+import { ClinicalLevel, LEVEL_ORDER, LEVEL_POSITION } from "../types/gamification";
+
 export interface WordEntry {
   parola: string;
   emoji: string;
@@ -213,11 +215,30 @@ export function wordsFor(key: PhonemeKey, position: "iniziale" | "mediana"): Wor
   return entry.iniziale.length ? entry.iniziale : entry.mediana;
 }
 
-// Tutte le parole del fonema, iniziale + mediana insieme — usato dal gioco "Ripeti"
-// (brief: far vedere tutte le parole disponibili per il suono, entrambe le posizioni).
+// Tutte le parole del fonema, iniziale + mediana insieme — usato solo dai giochi di
+// narrazione (L4, Sequenze illustrate) che non hanno un concetto di posizione (vedi
+// LEVEL_POSITION). I giochi legati a un livello con posizione (Ripeti, Coppie minime,
+// Memory, ecc.) usano invece wordsFor con la posizione del livello aperto.
 export function allWordsFor(key: PhonemeKey): WordEntry[] {
   const entry = WORD_BANK[key];
   return [...entry.iniziale, ...entry.mediana];
+}
+
+// Livelli clinici che esistono davvero per QUESTO fonema — esclude un livello quando la sua
+// posizione (LEVEL_POSITION) è strutturalmente vuota per il fonema, non per una lacuna di
+// contenuto da curare: GLI e i due gruppi consonantici cons_r-reversed (r_cons: -RT-/-RD-/...)
+// e M/N/L+cons. (mnl_cons) non hanno MAI una parola italiana comune con quel suono in
+// posizione iniziale (sono cluster che in italiano si formano solo a cavallo tra due sillabe,
+// mai in apertura di parola) — offrire comunque il nodo "Livello 1" per questi fonemi
+// mostrerebbe parole mediana sotto l'etichetta "iniziale" (bug segnalato, vedi fallback di
+// wordsFor sopra). Usata sia per la mappa (LivelliScreen) sia per inizializzare i progressi di
+// un fonema nello store (freshLevels), così il livello nascosto non resta anche "saltato" per
+// sempre nello sblocco a cascata: qui non esiste proprio, la progressione passa al successivo.
+export function applicableLevelsFor(key: PhonemeKey): ClinicalLevel[] {
+  return LEVEL_ORDER.filter((level) => {
+    const position = LEVEL_POSITION[level];
+    return !position || WORD_BANK[key][position].length > 0;
+  });
 }
 
 export function pickRandom<T>(arr: T[], n: number): T[] {

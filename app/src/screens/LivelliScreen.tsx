@@ -3,10 +3,10 @@ import { View, Text, Image, ScrollView, Pressable, StyleSheet } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useGamificationStore } from "../store/useGamificationStore";
-import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
+import { PhonemeKey, WORD_BANK, applicableLevelsFor } from "../constants/wordBank";
 import { PHRASES, RHYMES } from "../constants/phrases";
 import { STORIES } from "../constants/stories";
-import { ClinicalLevel, LevelProgress, LEVEL_LABELS, LEVEL_ORDER, LEVEL_POSITION } from "../types/gamification";
+import { ClinicalLevel, LevelProgress, LEVEL_LABELS, LEVEL_POSITION } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
 
 const C = {
@@ -78,8 +78,8 @@ const NODE_SHORT_LABEL: Record<ClinicalLevel, string> = {
   "L0": "0", "L1": "1", "L2": "2", "L3": "F", "L4": "R",
 };
 
-function freshLevelsForDisplay(): LevelProgress[] {
-  return LEVEL_ORDER.map((level, idx) => ({
+function freshLevelsForDisplay(phonemeKey: PhonemeKey): LevelProgress[] {
+  return applicableLevelsFor(phonemeKey).map((level, idx) => ({
     level,
     status: (idx === 0 ? "available" : "locked") as LevelProgress["status"],
     masteryThreshold: 0.75,
@@ -111,12 +111,13 @@ export default function LivelliScreen({ navigation, route }: any) {
   // Se il fonema non è ancora stato toccato (nessun gruppo salvato), la mappa mostra comunque
   // L0 come punto di partenza — il gruppo vero viene creato al primo Fatto (vedi
   // recordSession in useGamificationStore).
-  const levels = group?.levels ?? freshLevelsForDisplay();
+  const levels = group?.levels ?? freshLevelsForDisplay(phonemeKey);
 
   // La posizione del fonema è determinata dal LIVELLO, non è una scelta indipendente: la
-  // scala clinica lo dice già nell'id stesso (LEVEL_POSITION: L1-* "iniziale", L2-* "mediana",
-  // L0/L3/L4a/L4b nessuna). wordsFor() ha comunque un fallback se la posizione richiesta è
-  // vuota per quel fonema (es. "gli" non ha parole iniziali).
+  // scala clinica lo dice già nel livello stesso (LEVEL_POSITION: L1 "iniziale", L2 "mediana",
+  // L0/L3/L4 nessuna). Il nodo L1 non compare nemmeno nella mappa (vedi applicableLevelsFor)
+  // per i fonemi senza parole iniziali reali in italiano (GLI, r_cons, mnl_cons) — non è un
+  // fallback silenzioso, il livello semplicemente non esiste per quel fonema.
   function openGame(exerciseType: string, level: ClinicalLevel) {
     navigation.navigate("Session", { phonemeGroupId: phonemeKey, level, position: LEVEL_POSITION[level], exerciseType });
   }

@@ -6,10 +6,9 @@ import {
   SessionLogEntry,
   StreakState,
   LevelProgress,
-  LEVEL_ORDER,
   LEVEL_LABELS,
 } from "../types/gamification";
-import { PhonemeKey, WORD_BANK } from "../constants/wordBank";
+import { PhonemeKey, WORD_BANK, applicableLevelsFor } from "../constants/wordBank";
 import { getHunger } from "../constants/lalloPet";
 import { linkPurchasesToChild } from "../api/purchases";
 import { requestReminderPermission, scheduleNextReminder, cancelReminders } from "../notifications/reminders";
@@ -69,8 +68,8 @@ export function getDayStreak(sessionLog: SessionLogEntry[]): number {
   return streak;
 }
 
-function freshLevels(): LevelProgress[] {
-  return LEVEL_ORDER.map((level, idx) => ({
+function freshLevels(phonemeKey: PhonemeKey): LevelProgress[] {
+  return applicableLevelsFor(phonemeKey).map((level, idx) => ({
     level,
     status: (idx === 0 ? "available" : "locked") as LevelProgress["status"],
     masteryThreshold: MASTERY_DEFAULT_THRESHOLD,
@@ -179,7 +178,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
             name: `Suono ${WORD_BANK[result.phonemeGroupId as PhonemeKey]?.label ?? result.phonemeGroupId}`,
             islandAsset: "",
             unlockedByTherapist: false,
-            levels: freshLevels(),
+            levels: freshLevels(result.phonemeGroupId as PhonemeKey),
           },
         ];
 
@@ -276,7 +275,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         name: groupName,
         islandAsset: "",
         unlockedByTherapist: true,
-        levels: freshLevels().map((l) =>
+        levels: freshLevels(phonemeGroupId as PhonemeKey).map((l) =>
           l.level === level ? { ...l, status: "available" as const } : l
         ),
       };
@@ -426,7 +425,7 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       name: `Suono ${WORD_BANK[key].label}`,
       islandAsset: "",
       unlockedByTherapist: false,
-      levels: freshLevels(),
+      levels: freshLevels(key),
     }));
 
     const firstKey = sounds[0];
