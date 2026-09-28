@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, Image, Pressable, Animated, PanResponder, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable, Animated, PanResponder, StyleSheet, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
@@ -54,6 +54,14 @@ const POKE_REACTIONS = [
 // qui sopra, che resta solo testo + barra fame, non un aspetto visivo diverso del rig.
 export default function LalloScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
+  // Taglia esplicita in pixel (non percentuale, non lasciata "libera"): il componente nativo
+  // Rive non rispetta in modo affidabile uno style width/height come farebbe una <Image>, e
+  // senza un vincolo numerico si espande trascinando con sé petCard, spingendo il resto della
+  // schermata fuori vista (regressione osservata su device dopo l'integrazione del rig).
+  // Quadrato come l'artboard, ~80% della larghezza schermo, con un tetto per tablet/schermi
+  // molto larghi — responsive tra iPhone piccoli e grandi senza deformarsi (Fit.Contain).
+  const { width: screenWidth } = useWindowDimensions();
+  const petSize = Math.min(screenWidth * 0.8, 380);
   const profile = useGamificationStore((s) => s.profile);
   const feedLallo = useGamificationStore((s) => s.feedLallo);
   const talkToLallo = useGamificationStore((s) => s.talkToLallo);
@@ -221,8 +229,8 @@ export default function LalloScreen({ navigation }: any) {
       )}
 
       <View style={styles.petCard}>
-        <View ref={petBoxRef} collapsable={false}>
-          <Pressable onPress={pokeLallo}>
+        <View ref={petBoxRef} collapsable={false} style={{ width: petSize, height: petSize }}>
+          <Pressable onPress={pokeLallo} style={{ width: petSize, height: petSize }}>
             <Rive
               ref={riveRef}
               source={require("../../assets/lallo.riv")}
@@ -230,7 +238,7 @@ export default function LalloScreen({ navigation }: any) {
               stateMachineName="LalloStateMachine"
               autoplay
               fit={Fit.Contain}
-              style={styles.petImage}
+              style={{ width: petSize, height: petSize }}
             />
           </Pressable>
         </View>
@@ -399,7 +407,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff", borderRadius: 20, borderWidth: 1.5, borderColor: C.line,
     alignItems: "center", padding: 16, marginBottom: 18,
   },
-  petImage: { width: 170, height: 170 },
   moodTitle: { fontSize: 17, fontWeight: "800", color: C.ink, marginTop: 6 },
   moodSub: { fontSize: 12.5, color: C.inkSoft, marginTop: 2, marginBottom: 12 },
   hungerTrack: { width: "100%", height: 12, backgroundColor: C.mist, borderRadius: 999, overflow: "hidden" },
