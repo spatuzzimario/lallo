@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, Image, Pressable, Animated, PanResponder, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, Image, Pressable, Animated, PanResponder, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
@@ -212,7 +212,10 @@ export default function LalloScreen({ navigation }: any) {
   if (!profile) return null;
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
+    // ScrollView come rete di sicurezza: anche se il rig Rive o un telefono piccolo fanno
+    // eccedere l'altezza disponibile, il resto della schermata (cibi, microfono) resta
+    // sempre raggiungibile scorrendo, invece di sparire oltre il bordo di una View fissa.
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.screenContent, { paddingTop: insets.top + 16 }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Lallo</Text>
         {dayStreak > 0 && (
@@ -322,7 +325,7 @@ export default function LalloScreen({ navigation }: any) {
             : "Tocca il microfono e digli qualcosa"}
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -388,7 +391,8 @@ function DraggableFood({ food, img, justFed, lalloRef, onFeed }: {
 
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.bg, padding: 18 },
+  screen: { flex: 1, backgroundColor: C.bg },
+  screenContent: { padding: 18, paddingBottom: 32 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
   title: { fontSize: 20, fontWeight: "800", color: C.ink },
   streakPill: { backgroundColor: C.mist, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10 },
