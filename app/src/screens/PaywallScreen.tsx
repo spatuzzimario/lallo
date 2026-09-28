@@ -56,13 +56,15 @@ export default function PaywallScreen({ navigation, route }: any) {
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0];
 
   // Il Paywall si apre da due punti diversi: subito dopo l'onboarding (nessun posto dove
-  // tornare indietro, si prosegue verso MainTabs) oppure da Genitori → Abbonamento (si torna
-  // alla dashboard). fromParentDashboard distingue i due casi.
+  // tornare indietro, si prosegue verso i permessi opzionali e poi MainTabs — vedi
+  // PermissionsScreen) oppure da Genitori → Abbonamento (si torna alla dashboard, i permessi
+  // sono già stati chiesti o gestiti da Progressi → Privacy). fromParentDashboard distingue i
+  // due casi.
   const fromParentDashboard = !!route?.params?.fromParentDashboard;
 
   function afterDecision() {
     if (fromParentDashboard) navigation.goBack();
-    else navigation.navigate("MainTabs");
+    else navigation.navigate("Permissions");
   }
 
   async function subscribe() {

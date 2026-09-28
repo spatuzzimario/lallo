@@ -32,6 +32,7 @@ import {
   ResultsScreen,
 } from "./src/screens/DiagnosticScreens";
 import PaywallScreen from "./src/screens/PaywallScreen";
+import PermissionsScreen from "./src/screens/PermissionsScreen";
 import AuthScreen from "./src/screens/AuthScreen";
 import { PrivacyConsentScreen } from "./src/screens/ParentScreens";
 import MicConsentScreen from "./src/screens/MicConsentScreen";
@@ -220,6 +221,7 @@ export default function App() {
           <Stack.Screen name="Results" component={ResultsScreen} />
           <Stack.Screen name="Auth" component={AuthScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
+          <Stack.Screen name="Permissions" component={PermissionsScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Livelli" component={LivelliScreen} />
           <Stack.Screen name="Session" component={SessionScreen} />
