@@ -111,6 +111,13 @@ export interface ChildProfile {
   // principio del niente-ASR: l'app non "capisce" le foto, è il bambino a scegliere cosa
   // sta fotografando). Ogni tot foto sblocca un titolo, vedi constants/album.ts.
   photoCatches: PhotoCatchEntry[];
+  // Fonemi "conquistati" (tutti i livelli del gruppo a status "mastered", non solo uno) —
+  // vedi CLAUDE.md §6.4 "card traguardo". Per ora solo il dato/lo specchio su Supabase
+  // (tabella achievements): niente cartolina condivisibile ancora, quella resta un task a
+  // parte. Elenco di phonemeGroupId, non oggetti: basta per il calcolo idempotente in
+  // useGamificationStore (evita di richiamare unlockAchievement più volte per lo stesso
+  // fonema) e per un'eventuale UI futura.
+  unlockedAchievements: string[];
 }
 
 export interface PhotoCatchEntry {

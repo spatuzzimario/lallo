@@ -2,6 +2,8 @@ import { create } from "zustand";
 import {
   AssignedExercise,
   ChildProfile,
+  ClinicalLevel,
+  PhonemeGroup,
   SessionResult,
   SessionLogEntry,
   StreakState,
@@ -12,6 +14,10 @@ import { PhonemeKey, WORD_BANK, applicableLevelsFor } from "../constants/wordBan
 import { getHunger } from "../constants/lalloPet";
 import { linkPurchasesToChild } from "../api/purchases";
 import { requestReminderPermission, scheduleNextReminder, cancelReminders } from "../notifications/reminders";
+import { isSupabaseConfigured } from "../api/supabase";
+import { upsertTarget, updateTargetProgress, getTargets } from "../api/targets";
+import { recordSessionRemote, getSessions } from "../api/sessions";
+import { unlockAchievement, getAchievements } from "../api/achievements";
 
 interface GamificationStore {
   profile: ChildProfile | null;
@@ -38,6 +44,9 @@ interface GamificationStore {
   feedLallo: () => void;
   talkToLallo: () => void;
   markIntroSeen: (section: "lallo" | "album") => void;
+  // Ripristino all'avvio (App.tsx) quando esiste già una sessione Supabase valida — sostituisce
+  // il profilo demo con i dati reali del bambino ricostruiti da targets/sessions/achievements.
+  hydrateFromSupabase: (child: { id: string; name: string; audioRecordingConsent: boolean }) => Promise<void>;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -125,6 +134,66 @@ function updateStreak(streak: StreakState, sessionDate: string): StreakState {
     graceDaysRemaining,
     lastSessionDate: today,
   };
+}
+
+// "Conquistato" a livello di intero fonema (CLAUDE.md §6.4) — non basta un singolo livello
+// in "mastered" (quello è già gestito a parte come festa "Livello conquistato!"): serve che
+// OGNI livello applicabile a quel fonema lo sia.
+function isGroupFullyMastered(group: PhonemeGroup): boolean {
+  return group.levels.length > 0 && group.levels.every((l) => l.status === "mastered");
+}
+
+// Specchio best-effort su Supabase di una sessione appena registrata in locale — mai
+// bloccante (va sempre chiamata con .catch(() => {}), mai await-ata dal chiamante) e mai
+// causa di errori visibili al bambino: se il backend non è raggiungibile, l'app continua a
+// funzionare sullo store locale esattamente come oggi, i dati restano solo lì finché non
+// riparte un sync successivo.
+async function syncSessionToSupabase(params: {
+  childId: string;
+  phoneme: string;
+  level: ClinicalLevel;
+  levelStatus: "active" | "mastered";
+  exerciseType: string;
+  completedAt: string;
+  starsEarned: number;
+  starsPossible: number;
+  avgConfidence: number;
+  newlyConquered: boolean;
+}) {
+  const updated = await updateTargetProgress({
+    childId: params.childId,
+    phoneme: params.phoneme,
+    level: params.level,
+    status: params.levelStatus,
+  });
+  let targetId = updated.data?.id ?? null;
+
+  if (!targetId) {
+    // Nessun target esisteva ancora per questo fonema (es. esplorato liberamente da Giochi
+    // senza passare da screener/logopedista) — lo creiamo ora. set_by "parent": è la
+    // famiglia, non un professionista, ad aver scelto di giocarlo.
+    const created = await upsertTarget({
+      childId: params.childId,
+      phoneme: params.phoneme,
+      level: params.level,
+      setBy: "parent",
+    });
+    targetId = created.data?.id ?? null;
+  }
+
+  await recordSessionRemote({
+    childId: params.childId,
+    targetId,
+    gameType: params.exerciseType,
+    completedAt: params.completedAt,
+    starsEarned: params.starsEarned,
+    starsPossible: params.starsPossible,
+    avgConfidence: params.avgConfidence,
+  });
+
+  if (params.newlyConquered) {
+    await unlockAchievement({ childId: params.childId, phoneme: params.phoneme });
+  }
 }
 
 function updateLevelProgress(
@@ -232,6 +301,19 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
       durationSeconds: result.durationSeconds,
     };
 
+    // "Suono conquistato" (CLAUDE.md §6.4) = TUTTI i livelli del gruppo masterizzati, non
+    // solo quello appena giocato — controllato prima/dopo per beccare solo la transizione
+    // (evita di rifirmare l'unlock ad ogni sessione successiva sullo stesso fonema già
+    // conquistato in passato).
+    const beforeGroup = baseGroups.find((g) => g.id === result.phonemeGroupId);
+    const afterGroup = updatedGroups.find((g) => g.id === result.phonemeGroupId);
+    const wasFullyMastered = beforeGroup ? isGroupFullyMastered(beforeGroup) : false;
+    const isFullyMasteredNow = afterGroup ? isGroupFullyMastered(afterGroup) : false;
+    const newlyConquered =
+      !wasFullyMastered &&
+      isFullyMasteredNow &&
+      !profile.unlockedAchievements.includes(result.phonemeGroupId);
+
     set({
       profile: {
         ...profile,
@@ -239,6 +321,9 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         streak: newStreak,
         phonemeGroups: updatedGroups,
         sessionLog: [...profile.sessionLog, logEntry],
+        unlockedAchievements: newlyConquered
+          ? [...profile.unlockedAchievements, result.phonemeGroupId]
+          : profile.unlockedAchievements,
       },
     });
 
@@ -246,6 +331,24 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
     // notifications/reminders.ts) invece di lasciarne uno per "oggi" che arriverebbe dopo che
     // ha già fatto l'esercizio.
     if (profile.remindersEnabled) scheduleNextReminder(profile.displayName).catch(() => {});
+
+    // Specchio best-effort su Supabase — fire-and-forget, non deve mai bloccare né far
+    // fallire il gameplay locale già aggiornato sopra.
+    if (isSupabaseConfigured && profile.supabaseChildId) {
+      const playedLevel = afterGroup?.levels.find((l) => l.level === result.level);
+      syncSessionToSupabase({
+        childId: profile.supabaseChildId,
+        phoneme: result.phonemeGroupId,
+        level: result.level,
+        levelStatus: playedLevel?.status === "mastered" ? "mastered" : "active",
+        exerciseType: result.exerciseType,
+        completedAt: result.completedAt,
+        starsEarned: totalStars,
+        starsPossible: result.attempts.length * 3,
+        avgConfidence,
+        newlyConquered,
+      }).catch(() => {});
+    }
   },
 
   // Chiamata dallo schermo di assegnazione del logopedista (TherapistAssignScreen).
@@ -285,6 +388,15 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
           phonemeGroups: [...profile.phonemeGroups, newGroup],
         },
       });
+    }
+
+    if (isSupabaseConfigured && profile.supabaseChildId) {
+      upsertTarget({
+        childId: profile.supabaseChildId,
+        phoneme: phonemeGroupId,
+        level,
+        setBy: "therapist",
+      }).catch(() => {});
     }
   },
 
@@ -462,6 +574,133 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
           ...newGroups,
         ],
         assignedToday: todayPlan,
+      },
+    });
+
+    // supabaseChildId potrebbe non esserci ancora qui: nell'onboarding self-directed questa
+    // azione viene chiamata PRIMA che AuthScreen crei il bambino su Supabase (vedi
+    // AuthScreen.tsx: startSelfDirectedPlan seguito da createChild + setSupabaseChildId).
+    // In quel caso questi target non si scrivono ora — accettabile per l'MVP: al primo
+    // recordSession su questi fonemi, syncSessionToSupabase li crea comunque al volo (con
+    // set_by "parent" invece di "screener", unica differenza pratica).
+    if (isSupabaseConfigured && profile.supabaseChildId) {
+      const childId = profile.supabaseChildId;
+      for (const key of sounds) {
+        upsertTarget({
+          childId,
+          phoneme: key,
+          level: freshLevels(key)[0].level,
+          setBy: "screener",
+        }).catch(() => {});
+      }
+    }
+  },
+
+  hydrateFromSupabase: async (child) => {
+    const [{ data: targetRows }, { data: sessionRows }, { data: achievementRows }] = await Promise.all([
+      getTargets(child.id),
+      getSessions(child.id),
+      getAchievements(child.id),
+    ]);
+
+    const targets = targetRows ?? [];
+    const sessions = sessionRows ?? [];
+    const achievements = achievementRows ?? [];
+
+    // Un gruppo per ogni fonema con un target reale — freshLevels come scheletro, poi
+    // stelle/stato per livello si ricostruiscono rigiocando le sessioni in ordine
+    // cronologico attraverso la STESSA logica pura usata in tempo reale (updateLevelProgress
+    // + auto-sblocco), per restare coerenti con recordSession invece di duplicare regole.
+    const groups: PhonemeGroup[] = targets.map((t) => {
+      const key = t.phoneme as PhonemeKey;
+      let levels = freshLevels(key);
+      const phonemeSessions = sessions.filter((s) => s.targets?.phoneme === t.phoneme);
+
+      for (const s of phonemeSessions) {
+        const playedLevel = s.targets?.level as ClinicalLevel | undefined;
+        if (!playedLevel) continue;
+        levels = levels.map((l) => {
+          if (l.level !== playedLevel) return l;
+          const unlockedIfNeeded = l.status === "locked" ? { ...l, status: "available" as const } : l;
+          return updateLevelProgress(unlockedIfNeeded, s.stars_earned, s.stars_possible, s.avg_confidence ?? 0);
+        });
+        const idx = levels.findIndex((l) => l.level === playedLevel);
+        if (
+          levels[idx].status === "mastered" &&
+          idx + 1 < levels.length &&
+          levels[idx + 1].status === "locked"
+        ) {
+          levels[idx + 1] = { ...levels[idx + 1], status: "available" };
+        }
+      }
+
+      // Il livello "corrente" da targets.level deve risultare almeno disponibile, anche
+      // senza sessioni ancora giocate (es. appena assegnato dal logopedista).
+      levels = levels.map((l) => (l.level === t.level && l.status === "locked" ? { ...l, status: "available" } : l));
+
+      return {
+        id: t.phoneme,
+        name: `Suono ${WORD_BANK[key]?.label ?? t.phoneme}`,
+        islandAsset: "",
+        unlockedByTherapist: t.set_by === "therapist",
+        levels,
+      };
+    });
+
+    const sessionLog: SessionLogEntry[] = sessions.map((s) => ({
+      date: s.completed_at.slice(0, 10),
+      completedAt: s.completed_at,
+      phonemeGroupId: s.targets?.phoneme ?? "",
+      phonemeLabel: s.targets ? WORD_BANK[s.targets.phoneme as PhonemeKey]?.label ?? s.targets.phoneme : "",
+      level: (s.targets?.level as ClinicalLevel) ?? "L0",
+      exerciseType: s.game_type,
+      starsEarned: s.stars_earned,
+      starsPossible: s.stars_possible,
+      avgConfidence: s.avg_confidence ?? 0,
+      // Non persistita lato Supabase (vedi nota 2 in supabase/schema.sql) — persa nel
+      // ripristino, non nella sessione locale originale.
+      durationSeconds: 0,
+    }));
+
+    // Ricostruisce lo StreakState rigiocando ogni sessione in ordine cronologico attraverso
+    // la stessa funzione pura usata in tempo reale — mai una seconda logica divergente.
+    let streak: StreakState = {
+      currentWeeks: 0,
+      sessionsThisWeek: 0,
+      graceDaysRemaining: GRACE_DAYS_PER_MONTH,
+      lastSessionDate: null,
+    };
+    for (const entry of sessionLog) streak = updateStreak(streak, entry.date);
+
+    const totalStars = sessions.reduce((sum, s) => sum + s.stars_earned, 0);
+
+    set({
+      profile: {
+        id: child.id,
+        supabaseChildId: child.id,
+        displayName: child.name,
+        avatarId: "lallo-default",
+        stars: totalStars,
+        streak,
+        unlockedCosmetics: [],
+        phonemeGroups: groups,
+        preferredTopics: [],
+        // Piano di oggi non ricostruito dal ripristino (richiederebbe ricalcolare quali
+        // esercizi proporre da zero) — resta vuoto finché il bambino non gioca di nuovo;
+        // non è dato perso, solo da ricalcolare, fuori scope per questo giro.
+        assignedToday: [],
+        parentReportedConcerns: [],
+        // gender e cameraConsent non hanno una colonna su `children` — vedi CLAUDE.md §4.
+        // Nessun default pericoloso: cameraConsent riparte da false (mai assumere un
+        // consenso), gender resta non impostato finché il genitore non lo aggiorna di nuovo.
+        audioRecordingConsent: child.audioRecordingConsent,
+        cameraConsent: false,
+        remindersEnabled: false,
+        introsSeen: { lallo: false, album: false },
+        sessionLog,
+        lalloPet: { lastFedAt: null, lastInteractionAt: null },
+        photoCatches: [],
+        unlockedAchievements: achievements.map((a) => a.phoneme),
       },
     });
   },

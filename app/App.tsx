@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text, Image } from "react-native";
@@ -59,9 +59,17 @@ import MicConsentScreen from "./src/screens/MicConsentScreen";
 import { useGamificationStore } from "./src/store/useGamificationStore";
 import { ChildProfile, LEVEL_ORDER, LEVEL_LABELS } from "./src/types/gamification";
 import { configurePurchases, getCustomerInfo, hasPremiumEntitlement, addCustomerInfoListener } from "./src/api/purchases";
+import { isSupabaseConfigured } from "./src/api/supabase";
+import { getCurrentSession } from "./src/api/auth";
+import { getChildren } from "./src/api/children";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+// Ref imperativo per saltare l'onboarding e saltare dritti a MainTabs quando il ripristino
+// sessione (vedi App(), sotto) trova un bambino reale — non si può cambiare
+// initialRouteName dopo il primo mount di Stack.Navigator, quindi si naviga via ref invece
+// di ri-renderizzare il Navigator con una rotta iniziale diversa.
+const navigationRef = createNavigationContainerRef();
 
 const tabIconStyle = { width: 24, height: 24 };
 
@@ -90,6 +98,7 @@ const seedProfile: ChildProfile = {
   sessionLog: [],
   lalloPet: { lastFedAt: null, lastInteractionAt: null },
   photoCatches: [],
+  unlockedAchievements: [],
   phonemeGroups: [
     {
       id: "r",
@@ -177,11 +186,38 @@ function MainTabs() {
 
 export default function App() {
   const setProfile = useGamificationStore((s) => s.setProfile);
+  const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
   const setSubscriptionActive = useGamificationStore((s) => s.setSubscriptionActive);
   const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
+    // Il profilo demo parte SEMPRE subito, prima di qualunque controllo asincrono: l'app
+    // non deve mai trovarsi con profile===null, nemmeno per l'istante in cui il controllo
+    // sessione qui sotto è ancora in corso.
     setProfile(seedProfile);
+
+    // Ripristino sessione: se il genitore ha già fatto l'onboarding in passato (sessione
+    // Supabase valida + un bambino già creato), sostituisce il profilo demo con i dati reali
+    // e salta dritto a MainTabs — altrimenti resta tutto come oggi (onboarding da Trust).
+    // Nota: se il controllo impiega più dei ~1.7s della splash (rete lenta), l'utente può
+    // vedere per un istante la schermata Trust prima dello switch a MainTabs — non è una
+    // perdita di dati, solo un piccolo sfarfallio da rivedere in futuro.
+    (async () => {
+      if (!isSupabaseConfigured) return;
+      const session = await getCurrentSession();
+      if (!session) return;
+      const { data: children } = await getChildren();
+      const child = children?.[0]; // MVP: un bambino per genitore, niente selettore ancora
+      if (!child) return; // sessione valida ma onboarding mai completato: resta su Trust
+      await hydrateFromSupabase({
+        id: child.id,
+        name: child.name,
+        audioRecordingConsent: child.audio_recording_consent,
+      });
+      if (navigationRef.isReady()) {
+        navigationRef.reset({ index: 0, routes: [{ name: "MainTabs" }] });
+      }
+    })();
   }, []);
 
   // Configura RevenueCat all'avvio e sincronizza subscriptionActive con l'abbonamento
@@ -202,7 +238,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Trust" component={TrustScreen} />
           <Stack.Screen name="TherapistLink" component={TherapistLinkScreen} />

@@ -2,10 +2,17 @@
 -- (zrzrmarrhiityuoszdze, confermato ottobre 2026: tutte le tabelle esistono con RLS attiva
 -- e le policy combaciano 1:1 con quelle qui sotto). Questo file resta la fonte di verità
 -- per lo schema — se lo modifichi, applica il diff manualmente nel SQL editor del progetto
--- (o via CLI). auth/profiles/children sono già scritti dall'app (vedi src/api/); targets,
--- sessions e achievements non hanno ancora un consumer lato client: lo store locale
--- (useGamificationStore) resta la fonte di verità per il loop di gioco finché quel
--- collegamento non viene fatto (prossimo passo, non ancora pianificato).
+-- (o via CLI): per le tabelle già esistenti, `create table if not exists` non applica da
+-- solo le modifiche successive (vedi supabase/migrations/ per i diff incrementali da
+-- eseguire a mano sul DB reale).
+--
+-- Collegamento al loop di gioco (ottobre 2026): auth/profiles/children erano già scritti
+-- dall'app; ora anche targets/sessions/achievements hanno un consumer reale (vedi
+-- src/api/targets.ts, sessions.ts, achievements.ts e useGamificationStore — scritture
+-- fire-and-forget, mai bloccanti per il gameplay, e ripristino all'avvio in App.tsx se
+-- esiste già una sessione Supabase valida). Lo store locale resta comunque la fonte di
+-- verità immediata per l'UI: Supabase è uno specchio best-effort, non richiesto per giocare
+-- offline.
 --
 -- Scostamenti dal punto di partenza del brief, segnalati in chat:
 -- 1. `content` è una libreria condivisa per (phoneme, level, syllable_complexity, game_type),
@@ -16,13 +23,18 @@
 -- 2. `sessions` ha stars_earned/stars_possible/avg_confidence invece di un generico
 --    self_score — stesso formato che useGamificationStore.recordSession calcola già in
 --    locale, niente tabella attempts separata per l'MVP.
--- 3. `level` (targets/content) è la scala clinica L0-L4b (brief aggiornamento livelli,
---    settembre 2026 — sostituisce la scala 1-5 originaria): 'L0' | 'L1-1' | 'L1-2' | 'L1-3'
---    | 'L1-4plus' | 'L2-1' | 'L2-2' | 'L2-3' | 'L2-4plus' | 'L3' | 'L4a' | 'L4b'. La posizione
---    del fonema NON è più una colonna a parte: è derivata dal livello stesso (L1-* =
---    iniziale, L2-* = mediana, gli altri livelli non hanno una posizione singola) — vedi
---    LEVEL_POSITION in app/src/types/gamification.ts, unica fonte di verità per questa
---    derivazione, da tenere allineata a questo check se la scala cambia ancora.
+-- 3. `level` (targets/content) è la scala clinica L0-L4 (riorganizzazione settembre 2026,
+--    vedi types/gamification.ts — sostituisce una scala precedente con sotto-step L1-1..
+--    L2-4plus/L4a/L4b mai realmente usata: nessuna parola ha mai avuto la complessità
+--    sillabica popolata). La posizione del fonema NON è una colonna a parte: è derivata dal
+--    livello stesso (L1 = iniziale, L2 = mediana, gli altri livelli non hanno una posizione
+--    singola) — vedi LEVEL_POSITION in app/src/types/gamification.ts, unica fonte di verità
+--    per questa derivazione, da tenere allineata a questo check se la scala cambia ancora.
+-- 4. `targets` e `achievements` hanno un vincolo UNIQUE (child_id, phoneme): un solo target
+--    "vivo" per fonema per bambino (il livello avanza aggiornando la stessa riga, non
+--    creandone una nuova — la storia dei livelli passati resta comunque in `sessions` via
+--    `target_id`), e una sola riga achievement per fonema conquistato (idempotenza sulla
+--    scrittura fire-and-forget lato client).
 
 create extension if not exists "pgcrypto";
 
@@ -47,16 +59,18 @@ create table if not exists targets (
   id uuid primary key default gen_random_uuid(),
   child_id uuid not null references children (id) on delete cascade,
   phoneme text not null,
-  -- syllable_complexity si applica solo a level L1-*/L2-* (vedi nota 3 sopra); per gli altri
-  -- livelli resta null — non c'è un sotto-step di complessità per suono isolato/frase/racconto.
+  -- syllable_complexity: mai popolato lato client (vedi nota 3 sopra), colonna tenuta per
+  -- compatibilità futura se servirà davvero un giorno.
   syllable_complexity text check (syllable_complexity in ('1', '2', '3', '4plus')),
-  level text not null check (level in ('L0', 'L1-1', 'L1-2', 'L1-3', 'L1-4plus', 'L2-1', 'L2-2', 'L2-3', 'L2-4plus', 'L3', 'L4a', 'L4b')),
+  level text not null check (level in ('L0', 'L1', 'L2', 'L3', 'L4')),
   set_by text not null check (set_by in ('parent', 'screener', 'therapist')),
   -- Niente stato "pending sbloccato dal logopedista": modello parent-first, il genitore
   -- può giocare subito (vedi CLAUDE.md §1) — il logopedista resta un potenziamento
   -- opzionale, non un cancello sull'accesso.
   status text not null default 'active' check (status in ('active', 'mastered', 'paused')),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- Un solo target vivo per fonema per bambino — vedi nota 4 sopra.
+  unique (child_id, phoneme)
 );
 
 -- Libreria condivisa di contenuti (parole+immagini+audio ref), non legata a un target
@@ -65,7 +79,7 @@ create table if not exists content (
   id uuid primary key default gen_random_uuid(),
   phoneme text not null,
   syllable_complexity text check (syllable_complexity in ('1', '2', '3', '4plus')),
-  level text not null check (level in ('L0', 'L1-1', 'L1-2', 'L1-3', 'L1-4plus', 'L2-1', 'L2-2', 'L2-3', 'L2-4plus', 'L3', 'L4a', 'L4b')),
+  level text not null check (level in ('L0', 'L1', 'L2', 'L3', 'L4')),
   game_type text not null,
   payload jsonb not null,
   cached boolean not null default false,
@@ -88,7 +102,9 @@ create table if not exists achievements (
   id uuid primary key default gen_random_uuid(),
   child_id uuid not null references children (id) on delete cascade,
   phoneme text not null,
-  unlocked_at timestamptz not null default now()
+  unlocked_at timestamptz not null default now(),
+  -- Una sola riga per fonema conquistato — vedi nota 4 sopra.
+  unique (child_id, phoneme)
 );
 
 create table if not exists therapists (
