@@ -1,8 +1,11 @@
--- Schema Supabase per Lallo — proposta da CLAUDE.md §4, NON ANCORA APPLICATA.
--- Da eseguire manualmente nel SQL editor del progetto Supabase (o via CLI) solo dopo
--- conferma esplicita del founder. Nessuna app/schermata scrive ancora su queste tabelle:
--- lo store locale (useGamificationStore) resta la fonte di verità finché non si collega
--- davvero il backend.
+-- Schema Supabase per Lallo — proposta da CLAUDE.md §4, GIÀ APPLICATA sul progetto reale
+-- (zrzrmarrhiityuoszdze, confermato ottobre 2026: tutte le tabelle esistono con RLS attiva
+-- e le policy combaciano 1:1 con quelle qui sotto). Questo file resta la fonte di verità
+-- per lo schema — se lo modifichi, applica il diff manualmente nel SQL editor del progetto
+-- (o via CLI). auth/profiles/children sono già scritti dall'app (vedi src/api/); targets,
+-- sessions e achievements non hanno ancora un consumer lato client: lo store locale
+-- (useGamificationStore) resta la fonte di verità per il loop di gioco finché quel
+-- collegamento non viene fatto (prossimo passo, non ancora pianificato).
 --
 -- Scostamenti dal punto di partenza del brief, segnalati in chat:
 -- 1. `content` è una libreria condivisa per (phoneme, level, syllable_complexity, game_type),
