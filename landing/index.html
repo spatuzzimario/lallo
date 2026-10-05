@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lallo — i compiti a casa che i tuoi pazienti faranno davvero</title>
-<meta name="description" content="Lallo è lo strumento dei compiti a casa del logopedista: tu imposti fonema, posizione ed esercizi, il bambino li allena a casa con giochi, e tu vedi i progressi.">
+<title>Lallo — l'app di logopedia che i bambini vogliono giocare</title>
+<meta name="description" content="Lallo trasforma gli esercizi di logopedia in giochi pensati per l'italiano. Il genitore inizia subito da solo; se c'è già un logopedista, si collega la sua terapia.">
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,6 +107,9 @@
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
   .tile{aspect-ratio:1;border:2px solid var(--line);border-radius:15px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;font-weight:600;font-size:13px;transition:all .14s}
   .tile .emo{font-size:30px}
+  .tile .emo-img{width:30px;height:30px;object-fit:contain}
+  .mem-back img{width:24px;height:24px;object-fit:contain}
+  .oca-emoji img{width:40px;height:40px;object-fit:contain;display:block;margin:0 auto}
   .tile.correct{border-color:var(--jade);background:#E9F5F1}
   .tile.wrong{border-color:var(--coral);background:#FDECE7;animation:shake .3s}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
@@ -217,7 +220,7 @@
   .node-connector{width:2px;height:13px;background:var(--line);margin-left:15px}
   .node-games{padding:2px 0 6px 44px;display:flex;flex-direction:column;gap:8px}
 
-  /* sillabe isolate (Livello 1) */
+  /* sillabe isolate (Livello L0) */
   .syl-wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0}
   .syl-tile{width:66px;height:66px;border-radius:17px;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-family:"Bricolage Grotesque";font-weight:800;font-size:16px;cursor:pointer;transition:all .15s;color:var(--ink)}
   .syl-tile.done{border-color:var(--jade);background:#E9F5F1;color:var(--jade-deep)}
@@ -393,14 +396,14 @@
         <a href="#prezzi" class="btn btn-coral">Inizia gratis</a>
         <a href="#demo" class="btn btn-ghost">Prova la demo ↓</a>
       </div>
-      <div class="trust"><span class="dot"></span> Approvato dai logopedisti · Niente pubblicità · In italiano</div>
+      <div class="trust"><span class="dot"></span> Sviluppato con una logopedista italiana · Niente pubblicità · In italiano</div>
     </div>
 
     <!-- ===== INTERACTIVE PHONE DEMO ===== -->
     <div>
       <div class="view-toggle">
         <button id="tgChild" class="active" onclick="setView('child')">👦 Vista bambino</button>
-        <button id="tgPro" onclick="setView('pro')">🩺 Vista logopedista</button>
+        <button id="tgPro" onclick="setView('pro')">👨‍👩‍👧 Vista genitore</button>
       </div>
 
       <div class="phone-stage" id="demo">
@@ -453,7 +456,7 @@
 
                 <!-- LIVELLO 1 · SUONO ISOLATO (sillabe, non più una lista di giochi) -->
                 <div class="screen" data-c="sillabe">
-                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Livello 1 · Suono isolato</div></div>
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Livello L0 · Suono isolato</div></div>
                   <div class="ex-q">Tocca ogni sillaba e ripetila ad alta voce 🦜</div>
                   <div class="syl-wrap">
                     <div class="syl-tile" onclick="sylTap(this,'RA')">RA</div>
@@ -469,7 +472,7 @@
                 <div class="screen" data-c="ripeti">
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Ripeti</div></div>
                   <div class="ex-q">Ascolta e ripeti ad alta voce 🦜</div>
-                  <div style="text-align:center;font-size:56px;line-height:1;margin:8px 0 2px" id="ripEmoji">🐸</div>
+                  <div style="text-align:center;margin:8px 0 2px" id="ripEmoji"><img src="img/parole/rana.webp" alt="" style="width:64px;height:64px;object-fit:contain"></div>
                   <div class="rec-word" id="ripWord">rana</div>
                   <div class="rec-cap" style="margin-bottom:16px" id="ripMeta">R iniziale · parola 1 di 3</div>
                   <div class="rec-row">
@@ -485,10 +488,10 @@
                   <div class="ex-q">Ascolta la parola e tocca l'immagine giusta</div>
                   <div class="cm-play"><button class="rec-btn rec-listen" onclick="ascPlay()" title="Ascolta">▶</button></div>
                   <div class="grid2" id="ascGrid">
-                    <div class="tile" onclick="ascPick(this,'rana')"><span class="emo">🐸</span>Rana</div>
-                    <div class="tile" onclick="ascPick(this,'rosa')"><span class="emo">🌹</span>Rosa</div>
-                    <div class="tile" onclick="ascPick(this,'robot')"><span class="emo">🤖</span>Robot</div>
-                    <div class="tile" onclick="ascPick(this,'gatto')"><span class="emo">🐱</span>Gatto</div>
+                    <div class="tile" onclick="ascPick(this,'rana')"><img class="emo-img" src="img/parole/rana.webp" alt="">Rana</div>
+                    <div class="tile" onclick="ascPick(this,'rosa')"><img class="emo-img" src="img/parole/rosa.webp" alt="">Rosa</div>
+                    <div class="tile" onclick="ascPick(this,'robot')"><img class="emo-img" src="img/parole/robot.webp" alt="">Robot</div>
+                    <div class="tile" onclick="ascPick(this,'gatto')"><img class="emo-img" src="img/parole/gatto.webp" alt="">Gatto</div>
                   </div>
                   <div class="rec-cap" id="ascCap">Tocca ▶ per ascoltare</div>
                 </div>
@@ -498,12 +501,12 @@
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Caccia al suono</div></div>
                   <div class="ex-q">Tocca tutte le parole che iniziano con <b>R</b> 🦜</div>
                   <div class="grid2">
-                    <div class="tile" onclick="hit(this,true,'rana')"><span class="emo">🐸</span>Rana</div>
-                    <div class="tile" onclick="hit(this,false,'gatto')"><span class="emo">🐱</span>Gatto</div>
-                    <div class="tile" onclick="hit(this,true,'rosa')"><span class="emo">🌹</span>Rosa</div>
-                    <div class="tile" onclick="hit(this,false,'limone')"><span class="emo">🍋</span>Limone</div>
-                    <div class="tile" onclick="hit(this,true,'robot')"><span class="emo">🤖</span>Robot</div>
-                    <div class="tile" onclick="hit(this,false,'mela')"><span class="emo">🍎</span>Mela</div>
+                    <div class="tile" onclick="hit(this,true,'rana')"><img class="emo-img" src="img/parole/rana.webp" alt="">Rana</div>
+                    <div class="tile" onclick="hit(this,false,'gatto')"><img class="emo-img" src="img/parole/gatto.webp" alt="">Gatto</div>
+                    <div class="tile" onclick="hit(this,true,'rosa')"><img class="emo-img" src="img/parole/rosa.webp" alt="">Rosa</div>
+                    <div class="tile" onclick="hit(this,false,'limone')"><img class="emo-img" src="img/parole/limone.webp" alt="">Limone</div>
+                    <div class="tile" onclick="hit(this,true,'robot')"><img class="emo-img" src="img/parole/robot.webp" alt="">Robot</div>
+                    <div class="tile" onclick="hit(this,false,'mela')"><img class="emo-img" src="img/parole/mela.webp" alt="">Mela</div>
                   </div>
                 </div>
 
@@ -527,12 +530,12 @@
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Memory</div></div>
                   <div class="ex-q">Trova le coppie di parole con la <b>R</b> 🦜</div>
                   <div class="mem-grid">
-                    <div class="mem-card" data-id="rana" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🐸<small>rana</small></span></div>
-                    <div class="mem-card" data-id="rosa" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🌹<small>rosa</small></span></div>
-                    <div class="mem-card" data-id="rana" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🐸<small>rana</small></span></div>
-                    <div class="mem-card" data-id="robot" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🤖<small>robot</small></span></div>
-                    <div class="mem-card" data-id="rosa" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🌹<small>rosa</small></span></div>
-                    <div class="mem-card" data-id="robot" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back">🤖<small>robot</small></span></div>
+                    <div class="mem-card" data-id="rana" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back"><img src="img/parole/rana.webp" alt=""><small>rana</small></span></div>
+                    <div class="mem-card" data-id="rosa" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back"><img src="img/parole/rosa.webp" alt=""><small>rosa</small></span></div>
+                    <div class="mem-card" data-id="rana" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back"><img src="img/parole/rana.webp" alt=""><small>rana</small></span></div>
+                    <div class="mem-card" data-id="robot" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back"><img src="img/parole/robot.webp" alt=""><small>robot</small></span></div>
+                    <div class="mem-card" data-id="rosa" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back"><img src="img/parole/rosa.webp" alt=""><small>rosa</small></span></div>
+                    <div class="mem-card" data-id="robot" onclick="memFlip(this)"><span class="mem-front">?</span><span class="mem-back"><img src="img/parole/robot.webp" alt=""><small>robot</small></span></div>
                   </div>
                   <div class="rec-cap" id="memMsg">Tocca due carte uguali</div>
                 </div>
@@ -543,8 +546,8 @@
                   <div class="ex-q">Ascolta, poi tocca la parola che hai sentito.</div>
                   <div class="cm-play"><button class="rec-btn rec-listen" onclick="cmPlay()" title="Ascolta">▶</button></div>
                   <div class="grid2">
-                    <div class="tile" onclick="cmPick(this,'sole')"><span class="emo">🌞</span>SOLE</div>
-                    <div class="tile" onclick="cmPick(this,'sale')"><span class="emo">🧂</span>SALE</div>
+                    <div class="tile" onclick="cmPick(this,'sole')"><img class="emo-img" src="img/parole/sole.webp" alt="">SOLE</div>
+                    <div class="tile" onclick="cmPick(this,'sale')"><img class="emo-img" src="img/parole/sale.webp" alt="">SALE</div>
                   </div>
                   <div class="rec-cap" id="cmCap">Tocca ▶ per ascoltare</div>
                 </div>
@@ -561,7 +564,7 @@
                     <div class="oca-cell" id="oca4">5</div>
                     <div class="oca-cell" id="oca5">6</div>
                   </div>
-                  <div class="oca-fig" onclick="sayOcaWord()" title="Ascolta"><span class="oca-emoji" id="ocaEmoji">🐸</span><span class="oca-word" id="ocaWord">rana</span></div>
+                  <div class="oca-fig" onclick="sayOcaWord()" title="Ascolta"><span class="oca-emoji" id="ocaEmoji"><img src="img/parole/rana.webp" alt=""></span><span class="oca-word" id="ocaWord">rana</span></div>
                   <button class="oca-say" onclick="ocaSay()">🦜 Dillo!</button>
                   <div class="rec-cap" id="ocaCap">Casella 1 di 6</div>
                 </div>
@@ -646,100 +649,47 @@
               </div>
             </div>
 
-            <!-- ===== THERAPIST VIEW ===== -->
+            <!-- ===== PARENT VIEW (com'è nell'app oggi: ProgressiScreen → ParentDashboardScreen,
+                 dietro un calcolo matematico per adulti — qui semplificato, nella demo si entra
+                 subito) ===== -->
             <div id="view-pro" style="display:none;flex-direction:column;flex:1;min-height:0">
               <div class="app-top">
-                <div><div class="who">Dott.ssa Bianchi</div><div class="sub">8 pazienti attivi</div></div>
-                <div class="pill">🩺 Studio</div>
+                <div><div class="who">Area Genitori</div><div class="sub">Il profilo di Marco</div></div>
+                <div class="pill">🔒 Protetta</div>
               </div>
               <div class="app-body">
+                <div class="screen on">
+                  <div class="sec-label">PROGRESSI DI MARCO</div>
+                  <div class="pbar-row"><div class="pbar-top"><span>R · suono isolato</span><span>100%</span></div><div class="pbar"><i style="width:100%"></i></div></div>
+                  <div class="pbar-row"><div class="pbar-top"><span>R · parola iniziale</span><span>80%</span></div><div class="pbar"><i style="width:80%"></i></div></div>
+                  <div class="pbar-row"><div class="pbar-top"><span>R · parola mediana</span><span>55%</span></div><div class="pbar"><i style="width:55%"></i></div></div>
+                  <div class="pbar-row"><div class="pbar-top"><span>S · suono isolato</span><span>100%</span></div><div class="pbar"><i style="width:100%"></i></div></div>
 
-                <!-- PAZIENTI -->
-                <div class="screen on" data-p="pazienti">
-                  <div class="sec-label">I tuoi pazienti</div>
-                  <div class="pt-card" onclick="goPro('assegna')">
+                  <div class="sec-label" style="margin-top:18px">ABBONAMENTO</div>
+                  <div class="card" style="cursor:default">
+                    <div class="ic" style="background:#FFF3D6">⭐</div>
+                    <div><h4>Piano annuale attivo</h4><div class="meta">Tutti i 25 fonemi sbloccati</div></div>
+                  </div>
+
+                  <div class="sec-label" style="margin-top:18px">OPZIONI</div>
+                  <div class="pt-card">
                     <div class="pt-top">
-                      <div class="avatar" style="background:#137A6E">M</div>
-                      <div><div class="pt-name">Marco, 5 anni</div><div class="pt-meta">R iniziale · intervocalica</div></div>
-                      <div class="adh"><b style="color:var(--jade)">92%</b><span>aderenza</span></div>
+                      <div class="avatar" style="background:#137A6E">🩺</div>
+                      <div><div class="pt-name">Collega il tuo logopedista</div><div class="pt-meta">Opzionale — se ne hai uno</div></div>
+                      <div class="chev" style="margin-left:auto;color:var(--line);font-size:18px">›</div>
                     </div>
                   </div>
-                  <div class="pt-card" onclick="goPro('assegna')">
+                  <div class="pt-card" onclick="openLegalDemo()">
                     <div class="pt-top">
-                      <div class="avatar" style="background:#FF6A4D">G</div>
-                      <div><div class="pt-name">Giulia, 4 anni</div><div class="pt-meta">Sibilanti S / Z</div></div>
-                      <div class="adh"><b style="color:var(--jade)">78%</b><span>aderenza</span></div>
+                      <div class="avatar" style="background:#FF6A4D">🔒</div>
+                      <div><div class="pt-name">Privacy e registrazioni</div><div class="pt-meta">Consenso audio, promemoria, dati</div></div>
+                      <div class="chev" style="margin-left:auto;color:var(--line);font-size:18px">›</div>
                     </div>
                   </div>
-                  <div class="pt-card" onclick="goPro('assegna')">
-                    <div class="pt-top">
-                      <div class="avatar" style="background:#E0A82E">L</div>
-                      <div><div class="pt-name">Luca, 6 anni</div><div class="pt-meta">Gruppi TR / STR</div></div>
-                      <div class="adh"><b style="color:var(--coral)">41%</b><span>aderenza</span></div>
-                    </div>
-                  </div>
-                  <div style="text-align:center;font-size:12px;color:var(--ink-soft);margin-top:8px">Tocca un paziente per assegnare gli esercizi ›</div>
+                  <p style="font-size:11.5px;color:var(--ink-soft);margin-top:14px;text-align:center">
+                    Nell'app vera, questa sezione è protetta da un piccolo calcolo matematico — pensata per un adulto, non per il bambino.
+                  </p>
                 </div>
-
-                <!-- ASSEGNA -->
-                <div class="screen" data-p="assegna">
-                  <div class="ex-head"><button class="ex-back" onclick="goPro('pazienti')">‹</button><div class="ex-title">Assegna a Marco</div></div>
-
-                  <div class="field-label">FONEMA</div>
-                  <div class="chiprow">
-                    <div class="chip sel" onclick="tog(this,'mono')">R</div>
-                    <div class="chip" onclick="tog(this,'mono')">S</div>
-                    <div class="chip" onclick="tog(this,'mono')">Z</div>
-                    <div class="chip" onclick="tog(this,'mono')">SC/SCI</div>
-                    <div class="chip" onclick="tog(this,'mono')">GN</div>
-                  </div>
-
-                  <div class="field-label">POSIZIONE</div>
-                  <div class="chiprow">
-                    <div class="chip sel" onclick="tog(this)">Iniziale</div>
-                    <div class="chip sel" onclick="tog(this)">Intervocalica</div>
-                    <div class="chip" onclick="tog(this)">Gruppo cons.</div>
-                  </div>
-
-                  <div class="field-label">TIPI DI ESERCIZIO</div>
-                  <div class="chiprow">
-                    <div class="chip sun sel" onclick="tog(this)">🎤 Registratore</div>
-                    <div class="chip sun sel" onclick="tog(this)">🔎 Caccia al suono</div>
-                    <div class="chip sun" onclick="tog(this)">🧩 Memory</div>
-                    <div class="chip sun" onclick="tog(this)">👯 Coppie minime</div>
-                    <div class="chip sun" onclick="tog(this)">🎲 Gioco dell'oca</div>
-                    <div class="chip sun" onclick="tog(this)">📖 Sequenze illustrate</div>
-                  </div>
-
-                  <div class="field-label">LIVELLO</div>
-                  <div class="chiprow">
-                    <div class="chip" onclick="tog(this,'lvl')">Sillaba</div>
-                    <div class="chip sel" onclick="tog(this,'lvl')">Parola</div>
-                    <div class="chip" onclick="tog(this,'lvl')">Frase</div>
-                  </div>
-
-                  <button class="assign-btn" onclick="assign()">Assegna piano della settimana</button>
-                </div>
-
-                <!-- REPORT -->
-                <div class="screen" data-p="report">
-                  <div class="sec-label">Report · Marco</div>
-                  <div class="pbar-row"><div class="pbar-top"><span>Aderenza settimana</span><span>92%</span></div><div class="pbar"><i style="width:92%"></i></div></div>
-                  <div class="pbar-row"><div class="pbar-top"><span>R iniziale — produzione</span><span>80%</span></div><div class="pbar"><i style="width:80%"></i></div></div>
-                  <div class="pbar-row"><div class="pbar-top"><span>R intervocalica</span><span>55%</span></div><div class="pbar"><i style="width:55%"></i></div></div>
-                  <div class="card" style="cursor:default;margin-top:14px">
-                    <div class="ic" style="background:#E9F5F1">📄</div>
-                    <div><h4>Riepilogo per la seduta</h4><div class="meta">14 sessioni · 3 da rivedere insieme</div></div>
-                  </div>
-                  <button class="assign-btn" style="background:var(--jade);box-shadow:0 4px 0 var(--jade-deep)" onclick="goPro('pazienti')">Esporta PDF</button>
-                </div>
-
-              </div>
-              <div class="toast" id="toast">✓ Piano assegnato — Marco lo vedrà stasera</div>
-              <div class="tabbar">
-                <button class="tab active" data-ptab="pazienti" onclick="goPro('pazienti')"><span class="ti">👥</span>Pazienti</button>
-                <button class="tab" data-ptab="assegna" onclick="goPro('assegna')"><span class="ti">➕</span>Assegna</button>
-                <button class="tab" data-ptab="report" onclick="goPro('report')"><span class="ti">📊</span>Report</button>
               </div>
             </div>
 
@@ -785,22 +735,22 @@
     <p class="lead2">Mappati alla scala terapeutica reale — dal suono isolato al racconto. Non "dei giochi", ma una progressione.</p>
     <div class="scala">
       <span class="lab">La scala clinica:</span>
-      <span class="lv"><b>1</b> Suono isolato</span>
-      <span class="lv"><b>2</b> Parola</span>
-      <span class="lv"><b>3</b> Frase</span>
-      <span class="lv"><b>4</b> Parola</span>
-      <span class="lv"><b>5</b> Frase</span>
+      <span class="lv"><b>L0</b> Suono isolato</span>
+      <span class="lv"><b>L1</b> Parola iniziale</span>
+      <span class="lv"><b>L2</b> Parola mediana</span>
+      <span class="lv"><b>L3</b> Frase</span>
+      <span class="lv"><b>L4</b> Racconto</span>
     </div>
-    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 26px">Al Livello 1 non c'è scelta tra giochi: solo le sillabe isolate col suono target, da toccare e ripetere. Dal Livello 2 in poi si parte sempre dal più semplice — <b>Ripeti</b> (nessuna risposta sbagliata) — fino al più difficile — <b>Caccia al suono</b>, che richiede aver già capito bene il suono.</p>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 26px">Al Livello 0 non c'è scelta tra giochi: solo le sillabe isolate col suono target, da toccare e ripetere. Dal Livello 1 in poi si parte sempre dal più semplice — <b>Ripeti</b> (nessuna risposta sbagliata) — fino al più difficile — <b>Caccia al suono</b>, che richiede aver già capito bene il suono.</p>
     <div class="ex-grid">
-      <div class="exq"><div class="emoji">🔁</div><h3>Ripeti</h3><div class="role">Produzione guidata</div><p>Ascolta il modello e ripeti ad alta voce. Nessuna risposta sbagliata: il primo passo, senza rischio.</p><span class="lvl">Livello 2–3</span></div>
-      <div class="exq"><div class="emoji">👂</div><h3>Ascolta e scegli</h3><div class="role">Discriminazione</div><p>Ascolta la parola e tocca l'immagine giusta tra più opzioni.</p><span class="lvl">Livello 2–3</span></div>
-      <div class="exq"><div class="emoji">🧩</div><h3>Memory</h3><div class="role">Discriminazione + lessico</div><p>Abbina coppie con lo stesso suono, allenando memoria di lavoro.</p><span class="lvl">Livello 2–3</span></div>
-      <div class="exq"><div class="emoji">🔎</div><h3>Caccia al suono</h3><div class="role">Discriminazione percettiva</div><p>Trova le parole che contengono il fonema target: il più difficile del gruppo.</p><span class="lvl">Livello 2–3</span></div>
-      <div class="exq"><div class="emoji">🎤</div><h3>Registratore</h3><div class="role">Produzione + autoascolto</div><p>Ascolta il modello, registra, riascolta e confronta. Il cuore del lavoro a casa.</p><span class="lvl">Livello 3–5</span></div>
-      <div class="exq"><div class="emoji">👯</div><h3>Coppie minime</h3><div class="role">Discriminazione fine</div><p>Sole/sale, pala/bala: tocca la parola pronunciata. L'esercizio più clinico del set.</p><span class="lvl">Livello 3</span></div>
-      <div class="exq"><div class="emoji">🎲</div><h3>Gioco dell'oca</h3><div class="role">Produzione ripetuta + motivazione</div><p>Avanzi di una casella solo pronunciando bene. Ripetizione che non annoia.</p><span class="lvl">Livello 3–4</span></div>
-      <div class="exq"><div class="emoji">📖</div><h3>Sequenze illustrate</h3><div class="role">Narrazione e generalizzazione</div><p>Racconta la storia in ordine: il fonema nell'eloquio quasi spontaneo.</p><span class="lvl">Livello 5</span></div>
+      <div class="exq"><div class="emoji">🔁</div><h3>Ripeti</h3><div class="role">Produzione guidata</div><p>Ascolta il modello e ripeti ad alta voce. Nessuna risposta sbagliata: il primo passo, senza rischio.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><div class="emoji">👂</div><h3>Ascolta e scegli</h3><div class="role">Discriminazione</div><p>Ascolta la parola e tocca l'immagine giusta tra più opzioni.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><div class="emoji">🧩</div><h3>Memory</h3><div class="role">Discriminazione + lessico</div><p>Abbina coppie con lo stesso suono, allenando memoria di lavoro.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><div class="emoji">🔎</div><h3>Caccia al suono</h3><div class="role">Discriminazione percettiva</div><p>Trova le parole che contengono il fonema target: il più difficile del gruppo.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><div class="emoji">🎤</div><h3>Registratore</h3><div class="role">Produzione + autoascolto</div><p>Ascolta il modello, registra, riascolta e confronta. Il cuore del lavoro a casa.</p><span class="lvl">Livello L2–L4</span></div>
+      <div class="exq"><div class="emoji">👯</div><h3>Coppie minime</h3><div class="role">Discriminazione fine</div><p>Sole/sale, pala/bala: tocca la parola pronunciata. L'esercizio più clinico del set.</p><span class="lvl">Livello L2</span></div>
+      <div class="exq"><div class="emoji">🎲</div><h3>Gioco dell'oca</h3><div class="role">Produzione ripetuta + motivazione</div><p>Avanzi di una casella solo pronunciando bene. Ripetizione che non annoia.</p><span class="lvl">Livello L2–L3</span></div>
+      <div class="exq"><div class="emoji">📖</div><h3>Sequenze illustrate</h3><div class="role">Narrazione e generalizzazione</div><p>Racconta la storia in ordine: il fonema nell'eloquio quasi spontaneo.</p><span class="lvl">Livello L4</span></div>
     </div>
     <div class="ita-note">
       <p><b>Pensato per l'italiano, non tradotto dall'inglese.</b> Le app straniere lavorano la posizione "fine parola" (final /s/, /t/), che in italiano — lingua a sillabe aperte — conta pochissimo. Lallo lavora dove serve davvero: <b>iniziale, intervocalica, gruppi consonantici (tr, str, pr) e digrammi (gn, gl, sc)</b>, i veri scogli del bambino italiano.</p>
@@ -829,7 +779,7 @@
     <div class="ct-grid">
       <div class="ct"><div class="em">👨‍👩‍👧</div><h3>Da solo, a casa</h3><p>Scegli i suoni, il bambino gioca, tu segui i progressi. Non serve altro per iniziare oggi.</p></div>
       <div class="ct"><div class="em">🩺</div><h3>Collegato al logopedista</h3><p>Hai già un logopedista? Può impostare il piano e seguire i progressi: gli esercizi seguono la sua terapia. È un'opzione, non un obbligo.</p></div>
-      <div class="ct"><div class="em">✓</div><h3>Approvato dai professionisti</h3><p>Costruito con logopedisti italiani. Lallo affianca la terapia, non la sostituisce — e se serve, ti invita a rivolgerti a un professionista.</p></div>
+      <div class="ct"><div class="em">✓</div><h3>Mai al posto della terapia</h3><p>Sviluppato con il contributo di una logopedista italiana. Lallo affianca la terapia, non la sostituisce — e se emergono segnali importanti, ti invita a rivolgerti a un professionista.</p></div>
     </div>
   </div>
 </section>
@@ -866,15 +816,15 @@
     <div>
       <div class="kicker">Lista d'attesa</div>
       <h2 class="big">Entra tra i primi.</h2>
-      <p class="lead2">Stiamo costruendo Lallo con un gruppo ristretto di logopedisti. Iscriviti: avrai accesso prioritario alla beta e, se sei un professionista, potrai dare forma agli esercizi prima del lancio.</p>
+      <p class="lead2">Stiamo costruendo Lallo insieme alle prime famiglie. Iscriviti: avrai accesso prioritario alla beta. Sei un logopedista? Iscriviti comunque — la dashboard pro è sempre gratuita per te.</p>
     </div>
     <div class="wl-form">
       <div id="wlFormInner">
         <div class="seg">
-          <input type="radio" name="role" id="r1" value="logopedista" checked>
-          <label for="r1">🩺 Sono logopedista</label>
-          <input type="radio" name="role" id="r2" value="genitore">
-          <label for="r2">👨‍👩‍👧 Sono genitore</label>
+          <input type="radio" name="role" id="r1" value="genitore" checked>
+          <label for="r1">👨‍👩‍👧 Sono genitore</label>
+          <input type="radio" name="role" id="r2" value="logopedista">
+          <label for="r2">🩺 Sono logopedista</label>
         </div>
         <input class="inp" id="wlName" type="text" placeholder="Nome">
         <input class="inp" id="wlEmail" type="email" placeholder="Email">
@@ -989,42 +939,45 @@ function openGame(type){ openEx(type, 'giochi'); }
 
 /* ---------- mappa dei livelli (tab Giochi) ----------
    Stesso schema della vera app (GiochiScreen.tsx): un percorso a 5 nodi/livelli
-   clinici, ogni gioco dichiara a quali livelli si applica. Livello 1 non è più una
+   clinici, ogni gioco dichiara a quali livelli si applica. Livello L0 non è più una
    lista di giochi tra cui scegliere: apre direttamente le sillabe isolate. Qui, a
    differenza dell'app vera, tutti i livelli restano esplorabili da subito (niente
    sblocco progressivo) per far vedere tutto il ventaglio di giochi nella demo. */
 const GAMES = [
-  { type:'ripeti',   label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', emoji:'🔁', levels:[2,3] },
-  { type:'ascolta',  label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[2,3] },
-  { type:'memory',   label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', emoji:'🧩', levels:[2,3] },
-  { type:'caccia',   label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', emoji:'🔎', levels:[2,3] },
-  { type:'rec',      label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎤', levels:[3,4,5] },
-  { type:'coppie',   label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', emoji:'👯', levels:[3] },
-  { type:'oca',      label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎲', levels:[3,4] },
-  { type:'sequenze', label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[5] },
+  { type:'ripeti',   label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', emoji:'🔁', levels:[1,2] },
+  { type:'ascolta',  label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[1,2] },
+  { type:'memory',   label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', emoji:'🧩', levels:[1,2] },
+  { type:'caccia',   label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', emoji:'🔎', levels:[1,2] },
+  { type:'rec',      label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎤', levels:[2,3,4] },
+  { type:'coppie',   label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', emoji:'👯', levels:[2] },
+  { type:'oca',      label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎲', levels:[2,3] },
+  { type:'sequenze', label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[4] },
 ];
-const LEVEL_LABELS = { 1:'Suono isolato', 2:'Parola iniziale', 3:'Frase iniziale', 4:'Parola mediana', 5:'Frase mediana' };
+// Stessa scala di app/src/types/gamification.ts (ClinicalLevel/LEVEL_LABELS): L0 suono
+// isolato, L1 parola iniziale, L2 parola mediana, L3 frase, L4 racconto — qui tenuta come
+// indice numerico 0-4 solo per comodità del nodeMap, il testo mostrato è quello vero.
+const LEVEL_LABELS = { 0:'Suono isolato', 1:'Parola iniziale', 2:'Parola mediana', 3:'Frase', 4:'Racconto' };
 let expandedLevel = null;
-let level1Mastered = false;
+let level0Mastered = false;
 function tapNode(lvl){
-  if(lvl===1){ openEx('sillabe','giochi'); return; }
+  if(lvl===0){ openEx('sillabe','giochi'); return; }
   expandedLevel = (expandedLevel===lvl) ? null : lvl;
   renderMap();
 }
 function renderMap(){
   const root=document.getElementById('nodeMap'); if(!root) return;
   let html='';
-  for(let lvl=1; lvl<=5; lvl++){
-    const mastered = lvl===1 && level1Mastered;
-    const chev = lvl===1 ? '' : (expandedLevel===lvl ? '︿' : '›');
+  for(let lvl=0; lvl<=4; lvl++){
+    const mastered = lvl===0 && level0Mastered;
+    const chev = lvl===0 ? '' : (expandedLevel===lvl ? '︿' : '›');
     html += `<div class="node-row" onclick="tapNode(${lvl})">`
-      + `<div class="node-circle${mastered?' mastered':''}">${mastered?'⭐':lvl}</div>`
-      + `<div style="flex:1"><div class="node-label">Livello ${lvl} · ${LEVEL_LABELS[lvl]}</div>`
+      + `<div class="node-circle${mastered?' mastered':''}">${mastered?'⭐':'L'+lvl}</div>`
+      + `<div style="flex:1"><div class="node-label">Livello L${lvl} · ${LEVEL_LABELS[lvl]}</div>`
       + (mastered ? `<div class="node-sub">5/5 ⭐ · conquistato</div>` : '')
       + `</div>`
       + (chev ? `<div class="node-chev">${chev}</div>` : '')
       + `</div>`;
-    if(lvl<5) html += `<div class="node-connector"></div>`;
+    if(lvl<4) html += `<div class="node-connector"></div>`;
     if(expandedLevel===lvl){
       const games = GAMES.filter(g=>g.levels.includes(lvl));
       html += `<div class="node-games">` + games.map(g =>
@@ -1039,7 +992,7 @@ function renderMap(){
   root.innerHTML = html;
 }
 
-/* ---------- Livello 1 · suono isolato (sillabe) ---------- */
+/* ---------- Livello L0 · suono isolato (sillabe) ---------- */
 const SYL_LIST = ['RA','RE','RI','RO','RU'];
 let sylDone = new Set();
 function sylReset(){
@@ -1053,19 +1006,19 @@ function sylTap(el, syl){
   el.classList.add('done');
   sylDone.add(syl);
   if(sylDone.size===SYL_LIST.length){
-    document.getElementById('sylCap').textContent='Evviva! Livello 1 completato 🦜';
-    level1Mastered = true;
+    document.getElementById('sylCap').textContent='Evviva! Livello L0 completato 🦜';
+    level0Mastered = true;
     setTimeout(()=>say('Evviva! Hai completato il livello uno!'), 300);
     setTimeout(()=>goChild('giochi'), 1800);
   }
 }
 
 /* ---------- Ripeti (il più semplice: niente risposte sbagliate) ---------- */
-const RIP_WORDS=[{w:'rana',e:'🐸'},{w:'rosa',e:'🌹'},{w:'robot',e:'🤖'}];
+const RIP_WORDS=[{w:'rana',e:'rana.webp'},{w:'rosa',e:'rosa.webp'},{w:'robot',e:'robot.webp'}];
 let ripIdx=0;
 function ripReset(){ ripIdx=0; updateRip(); setTimeout(()=>say(RIP_WORDS[0].w),1500); }
 function updateRip(){
-  document.getElementById('ripEmoji').textContent=RIP_WORDS[ripIdx].e;
+  document.getElementById('ripEmoji').innerHTML='<img src="img/parole/'+RIP_WORDS[ripIdx].e+'" alt="" style="width:64px;height:64px;object-fit:contain">';
   document.getElementById('ripWord').textContent=RIP_WORDS[ripIdx].w;
   document.getElementById('ripMeta').textContent='R iniziale · parola '+(ripIdx+1)+' di '+RIP_WORDS.length;
 }
@@ -1229,17 +1182,17 @@ function cmPick(el,word){
 /* gioco dell'oca */
 let ocaPos=0;
 const ocaWords=[
-  {w:'rana',  img:'🐸'},
-  {w:'rosa',  img:'🌹'},
-  {w:'robot', img:'🤖'},
-  {w:'pera',  img:'🍐'},
-  {w:'mare',  img:'🌊'},
-  {w:'fiore', img:'🌸'},
+  {w:'rana',  img:'rana.webp'},
+  {w:'rosa',  img:'rosa.webp'},
+  {w:'robot', img:'robot.webp'},
+  {w:'pera',  img:'pera.webp'},
+  {w:'mare',  img:'mare.webp'},
+  {w:'fiore', img:'fiore.webp'},
 ];
 function ocaReset(){ ocaPos=0; updateOca(); }
 function updateOca(){
   for(let i=0;i<6;i++){ const c=document.getElementById('oca'+i); if(!c) continue; c.classList.toggle('active', i===ocaPos); c.textContent = i===ocaPos ? '🦜' : (i+1); }
-  const e=document.getElementById('ocaEmoji'); if(e) e.textContent=ocaWords[ocaPos].img;
+  const e=document.getElementById('ocaEmoji'); if(e) e.innerHTML='<img src="img/parole/'+ocaWords[ocaPos].img+'" alt="">';
   const w=document.getElementById('ocaWord'); if(w) w.textContent=ocaWords[ocaPos].w;
   const cap=document.getElementById('ocaCap'); if(cap) cap.textContent = ocaPos===5 ? '🏆 Arrivato! Tutte le parole con la R.' : ('Casella '+(ocaPos+1)+' di 6');
 }
@@ -1287,22 +1240,9 @@ function resetRec(){
   const cap=document.getElementById('recCap'); if(cap)cap.textContent='Tocca ▶ per il modello, 🎤 per registrarti';
 }
 
-/* ---------- therapist navigation ---------- */
-function goPro(name){
-  document.querySelectorAll('#view-pro .screen').forEach(s=>s.classList.toggle('on', s.dataset.p===name));
-  document.querySelectorAll('#view-pro .tab').forEach(t=>t.classList.toggle('active', t.dataset.ptab===name));
-}
-function tog(el,group){
-  if(group==='mono'||group==='lvl'){
-    el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
-    el.classList.add('sel');
-  } else { el.classList.toggle('sel'); }
-}
-function assign(){
-  const t=document.getElementById('toast');
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-  setTimeout(()=>goPro('report'),900);
+/* ---------- vista genitore (statica: non ha sotto-schede, vedi ParentScreens.tsx) ---------- */
+function openLegalDemo(){
+  alert('Nell\'app vera questa sezione apre consenso microfono/fotocamera, promemoria e il link alla Privacy Policy (lallo.app/privacy.html).');
 }
 
 /* ---------- waitlist ----------
@@ -1313,8 +1253,8 @@ function assign(){
    La anon key nel codice pubblico è SICURA: con RLS può solo INSERIRE, non leggere.
    Leggi/esporta le mail dal dashboard: Table Editor → waitlist → Export to CSV.
 --------------------------------- */
-const SUPABASE_URL  = 'https://INCOLLA-QUI.supabase.co';  // <-- Project URL
-const SUPABASE_ANON = 'INCOLLA-QUI-ANON-KEY';             // <-- anon public key
+const SUPABASE_URL  = 'https://zrzrmarrhiityuoszdze.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyenJtYXJyaGlpdHl1b3N6ZHplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTg4MDcsImV4cCI6MjA5Nzg3NDgwN30._41IPPaOZZLUcFevmPZeaytFEFE1uoLB3c8Wcemyvnk';
 
 let wlSending=false;
 async function submitWL(){
