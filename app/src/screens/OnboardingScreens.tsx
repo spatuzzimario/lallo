@@ -3,7 +3,9 @@ import { View, Text, TextInput, Image, Pressable, StyleSheet, ActivityIndicator,
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
+import { createChild } from "../api/children";
 import { useGamificationStore } from "../store/useGamificationStore";
+import { AVATAR_OPTIONS, DEFAULT_AVATAR_ID, getAvatarImage } from "../constants/avatars";
 
 const COLORS = {
   bg: "#FBF6EE", // --paper della demo HTML
@@ -242,7 +244,7 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
 // Screen 3 — name entry, direct port of the Speech Blubs pattern (illustration,
 // input, Skip in the top right). Their affirmative-nickname framing works well
 // for a sensitive context like speech delay, kept as-is.
-export function ChildNameScreen({ navigation }: any) {
+export function ChildNameScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   return (
@@ -251,7 +253,7 @@ export function ChildNameScreen({ navigation }: any) {
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>←</Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate("ChildGender", { name: "" })}>
+        <Pressable onPress={() => navigation.navigate("ChildGender", { ...route?.params, name: "" })}>
           <Text style={styles.skip}>Salta</Text>
         </Pressable>
       </View>
@@ -270,7 +272,7 @@ export function ChildNameScreen({ navigation }: any) {
       </View>
       <ContinueButton
         disabled={name.length === 0}
-        onPress={() => navigation.navigate("ChildGender", { name })}
+        onPress={() => navigation.navigate("ChildGender", { ...route?.params, name })}
       />
     </KeyboardAvoidingView>
   );
@@ -359,7 +361,7 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
     const birthdate = isValid
       ? `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`
       : null;
-    navigation.navigate("WordCount", { ...route?.params, name, birthdate });
+    navigation.navigate("AvatarPicker", { ...route?.params, name, birthdate });
   }
 
   return (
@@ -402,6 +404,103 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
     </KeyboardAvoidingView>
   );
 }
+
+// Ultimo passo prima dello screener (o, se route.params.addingChild è true, ultimo passo
+// in assoluto — vedi nota sotto): scelta dell'avatar tra illustrazioni già esistenti nel
+// word bank (constants/avatars.ts), non nuove foto/illustrazioni da generare. Pappagallo
+// pre-selezionato come default neutro: il genitore può continuare subito senza scegliere,
+// stesso principio "saltabile" di nome/sesso qui sopra.
+//
+// route.params.addingChild distingue due usi della STESSA catena di schermate
+// (ChildName→ChildGender→ChildBirthdate→AvatarPicker, vedi i navigate({...route.params, ...})
+// sopra, che la propagano da soli): primo figlio durante l'onboarding (continua verso
+// WordCount/lo screener, poi Auth crea davvero il profilo) oppure un figlio aggiunto DOPO
+// da un genitore già autenticato (da Genitori → "Aggiungi un bambino", vedi ParentScreens.tsx)
+// — qui il profilo va creato subito, senza rifare login/screener.
+export function AvatarPickerScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
+  const [avatarId, setAvatarId] = useState(DEFAULT_AVATAR_ID);
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
+  const children = useGamificationStore((s) => s.children);
+  const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
+
+  async function finish() {
+    if (!route?.params?.addingChild) {
+      navigation.navigate("WordCount", { ...route?.params, avatarId });
+      return;
+    }
+    setSaving(true);
+    setErrorMsg(null);
+    const { data: child, error } = await createChild({
+      name: route.params.name,
+      birthdate: route.params.birthdate ?? null,
+      gender: route.params.gender ?? null,
+      avatarId,
+    });
+    setSaving(false);
+    if (error || !child) {
+      setErrorMsg("Non siamo riusciti a salvare il profilo. Riprova.");
+      return;
+    }
+    setChildrenRoster([...children, { id: child.id, displayName: child.name, avatarId: child.avatar_id || DEFAULT_AVATAR_ID }]);
+    await hydrateFromSupabase({
+      id: child.id,
+      name: child.name,
+      audioRecordingConsent: false,
+      avatarId: child.avatar_id,
+      gender: child.gender,
+    });
+    navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+      <View style={styles.topRow}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.title}>Scegli il suo avatar</Text>
+      <Text style={styles.subtitle}>Potrà cambiarlo quando vuole dall'area Genitori.</Text>
+      <View style={avatarStyles.grid}>
+        {AVATAR_OPTIONS.map((opt) => {
+          const selected = opt.id === avatarId;
+          return (
+            <Pressable
+              key={opt.id}
+              onPress={() => setAvatarId(opt.id)}
+              style={[avatarStyles.tile, selected && avatarStyles.tileSelected]}
+            >
+              <Image source={getAvatarImage(opt.id)} style={avatarStyles.tileImage} resizeMode="contain" />
+              <Text style={[avatarStyles.tileLabel, selected && avatarStyles.tileLabelSelected]}>{opt.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+      <View style={{ flex: 1 }} />
+      {saving ? (
+        <ActivityIndicator color={COLORS.primary} />
+      ) : (
+        <ContinueButton onPress={finish} />
+      )}
+    </View>
+  );
+}
+
+const avatarStyles = StyleSheet.create({
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginTop: 20 },
+  tile: {
+    width: "31%", aspectRatio: 0.85, borderWidth: 2, borderColor: "transparent", borderRadius: 16,
+    alignItems: "center", justifyContent: "center", marginBottom: 12, backgroundColor: "#fff", padding: 6,
+  },
+  tileSelected: { borderColor: COLORS.primary, backgroundColor: "#FFF3EF" },
+  tileImage: { width: 56, height: 56 },
+  tileLabel: { fontSize: 11.5, color: COLORS.subtext, marginTop: 6, textAlign: "center" },
+  tileLabelSelected: { color: COLORS.primary, fontWeight: "700" },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },

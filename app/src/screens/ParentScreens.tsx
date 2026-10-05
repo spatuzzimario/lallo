@@ -23,6 +23,7 @@ const COLORS = {
 export function ParentDashboardScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
+  const childrenRoster = useGamificationStore((s) => s.children);
   const supabaseChildId = profile?.supabaseChildId;
 
   // Stato del collegamento al logopedista — letto da therapist_links (vedi api/therapists.ts).
@@ -234,6 +235,17 @@ export function ParentDashboardScreen({ navigation }: any) {
             uno in qualsiasi momento qui sotto.
           </Text>
         </View>
+      )}
+
+      {isSupabaseConfigured && (
+        <Pressable style={dashStyles.privacyRow} onPress={() => navigation.navigate("ChildName", { addingChild: true })}>
+          <Text style={dashStyles.privacyRowText}>
+            {childrenRoster.length > 1
+              ? `👨‍👩‍👧 Aggiungi un altro bambino (ne hai ${childrenRoster.length})`
+              : "👨‍👩‍👧 Aggiungi un altro bambino"}
+          </Text>
+          <Text style={dashStyles.chevron}>›</Text>
+        </Pressable>
       )}
 
       <Pressable

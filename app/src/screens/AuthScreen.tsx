@@ -29,6 +29,7 @@ export default function AuthScreen({ navigation, route }: any) {
   const role: "parent" | "therapist" = route.params?.role === "therapist" ? "therapist" : "parent";
   const name: string = route.params?.name || "il bambino";
   const gender: "maschio" | "femmina" | "preferisco_non_dire" | undefined = route.params?.gender;
+  const avatarId: string | undefined = route.params?.avatarId;
   const sounds: PhonemeKey[] | undefined = route.params?.strugglingSounds;
   const birthdate: string | null = route.params?.birthdate ?? null;
   const therapistFullName: string = route.params?.fullName || "";
@@ -94,14 +95,14 @@ export default function AuthScreen({ navigation, route }: any) {
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.");
       return;
     }
-    const { data: child, error: childError } = await createChild({ name, birthdate });
+    const { data: child, error: childError } = await createChild({ name, birthdate, gender, avatarId });
     setLoading(false);
     if (childError) {
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a salvare il profilo di " + name + ". Riprova.");
       return;
     }
     if (child) setSupabaseChildId(child.id);
-    setChildInfo({ displayName: name, gender });
+    setChildInfo({ displayName: name, gender, avatarId });
     if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
     navigation.navigate("Paywall");
   }
@@ -134,7 +135,7 @@ export default function AuthScreen({ navigation, route }: any) {
         <View style={{ flex: 1 }} />
         <ContinueButton
           onPress={() => {
-            setChildInfo({ displayName: name, gender });
+            setChildInfo({ displayName: name, gender, avatarId });
             if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
             navigation.navigate("Paywall");
           }}

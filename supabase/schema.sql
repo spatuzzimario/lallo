@@ -35,6 +35,10 @@
 --    creandone una nuova — la storia dei livelli passati resta comunque in `sessions` via
 --    `target_id`), e una sola riga achievement per fonema conquistato (idempotenza sulla
 --    scrittura fire-and-forget lato client).
+-- 5. `children` non ha (e non ha mai avuto) un vincolo di unicità su owner_id: un genitore
+--    con più righe `children` è il caso normale (brief §7 "profili multipli figlio su un
+--    solo abbonamento"), non un bug — l'app prima semplicemente non offriva un selettore
+--    (vedi migrazione 0003 e App.tsx/ChildSwitcher).
 
 create extension if not exists "pgcrypto";
 
@@ -52,6 +56,13 @@ create table if not exists children (
   interests text[] not null default '{}',
   audio_recording_consent boolean not null default false,
   consent_given_at timestamptz,
+  -- avatar_id e gender: raccolti in onboarding (AvatarPickerScreen/ChildGenderScreen) ma
+  -- prima persi nel passaggio tra schermate (mai salvati su Supabase, vedi migrazione 0003)
+  -- — gender guida solo la grammatica italiana nei testi (es. "bravo"/"brava"), non è un
+  -- dato clinico. owner_id NON è più "un bambino per genitore": più righe con lo stesso
+  -- owner_id sono normali (un genitore con più figli, vedi nota 5).
+  avatar_id text,
+  gender text check (gender in ('maschio', 'femmina', 'preferisco_non_dire')),
   created_at timestamptz not null default now()
 );
 

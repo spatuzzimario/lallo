@@ -19,6 +19,7 @@ import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LALLO_CELEBRATE_FOODS
 import { getWordImage } from "../constants/wordImage";
 import { useVoice } from "../hooks/useVoice";
 import { useLalloMachine } from "../hooks/useLalloMachine";
+import { ChildSwitcher } from "../components/ChildSwitcher";
 
 // Presentazione lunga di Lallo, sentita/vista solo la prima volta che si apre questa tab
 // (settembre 2026, feedback: "Lallo si presenta solo la prima volta, poi solo le
@@ -236,7 +237,10 @@ export default function LalloScreen({ navigation }: any) {
       scrollEnabled={!isDraggingFood}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Lallo</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <ChildSwitcher navigation={navigation} />
+          <Text style={styles.title}>Lallo</Text>
+        </View>
         {dayStreak > 0 && (
           <View style={styles.streakPill}>
             <Text style={styles.streakText}>🔥 {dayStreak} {dayStreak === 1 ? "giorno" : "giorni"} di fila</Text>

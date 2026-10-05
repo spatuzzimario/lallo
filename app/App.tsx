@@ -22,6 +22,7 @@ import {
   ChildNameScreen,
   ChildGenderScreen,
   ChildBirthdateScreen,
+  AvatarPickerScreen,
 } from "./src/screens/OnboardingScreens";
 import {
   WordCountScreen,
@@ -62,6 +63,7 @@ import { configurePurchases, getCustomerInfo, hasPremiumEntitlement, addCustomer
 import { isSupabaseConfigured } from "./src/api/supabase";
 import { getCurrentSession } from "./src/api/auth";
 import { getChildren } from "./src/api/children";
+import { DEFAULT_AVATAR_ID } from "./src/constants/avatars";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,7 +82,7 @@ const tabIconStyle = { width: 24, height: 24 };
 const seedProfile: ChildProfile = {
   id: "demo-child",
   displayName: "Marco",
-  avatarId: "lallo-default",
+  avatarId: DEFAULT_AVATAR_ID,
   stars: 0,
   streak: {
     currentWeeks: 0,
@@ -187,6 +189,7 @@ function MainTabs() {
 export default function App() {
   const setProfile = useGamificationStore((s) => s.setProfile);
   const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
+  const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
   const setSubscriptionActive = useGamificationStore((s) => s.setSubscriptionActive);
   const [showIntro, setShowIntro] = useState(true);
 
@@ -207,12 +210,19 @@ export default function App() {
       const session = await getCurrentSession();
       if (!session) return;
       const { data: children } = await getChildren();
-      const child = children?.[0]; // MVP: un bambino per genitore, niente selettore ancora
-      if (!child) return; // sessione valida ma onboarding mai completato: resta su Trust
+      if (!children || children.length === 0) return; // sessione valida ma onboarding mai completato: resta su Trust
+      // Elenco completo per il selettore (ChildSwitcher) — il figlio attivo all'avvio resta
+      // il primo creato finché non esiste un "ultimo figlio attivo" salvato da qualche parte.
+      setChildrenRoster(
+        children.map((c) => ({ id: c.id, displayName: c.name, avatarId: c.avatar_id || DEFAULT_AVATAR_ID }))
+      );
+      const child = children[0];
       await hydrateFromSupabase({
         id: child.id,
         name: child.name,
         audioRecordingConsent: child.audio_recording_consent,
+        avatarId: child.avatar_id,
+        gender: child.gender,
       });
       if (navigationRef.isReady()) {
         navigationRef.reset({ index: 0, routes: [{ name: "MainTabs" }] });
@@ -249,6 +259,7 @@ export default function App() {
           <Stack.Screen name="ChildName" component={ChildNameScreen} />
           <Stack.Screen name="ChildGender" component={ChildGenderScreen} />
           <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
+          <Stack.Screen name="AvatarPicker" component={AvatarPickerScreen} />
           <Stack.Screen name="WordCount" component={WordCountScreen} />
           <Stack.Screen name="EvaluatedByTherapist" component={EvaluatedByTherapistScreen} />
           <Stack.Screen name="DiagnosedConditions" component={DiagnosedConditionsScreen} />

@@ -422,14 +422,15 @@ const syllableStyles = StyleSheet.create({
    3 partite a difficoltà crescente per la stessa sessione (brief riorganizzazione livelli,
    settembre 2026): 3 → 6 → 9 coppie, cioè 6 → 12 → 18 carte. Il pool è quello della sola
    posizione in allenamento (iniziale per Livello 2, mediana per Livello 3) — prima pescava
-   iniziale+mediana insieme, ma i due livelli vanno tenuti separati come gli altri giochi. */
+   iniziale+mediana insieme, ma i due livelli vanno tenuti separati come gli altri giochi.
+   Sempre 3 carte per riga (2 → 4 → 6 file man mano che le partite crescono), non più 4 o 5
+   per riga alle partite più difficili: le carte restavano piccole proprio quando il bambino
+   doveva tenerne a mente di più. Larghezza fissa anche per le carte coperte, non solo per
+   quelle scoperte (vedi MEMORY_CARD_IMAGE_SIZE sotto — era la causa reale del "le carte
+   sembrano più grandi quando si girano", bug segnalato). */
 const MEMORY_TIERS = [3, 6, 9]; // coppie per partita
-
-function memoryCardWidth(totalCards: number): `${number}%` {
-  if (totalCards <= 8) return "30%"; // 3 per riga
-  if (totalCards === 12) return "22%"; // 4 per riga
-  return "18%"; // 18 carte, 5 per riga
-}
+const MEMORY_CARD_WIDTH = "30%"; // 3 carte per riga, a ogni partita
+const MEMORY_CARD_IMAGE_SIZE = 64; // deve stare dentro una carta al 30%, anche sui telefoni più stretti
 
 function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
@@ -513,14 +514,14 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
               onPress={() => handleFlip(c)}
               style={[
                 styles.memCard,
-                { width: memoryCardWidth(cards.length) },
+                { width: MEMORY_CARD_WIDTH },
                 shown && styles.memCardFlipped,
                 isMatched && styles.memCardMatched,
                 isMismatched && styles.memCardWrong,
               ]}
             >
               {shown ? (
-                <WordVisual parola={c.parola} emoji={c.emoji} size={80} textStyle={styles.memCardText} />
+                <WordVisual parola={c.parola} emoji={c.emoji} size={MEMORY_CARD_IMAGE_SIZE} textStyle={styles.memCardText} />
               ) : (
                 <Text style={styles.memCardText}>?</Text>
               )}
@@ -986,7 +987,7 @@ function GiocoDellOca({ navigation, phonemeKey, position, onAttempt, onDone }: {
           </Pressable>
         )}
         <Pressable style={[ocaStyles.sayBtn, celebrating && ocaStyles.sayBtnCelebrating]} onPress={tapAdvance} disabled={celebrating}>
-          <Text style={styles.primaryBtnText}>{celebrating ? "🎉" : "🦜 Dillo!"}</Text>
+          <Text style={styles.primaryBtnText}>{celebrating ? "🎉" : "Dillo! ➡️"}</Text>
         </Pressable>
       </View>
       <Text style={styles.recCap}>Casella {pos + 1} di 6</Text>
@@ -1333,8 +1334,13 @@ function RaccontaLaStoria({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDo
 
   function next() {
     if (!story || !scene) return;
-    speakWord(scene.parola);
-    if (index + 1 < story.scenes.length) setIndex((i) => i + 1);
+    const last = index + 1 === story.scenes.length;
+    // Rinforza la parola-chiave isolata tra una scena e la successiva (stesso principio di
+    // SequenzeIllustrate: connettore + parola) — ma non sull'ultima scena: lì la frase di
+    // chiusura l'ha già nominata un attimo prima, ripeterla subito dopo prima di finire la
+    // storia era solo un'eco ridondante, senza una scena successiva a cui agganciarla.
+    if (!last) speakWord(scene.parola);
+    if (!last) setIndex((i) => i + 1);
     else setTimeout(onDone, 900);
   }
 
@@ -1347,7 +1353,7 @@ function RaccontaLaStoria({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDo
       <Image source={scene.image} style={raccontoStyles.sceneImage} resizeMode="contain" />
       <Text style={ocaStyles.word}>{scene.testo}</Text>
       <Pressable style={ocaStyles.sayBtn} onPress={next}>
-        <Text style={styles.primaryBtnText}>{isLast ? "Fine della storia! 🎉" : "E poi? 🦜"}</Text>
+        <Text style={styles.primaryBtnText}>{isLast ? "Fine della storia! 🎉" : "E poi? ➡️"}</Text>
       </Pressable>
       <Text style={styles.recCap}>Scena {index + 1} di {story.scenes.length}</Text>
     </View>

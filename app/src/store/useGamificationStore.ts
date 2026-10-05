@@ -18,10 +18,26 @@ import { isSupabaseConfigured } from "../api/supabase";
 import { upsertTarget, updateTargetProgress, getTargets } from "../api/targets";
 import { recordSessionRemote, getSessions } from "../api/sessions";
 import { unlockAchievement, getAchievements } from "../api/achievements";
+import { DEFAULT_AVATAR_ID } from "../constants/avatars";
+
+// Riga leggera per il selettore multi-figlio (ChildSwitcher) — non è il ChildProfile
+// completo (stelle/livelli/sessionLog...), solo quanto serve per mostrare la lista e capire
+// quale cambiare. Il profilo pieno del figlio attivo resta solo in `profile`, ricostruito da
+// hydrateFromSupabase al cambio — niente N profili completi tenuti in memoria insieme.
+export interface ChildRosterEntry {
+  id: string;
+  displayName: string;
+  avatarId: string;
+}
 
 interface GamificationStore {
   profile: ChildProfile | null;
   setProfile: (p: ChildProfile) => void;
+  // Elenco di TUTTI i bambini collegati a questo genitore (brief §7 "profili multipli figlio
+  // su un solo abbonamento") — popolato da App.tsx al ripristino sessione. Vuoto finché il
+  // backend non è collegato o l'onboarding non è ancora stato completato.
+  children: ChildRosterEntry[];
+  setChildrenRoster: (roster: ChildRosterEntry[]) => void;
   // Segnale effimero (non persistito, non parte del profilo salvato): SessionScreen lo
   // accende quando un livello si sblocca proprio ora, LalloScreen lo consuma alla prossima
   // apertura per far festeggiare Lallo — così la festa non è legata a stare già su quella
@@ -40,13 +56,21 @@ interface GamificationStore {
   removePhotoCatch: (id: string) => void;
   startSelfDirectedPlan: (sounds: PhonemeKey[]) => void;
   setSupabaseChildId: (id: string) => void;
-  setChildInfo: (info: { displayName?: string; gender?: ChildProfile["gender"] }) => void;
+  setChildInfo: (info: { displayName?: string; gender?: ChildProfile["gender"]; avatarId?: string }) => void;
   feedLallo: () => void;
   talkToLallo: () => void;
   markIntroSeen: (section: "lallo" | "album") => void;
   // Ripristino all'avvio (App.tsx) quando esiste già una sessione Supabase valida — sostituisce
   // il profilo demo con i dati reali del bambino ricostruiti da targets/sessions/achievements.
-  hydrateFromSupabase: (child: { id: string; name: string; audioRecordingConsent: boolean }) => Promise<void>;
+  // Stessa funzione usata anche da ChildSwitcher per cambiare bambino attivo a sessione già
+  // avviata, non solo all'avvio dell'app.
+  hydrateFromSupabase: (child: {
+    id: string;
+    name: string;
+    audioRecordingConsent: boolean;
+    avatarId?: string | null;
+    gender?: ChildProfile["gender"] | null;
+  }) => Promise<void>;
 }
 
 const MASTERY_DEFAULT_THRESHOLD = 0.75;
@@ -220,6 +244,9 @@ function updateLevelProgress(
 export const useGamificationStore = create<GamificationStore>((set, get) => ({
   profile: null,
   setProfile: (p) => set({ profile: p }),
+
+  children: [],
+  setChildrenRoster: (roster) => set({ children: roster }),
 
   pendingLalloCelebration: false,
   triggerLalloCelebration: () => set({ pendingLalloCelebration: true }),
@@ -679,7 +706,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         id: child.id,
         supabaseChildId: child.id,
         displayName: child.name,
-        avatarId: "lallo-default",
+        gender: child.gender ?? undefined,
+        avatarId: child.avatarId || DEFAULT_AVATAR_ID,
         stars: totalStars,
         streak,
         unlockedCosmetics: [],
@@ -690,9 +718,8 @@ export const useGamificationStore = create<GamificationStore>((set, get) => ({
         // non è dato perso, solo da ricalcolare, fuori scope per questo giro.
         assignedToday: [],
         parentReportedConcerns: [],
-        // gender e cameraConsent non hanno una colonna su `children` — vedi CLAUDE.md §4.
-        // Nessun default pericoloso: cameraConsent riparte da false (mai assumere un
-        // consenso), gender resta non impostato finché il genitore non lo aggiorna di nuovo.
+        // cameraConsent non ha una colonna su `children` — vedi CLAUDE.md §4. Nessun default
+        // pericoloso: riparte sempre da false, mai assumere un consenso dato in passato.
         audioRecordingConsent: child.audioRecordingConsent,
         cameraConsent: false,
         remindersEnabled: false,

@@ -275,6 +275,12 @@ export function ResultsScreen({ navigation, route }: any) {
               name: route.params?.name,
               strugglingSounds: sounds,
               birthdate: route.params?.birthdate,
+              // gender e avatarId raccolti nei passi precedenti (ChildGenderScreen,
+              // AvatarPickerScreen) — prima andavano persi qui, mai passati ad AuthScreen
+              // (bug segnalato: il sesso scelto in onboarding non arrivava mai al profilo
+              // salvato, quindi i rinforzi con la grammatica giusta non partivano mai).
+              gender: route.params?.gender,
+              avatarId: route.params?.avatarId,
             })
           }
         />

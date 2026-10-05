@@ -6,6 +6,7 @@ import { useGamificationStore } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium } from "../constants/wordBank";
 import { ClinicalLevel, LEVEL_ORDER, LEVEL_LABELS } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
+import { ChildSwitcher } from "../components/ChildSwitcher";
 
 const C = {
   paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC",
@@ -59,6 +60,7 @@ export default function GiochiScreen({ navigation }: any) {
           <Text style={styles.title}>Scegli un suono</Text>
           <Text style={styles.subtitle}>Lallo ti aiuta ad allenarti su questo</Text>
         </View>
+        <ChildSwitcher navigation={navigation} />
       </View>
 
       <View style={styles.grid}>

@@ -11,6 +11,8 @@ export interface ChildRow {
   interests: string[];
   audio_recording_consent: boolean;
   consent_given_at: string | null;
+  avatar_id: string | null;
+  gender: "maschio" | "femmina" | "preferisco_non_dire" | null;
   created_at: string;
 }
 
@@ -18,6 +20,8 @@ export async function createChild(input: {
   name: string;
   birthdate?: string | null;
   interests?: string[];
+  avatarId?: string | null;
+  gender?: "maschio" | "femmina" | "preferisco_non_dire" | null;
 }) {
   const {
     data: { user },
@@ -31,6 +35,8 @@ export async function createChild(input: {
       name: input.name,
       birthdate: input.birthdate ?? null,
       interests: input.interests ?? [],
+      avatar_id: input.avatarId ?? null,
+      gender: input.gender ?? null,
     })
     .select()
     .single<ChildRow>();
