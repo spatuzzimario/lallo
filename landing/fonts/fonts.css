@@ -1,0 +1,28 @@
+/* Font auto-ospitati (Bricolage Grotesque, Figtree) invece che caricati da Google Fonts:
+   prima ogni visitatore del sito faceva una richiesta diretta a fonts.googleapis.com/
+   fonts.gstatic.com, che riceveva così il suo IP — per un sito che parla di bambini e
+   privacy non ha senso. Solo il sottoinsieme "latin" (copre l'italiano: à,è,é,ì,ò,ù sono
+   tutti dentro U+0000-00FF) — niente vietnamese/cirillico/greco mai usati qui. Bricolage
+   Grotesque e Figtree sono entrambi font variabili: un solo file copre l'intero range di
+   pesi richiesto (500-800 e 400-700), stessa identica resa dei pesi intermedi del CDN Google. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url('bricolage-grotesque-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('figtree-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('figtree-italic-latin.woff2') format('woff2');
+}
