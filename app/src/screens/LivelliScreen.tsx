@@ -45,7 +45,9 @@ const GAMES = [
   { type: "registratore", label: "Registratore", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_registratore.png"), levels: WORD_LEVELS },
   { type: "coppie", label: "Coppie minime", meta: "Discriminazione fine", bg: "#FDECE7", icon: require("../../assets/icons/game_coppie.png"), levels: WORD_LEVELS },
   { type: "oca", label: "Gioco dell'oca", meta: "Produzione", bg: "#E9F5F1", icon: require("../../assets/icons/game_oca.png"), levels: WORD_LEVELS },
-  { type: "sequenze", label: "Sequenze illustrate", meta: "Narrazione", bg: "#FFF3D6", icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4"] as ClinicalLevel[] },
+  // "Sequenze illustrate" rimosso dall'elenco per ora (richiesta esplicita del founder) —
+  // il componente (SessionScreen.tsx) e il contenuto (constants/sequences.ts) restano intatti,
+  // pronti da riattivare: basta rimettere questa voce.
   {
     type: "racconta_storia", label: "Racconta la storia", meta: "Narrazione", bg: "#FFF3D6",
     icon: require("../../assets/icons/game_sequenze.png"), levels: ["L4"] as ClinicalLevel[],
