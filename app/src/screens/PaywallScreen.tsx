@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { FREE_PHONEMES, PHONEME_ORDER, WORD_BANK } from "../constants/wordBank";
@@ -14,8 +14,8 @@ const C = { bg: "#FBF6EE", primary: "#FF6A4D", primaryDeep: "#E84B30", jade: "#1
 // offerte non ancora configurate) — vedi PAYWALL_SETUP.md. Quando è disponibile, i prezzi
 // veri arrivano dall'offerta RevenueCat/store (localizzati, sempre aggiornati).
 const FALLBACK_PLANS = [
-  { id: "annual", label: "Annuale", price: "3,99 €", sub: "/mese · 47,88 €/anno · 7 giorni gratis", badge: "Risparmia ~50%" },
-  { id: "monthly", label: "Mensile", price: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null as string | null },
+  { id: "annual", label: "Annuale", price: "3,99 €", period: "anno", renewalPrice: "47,88 €", sub: "/mese · 47,88 €/anno · 7 giorni gratis", badge: "Risparmia ~50%" },
+  { id: "monthly", label: "Mensile", price: "7,99 €", period: "mese", renewalPrice: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null as string | null },
 ];
 
 // L'offerta RevenueCat va costruita con i due package standard "Annuale"/"Mensile" (vedi
@@ -29,11 +29,26 @@ function planFromPackage(pkg: PurchasesPackage) {
     id: pkg.identifier,
     label: isAnnual ? "Annuale" : "Mensile",
     price: perMonth,
+    period: isAnnual ? "anno" : "mese",
+    // Prezzo dell'intero periodo di fatturazione (non il "al mese" sopra) — quello che
+    // viene davvero addebitato a ogni rinnovo, per la dicitura legale qui sotto.
+    renewalPrice: p.priceString,
     sub: isAnnual ? `/mese · ${p.priceString}/anno · 7 giorni gratis` : "/mese · disdici quando vuoi",
     badge: isAnnual ? "Risparmia" : null,
     pkg,
   };
 }
+
+// Link legali vicino al punto di acquisto — richiesti sia da Apple (Guideline 3.1.2, Auto-
+// Renewable Subscriptions: titolo, durata, prezzo, link a Termini d'uso e Privacy Policy)
+// sia dalle policy equivalenti di Google Play. PRIVACY_URL è la pagina reale già in uso
+// altrove nell'app (Genitori → Privacy, vedi ParentScreens.tsx). TERMS_URL punta all'EULA
+// standard di Apple: non esiste ancora un Termini d'uso scritto apposta per Lallo — l'EULA
+// standard è esplicitamente pensato da Apple per questo caso (sviluppatori senza un proprio
+// EULA), non è un placeholder inventato, ma resta un TODO se/quando si scriverà un Termini
+// d'uso proprio (es. per il Play Store, che non riconosce l'EULA standard di Apple).
+const PRIVACY_URL = "https://lallo.app/privacy.html";
+const TERMS_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 export default function PaywallScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
@@ -173,7 +188,20 @@ export default function PaywallScreen({ navigation, route }: any) {
       >
         {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.subscribeBtnText}>Inizia la prova gratuita</Text>}
       </Pressable>
-      <Text style={styles.legalNote}>Annullabile in qualsiasi momento. Nessun addebito prima della fine dei 7 giorni di prova.</Text>
+      <Text style={styles.legalNote}>
+        7 giorni di prova gratuita, poi si rinnova automaticamente a {selectedPlan?.renewalPrice}/{selectedPlan?.period} finché
+        non annulli. Annulla quando vuoi dalle impostazioni del tuo account Apple/Google, almeno 24 ore prima del rinnovo —
+        nessun addebito prima della fine della prova.
+      </Text>
+      <View style={styles.legalLinksRow}>
+        <Pressable onPress={() => Linking.openURL(TERMS_URL)}>
+          <Text style={styles.legalLink}>Termini d'uso</Text>
+        </Pressable>
+        <Text style={styles.legalLinkSep}>·</Text>
+        <Pressable onPress={() => Linking.openURL(PRIVACY_URL)}>
+          <Text style={styles.legalLink}>Privacy Policy</Text>
+        </Pressable>
+      </View>
 
       <Pressable onPress={continueFree} style={{ marginTop: 18 }}>
         <Text style={styles.freeLink}>Continua con il piano gratuito ({FREE_PHONEMES.length} suoni)</Text>
@@ -204,7 +232,10 @@ const styles = StyleSheet.create({
   planPrice: { fontSize: 18, fontWeight: "800", color: C.text },
   subscribeBtn: { backgroundColor: C.primary, borderRadius: 999, paddingVertical: 16, alignItems: "center", marginTop: 12 },
   subscribeBtnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
-  legalNote: { fontSize: 11, color: C.subtext, textAlign: "center", marginTop: 10 },
+  legalNote: { fontSize: 11, color: C.subtext, textAlign: "center", marginTop: 10, lineHeight: 15 },
+  legalLinksRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 8 },
+  legalLink: { fontSize: 11, color: C.subtext, textDecorationLine: "underline" },
+  legalLinkSep: { fontSize: 11, color: C.subtext },
   freeLink: { textAlign: "center", color: C.jade, textDecorationLine: "underline", fontSize: 13.5 },
   restoreLink: { textAlign: "center", color: C.subtext, textDecorationLine: "underline", fontSize: 12 },
   errorText: { color: C.primaryDeep, fontSize: 12.5, textAlign: "center", marginTop: 14 },
