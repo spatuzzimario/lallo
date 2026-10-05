@@ -5,6 +5,7 @@ import { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { FREE_PHONEMES, PHONEME_ORDER, WORD_BANK } from "../constants/wordBank";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { getCurrentOffering, purchase, restore, hasPremiumEntitlement, isPurchasesConfigured } from "../api/purchases";
+import { AdultMathGate } from "../components/AdultMathGate";
 
 const C = { bg: "#FBF6EE", primary: "#FF6A4D", primaryDeep: "#E84B30", jade: "#137A6E", text: "#1F2E2B", subtext: "#4A5A56", line: "#D9CEBC", sun: "#FFC53D" };
 
@@ -40,6 +41,12 @@ export default function PaywallScreen({ navigation, route }: any) {
   const [loadingOffering, setLoadingOffering] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Parental gate (App Store Guideline 1.3, app rivolta a bambini): deve comparire subito
+  // prima di QUALUNQUE acquisto reale, non prima dell'intera schermata — sfogliare i prezzi
+  // e scegliere "Continua con il piano gratuito" restano liberi. Non copre "Ripristina
+  // acquisti": non crea un nuovo addebito, ripristina solo un acquisto già fatto
+  // sull'account Apple/Google del dispositivo (già quello di un adulto).
+  const [showPurchaseGate, setShowPurchaseGate] = useState(false);
   const setSubscriptionActive = useGamificationStore((s) => s.setSubscriptionActive);
 
   useEffect(() => {
@@ -111,6 +118,18 @@ export default function PaywallScreen({ navigation, route }: any) {
 
   const premiumCount = PHONEME_ORDER.length - FREE_PHONEMES.length;
 
+  if (showPurchaseGate) {
+    return (
+      <AdultMathGate
+        subtitle="Prima di acquistare serve la conferma di un adulto."
+        onPass={() => {
+          setShowPurchaseGate(false);
+          subscribe();
+        }}
+      />
+    );
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ padding: 22, paddingTop: insets.top + 16 }}>
       <Text style={styles.title}>Sblocca tutti i {PHONEME_ORDER.length} fonemi</Text>
@@ -147,7 +166,11 @@ export default function PaywallScreen({ navigation, route }: any) {
 
       {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
 
-      <Pressable style={[styles.subscribeBtn, purchasing && { opacity: 0.6 }]} onPress={subscribe} disabled={purchasing}>
+      <Pressable
+        style={[styles.subscribeBtn, purchasing && { opacity: 0.6 }]}
+        onPress={() => setShowPurchaseGate(true)}
+        disabled={purchasing}
+      >
         {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.subscribeBtnText}>Inizia la prova gratuita</Text>}
       </Pressable>
       <Text style={styles.legalNote}>Annullabile in qualsiasi momento. Nessun addebito prima della fine dei 7 giorni di prova.</Text>
