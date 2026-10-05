@@ -7,7 +7,6 @@ import {
   WORD_BANK,
   WordEntry,
   wordsFor,
-  allWordsFor,
   syllableEntries,
   pickRandom,
   distractorPool,
@@ -17,6 +16,7 @@ import {
 } from "../constants/wordBank";
 import { PHRASES, RHYMES, PhraseEntry } from "../constants/phrases";
 import { STORIES } from "../constants/stories";
+import { SEQUENCES } from "../constants/sequences";
 import { getWordImage } from "../constants/wordImage";
 import { getReinforcement } from "../constants/reinforcement";
 import { useGamificationStore } from "../store/useGamificationStore";
@@ -995,22 +995,22 @@ function GiocoDellOca({ navigation, phonemeKey, position, onAttempt, onDone }: {
   );
 }
 
-// Frasi di collegamento della mini-storia: solo TTS (nessuna registrazione professionale
-// dedicata, come già per le istruzioni dinamiche degli altri giochi, es. CacciaAlSuono) —
-// la parola vera invece usa sempre l'audio registrato di Linda Fiore via speakWord().
-const STORY_CONNECTORS = ["Prima incontriamo", "Poi arriva", "E infine ecco"];
-
 /* ---------------- Sequenze illustrate ----------------
-   L4a, racconto: 3 parole vere del fonema in allenamento (stesso word bank/audio
-   già usato dagli altri giochi), non più un'unica storia fissa (pioggia/arcobaleno/sole)
-   identica per ogni suono e slegata da quello in allenamento (bug segnalato). */
+   L4a, racconto: una storia vera per fonema (constants/sequences.ts), non più 3 parole a
+   caso dal word bank senza un filo logico tra loro (bug segnalato). Ogni storia è una catena
+   causale/temporale reale — vedi il commento in sequences.ts. I connettori restano solo TTS
+   (25 fonemi × 3 frasi diverse, troppe per registrarle tutte — stesso principio delle
+   istruzioni dinamiche di CacciaAlSuono), la parola vera usa sempre l'audio registrato di
+   Linda Fiore via speakWord() e la sua illustrazione reale (WordVisual), mai solo un'emoji. */
 function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; onDone: () => void }) {
   const meta = WORD_BANK[phonemeKey];
   const steps = useMemo(() => {
-    const pool = allWordsFor(phonemeKey);
-    const chosen = pickRandom(pool, Math.min(3, pool.length));
-    while (chosen.length < 3 && pool.length) chosen.push(pool[chosen.length % pool.length]);
-    return chosen.map((word, i) => ({ order: i + 1, parola: word.parola, emoji: word.emoji, connector: STORY_CONNECTORS[i] }));
+    return SEQUENCES[phonemeKey].steps.map((step, i) => ({
+      order: i + 1,
+      parola: step.parola,
+      connector: step.connector,
+      emoji: findWordEntry(step.parola)?.emoji ?? "🔊",
+    }));
   }, [phonemeKey]);
 
   const [next, setNext] = useState(1);
@@ -1025,7 +1025,7 @@ function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; on
   function tap(step: typeof steps[number]) {
     if (step.order < next) return;
     if (step.order === next) {
-      speak(step.connector, `seq_connector_${step.order}`);
+      speak(step.connector);
       setTimeout(() => speakWord(step.parola), 900);
       const line = `${step.connector} ${step.parola}...`;
       setStory((s) => (next === 1 ? line : `${s} ${line}`));
@@ -1051,7 +1051,7 @@ function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; on
               wrongOrder === step.order && seqStyles.cardWrong,
             ]}
           >
-            <Text style={seqStyles.emoji}>{step.emoji}</Text>
+            <WordVisual parola={step.parola} emoji={step.emoji} size={44} textStyle={seqStyles.emoji} />
             {step.order < next && <Text style={seqStyles.badge}>{step.order}</Text>}
           </Pressable>
         ))}
