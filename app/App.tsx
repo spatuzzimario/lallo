@@ -51,7 +51,7 @@ import MicConsentScreen from "./src/screens/MicConsentScreen";
 // non più B2B2C con gate clinico. Il vecchio PlanPreviewScreen (piano bloccato in attesa di
 // un logopedista) è stato rimosso — ResultsScreen ora sblocca il piano subito, si parte dal
 // livello 1. PaywallScreen resta instradato ma non ancora ricollegato al flusso onboarding:
-// il brief prevede un trial di 7 giorni prima del paywall (§7).
+// il brief prevede un trial di 3 giorni prima del paywall (§7).
 //
 // AGGIORNAMENTO (settembre 2026): RevenueCat agganciato per davvero — vedi
 // src/api/purchases.ts e PAYWALL_SETUP.md alla radice del repo per la checklist di setup

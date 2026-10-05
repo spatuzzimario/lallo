@@ -118,9 +118,9 @@ Ognuno dichiara livello + asse clinico; ogni parola ha immagine + audio.
 
 ## 7. Monetizzazione (RevenueCat, stile Speech Blubs)
 
-- Prova gratuita di 7 giorni, poi abbonamento.
+- Prova gratuita di 3 giorni, poi abbonamento.
 - Annuale spinto rispetto al mensile, con framing per-mese e badge risparmio:
-  - Annuale (in evidenza): ~€3,99/mese (fatturato ~€47,88/anno), "Risparmia ~50%", 7 giorni gratis.
+  - Annuale (in evidenza): ~€3,99/mese (fatturato ~€47,88/anno), "Risparmia ~50%", 3 giorni gratis.
   - Mensile: ~€7,99/mese.
   - (Prezzi di test — tarati sul mercato italiano, più bassi degli USA. Da validare.)
 - Gratis per i logopedisti (dashboard pro), come da §6.6.

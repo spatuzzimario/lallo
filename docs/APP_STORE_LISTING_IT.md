@@ -30,7 +30,7 @@ Logopedia che diventa gioco
 ## Testo promozionale (max 170 caratteri — unico campo aggiornabile senza nuova review)
 
 ```
-7 giorni di prova gratuita. Lallo trasforma gli esercizi di logopedia in giochi pensati per l'italiano — inizi da solo, o insieme al tuo logopedista.
+3 giorni di prova gratuita. Lallo trasforma gli esercizi di logopedia in giochi pensati per l'italiano — inizi da solo, o insieme al tuo logopedista.
 ```
 (150 caratteri)
 
@@ -77,7 +77,7 @@ telefono. Nessuna pubblicità, nessun tracker di terze parti rivolto ai bambini.
 
 GRATIS PER INIZIARE
 6 suoni comuni (M, N, P, T, L, S) sono sempre gratuiti. L'abbonamento sblocca tutti i 25
-suoni, inclusi gruppi consonantici e digrammi, con 7 giorni di prova gratuita — un solo
+suoni, inclusi gruppi consonantici e digrammi, con 3 giorni di prova gratuita — un solo
 abbonamento per più figli dello stesso genitore. Per i logopedisti, la dashboard è sempre
 gratuita.
 

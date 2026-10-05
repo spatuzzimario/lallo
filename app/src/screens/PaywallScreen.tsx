@@ -14,7 +14,7 @@ const C = { bg: "#FBF6EE", primary: "#FF6A4D", primaryDeep: "#E84B30", jade: "#1
 // offerte non ancora configurate) — vedi PAYWALL_SETUP.md. Quando è disponibile, i prezzi
 // veri arrivano dall'offerta RevenueCat/store (localizzati, sempre aggiornati).
 const FALLBACK_PLANS = [
-  { id: "annual", label: "Annuale", price: "3,99 €", period: "anno", renewalPrice: "47,88 €", sub: "/mese · 47,88 €/anno · 7 giorni gratis", badge: "Risparmia ~50%" },
+  { id: "annual", label: "Annuale", price: "3,99 €", period: "anno", renewalPrice: "47,88 €", sub: "/mese · 47,88 €/anno · 3 giorni gratis", badge: "Risparmia ~50%" },
   { id: "monthly", label: "Mensile", price: "7,99 €", period: "mese", renewalPrice: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null as string | null },
 ];
 
@@ -33,7 +33,7 @@ function planFromPackage(pkg: PurchasesPackage) {
     // Prezzo dell'intero periodo di fatturazione (non il "al mese" sopra) — quello che
     // viene davvero addebitato a ogni rinnovo, per la dicitura legale qui sotto.
     renewalPrice: p.priceString,
-    sub: isAnnual ? `/mese · ${p.priceString}/anno · 7 giorni gratis` : "/mese · disdici quando vuoi",
+    sub: isAnnual ? `/mese · ${p.priceString}/anno · 3 giorni gratis` : "/mese · disdici quando vuoi",
     badge: isAnnual ? "Risparmia" : null,
     pkg,
   };
@@ -148,7 +148,7 @@ export default function PaywallScreen({ navigation, route }: any) {
       <Text style={styles.title}>Sblocca tutti i {PHONEME_ORDER.length} fonemi</Text>
       <Text style={styles.subtitle}>
         Con il piano gratuito hai accesso a {FREE_PHONEMES.length} suoni comuni ({FREE_PHONEMES.map((k) => WORD_BANK[k].label).join(", ")}).
-        L'abbonamento sblocca gli altri {premiumCount}, inclusi gruppi consonantici e digrammi. 7 giorni di prova gratuita.
+        L'abbonamento sblocca gli altri {premiumCount}, inclusi gruppi consonantici e digrammi. 3 giorni di prova gratuita.
       </Text>
 
       {loadingOffering ? (
@@ -187,7 +187,7 @@ export default function PaywallScreen({ navigation, route }: any) {
         {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.subscribeBtnText}>Inizia la prova gratuita</Text>}
       </Pressable>
       <Text style={styles.legalNote}>
-        7 giorni di prova gratuita, poi si rinnova automaticamente a {selectedPlan?.renewalPrice}/{selectedPlan?.period} finché
+        3 giorni di prova gratuita, poi si rinnova automaticamente a {selectedPlan?.renewalPrice}/{selectedPlan?.period} finché
         non annulli. Annulla quando vuoi dalle impostazioni del tuo account Apple/Google, almeno 24 ore prima del rinnovo —
         nessun addebito prima della fine della prova.
       </Text>

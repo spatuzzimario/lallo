@@ -14,7 +14,7 @@ Hai già l'account sviluppatore Apple attivo, quindi:
    - **Annuale**: ID prodotto `lallo_annual` — prezzo che corrisponda a ~€47,88/anno
      (framing "€3,99/mese" nell'app)
    - **Mensile**: ID prodotto `lallo_monthly` — prezzo ~€7,99/mese
-4. Su entrambi, configura **7 giorni di prova gratuita** (Introductory Offer → Free Trial)
+4. Su entrambi, configura **3 giorni di prova gratuita** (Introductory Offer → Free Trial)
 5. Aggiungi le informazioni di localizzazione italiane richieste (nome visualizzato,
    descrizione) — obbligatorie per la review
 
@@ -25,7 +25,7 @@ che userai in RevenueCat al punto 3.
 
 1. Play Console → la tua app → **Monetizza → Prodotti → Abbonamenti**
 2. Crea un abbonamento con ID `lallo_annual`, poi al suo interno un **piano base** annuale
-   con **offerta di prova gratuita di 7 giorni**
+   con **offerta di prova gratuita di 3 giorni**
 3. Crea un secondo abbonamento con ID `lallo_monthly`, piano base mensile
 4. Stessi prezzi indicativi del punto 1 (Play Console converte automaticamente nelle altre
    valute)
