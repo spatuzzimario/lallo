@@ -41,14 +41,12 @@ function planFromPackage(pkg: PurchasesPackage) {
 
 // Link legali vicino al punto di acquisto — richiesti sia da Apple (Guideline 3.1.2, Auto-
 // Renewable Subscriptions: titolo, durata, prezzo, link a Termini d'uso e Privacy Policy)
-// sia dalle policy equivalenti di Google Play. PRIVACY_URL è la pagina reale già in uso
-// altrove nell'app (Genitori → Privacy, vedi ParentScreens.tsx). TERMS_URL punta all'EULA
-// standard di Apple: non esiste ancora un Termini d'uso scritto apposta per Lallo — l'EULA
-// standard è esplicitamente pensato da Apple per questo caso (sviluppatori senza un proprio
-// EULA), non è un placeholder inventato, ma resta un TODO se/quando si scriverà un Termini
-// d'uso proprio (es. per il Play Store, che non riconosce l'EULA standard di Apple).
+// sia dalle policy equivalenti di Google Play. Entrambe le pagine reali, già pubblicate su
+// landing/ (vedi terms.html/privacy.html) — terms.html copre esplicitamente prezzi,
+// rinnovo automatico e recesso, quindi vale anche per il Play Store (che non riconosce
+// l'EULA standard di Apple usato qui in precedenza come fallback).
 const PRIVACY_URL = "https://lallo.app/privacy.html";
-const TERMS_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
+const TERMS_URL = "https://lallo.app/terms.html";
 
 export default function PaywallScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();

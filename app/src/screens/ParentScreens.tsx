@@ -360,6 +360,10 @@ export function PrivacyConsentScreen({ navigation }: any) {
     Linking.openURL("https://lallo.app/privacy.html");
   }
 
+  function openTermsDoc() {
+    Linking.openURL("https://lallo.app/terms.html");
+  }
+
   if (!profile) return null;
 
   return (
@@ -435,6 +439,10 @@ export function PrivacyConsentScreen({ navigation }: any) {
 
       <Pressable style={privacyStyles.linkRow} onPress={openLegalDoc}>
         <Text style={privacyStyles.linkRowText}>Privacy Policy</Text>
+        <Text style={privacyStyles.chevronLink}>›</Text>
+      </Pressable>
+      <Pressable style={privacyStyles.linkRow} onPress={openTermsDoc}>
+        <Text style={privacyStyles.linkRowText}>Termini d'uso</Text>
         <Text style={privacyStyles.chevronLink}>›</Text>
       </Pressable>
     </ScrollView>
