@@ -632,7 +632,8 @@
                 <!-- LALLO (tamagotchi — 2ª tab dell'app, non più un "gioco" tra gli altri) -->
                 <div class="screen on" data-c="lallo">
                   <div class="pet-card">
-                    <img class="pet-img" id="petImg" src="img/lallo-felice.webp" alt="Lallo" onclick="pokeLallo()">
+                    <canvas class="pet-img" id="petImg" width="300" height="300" onclick="pokeLallo()" role="img" aria-label="Lallo, il pappagallo mascotte"></canvas>
+                    <img class="pet-img" id="petImgFallback" src="img/lallo-felice.webp" alt="Lallo" onclick="pokeLallo()" style="display:none">
                     <div class="pet-mood-title" id="petMoodTitle">Lallo è felice!</div>
                     <div class="pet-mood-sub" id="petMoodSub">È sazio e vuole giocare con te.</div>
                     <div class="pbar" style="height:12px"><i id="hungerFill" style="width:100%"></i></div>
@@ -897,6 +898,12 @@
   </div>
 </footer>
 
+<!-- Runtime Rive: anima lo stesso rig .riv usato nell'app vera (app/assets/lallo.riv, copiato
+     qui come lallo.riv) — niente animazione reinventata solo per il sito. Caricato come
+     script bloccante apposta, subito prima del codice che lo usa, così "rive" esiste già
+     quando initLalloRive() parte più sotto. Se il CDN non risponde, il codice sotto ricade
+     sull'immagine statica originale (vedi initLalloRive). -->
+<script src="https://unpkg.com/@rive-app/canvas@2/rive.js"></script>
 <script>
 /* ---------- audio: file reali ElevenLabs (stessa voce Linda Fiore dell'app) con fallback
    TTS di sistema — stesso principio di app/src/hooks/useVoice.ts: se esiste un audio
@@ -1163,12 +1170,41 @@ const MOOD_COPY = {
 };
 function lalloMood(){ return hunger>60?'felice':hunger>25?'neutro':'affamato'; }
 function renderPet(){
+  // Il rig Rive vero non cambia aspetto in base alla fame (solo testo + barra, come
+  // nell'app — vedi LalloScreen.tsx): la mascotte fotografica qui sotto esiste solo
+  // come fallback se il runtime Rive non si carica.
   const m=lalloMood();
-  document.getElementById('petImg').src = MOOD_IMG[m];
+  const fallback=document.getElementById('petImgFallback');
+  if(fallback) fallback.src = MOOD_IMG[m];
   document.getElementById('petMoodTitle').textContent = MOOD_COPY[m].t;
   document.getElementById('petMoodSub').textContent = MOOD_COPY[m].s;
   document.getElementById('hungerFill').style.width = hunger+'%';
 }
+
+/* ---------- Lallo (rig Rive vero, stesso file app/assets/lallo.riv) ----------
+   Stessi input della state machine usati nell'app (useLalloMachine.ts):
+   trigTouch/trigFeed/trigRepeat/trigCelebrate, boolListening, boolSleepy. */
+let lalloRive=null, lalloInputs={};
+function initLalloRive(){
+  const canvas=document.getElementById('petImg'), fallback=document.getElementById('petImgFallback');
+  if (typeof rive==='undefined'){ canvas.style.display='none'; fallback.style.display='block'; return; }
+  try {
+    lalloRive = new rive.Rive({
+      src: 'lallo.riv',
+      canvas,
+      autoplay: true,
+      stateMachines: 'LalloStateMachine',
+      layout: new rive.Layout({ fit: rive.Fit.Contain }),
+      onLoad: () => {
+        lalloRive.resizeDrawingSurfaceToCanvas();
+        (lalloRive.stateMachineInputs('LalloStateMachine')||[]).forEach(i=>{ lalloInputs[i.name]=i; });
+      },
+      onLoadError: () => { canvas.style.display='none'; fallback.style.display='block'; },
+    });
+  } catch(e) { canvas.style.display='none'; fallback.style.display='block'; }
+}
+function lalloFire(name){ if(lalloInputs[name]) lalloInputs[name].fire(); }
+function lalloSetBool(name, val){ if(lalloInputs[name]) lalloInputs[name].value = val; }
 const POKE_REACTIONS=[
   { text:'Hihi!', slug:'lallo_poke_1' },
   { text:'Che solletico!', slug:'lallo_poke_2' },
@@ -1179,6 +1215,7 @@ const POKE_REACTIONS=[
 function pokeLallo(){
   const r = POKE_REACTIONS[Math.floor(Math.random()*POKE_REACTIONS.length)];
   say(r.text, r.slug);
+  lalloFire('trigTouch');
   const img=document.getElementById('petImg');
   img.classList.remove('poke'); void img.offsetWidth; img.classList.add('poke');
 }
@@ -1186,6 +1223,7 @@ function feedLallo(food){
   hunger = Math.min(100, hunger+30);
   renderPet();
   say('Mmm, che buono! Grazie!', 'lallo_grazie_cibo');
+  lalloFire('trigFeed');
   const img=document.getElementById('petImg');
   img.classList.remove('eat'); void img.offsetWidth; img.classList.add('eat');
   const tile=document.querySelector('.food-tile[data-food="'+food+'"]');
@@ -1223,12 +1261,14 @@ let lalloRecording=false, lalloHasRecording=false;
 function lalloToggleMic(){
   lalloRecording=!lalloRecording;
   const btn=document.getElementById('lalloMicBtn'), cap=document.getElementById('lalloTalkCap');
+  lalloSetBool('boolListening', lalloRecording);
   if(lalloRecording){ btn.style.background='#E84B30'; cap.textContent='Sto registrando… tocca di nuovo per fermare'; }
   else { btn.style.background=''; lalloHasRecording=true; cap.textContent='Tocca il pappagallo per sentirlo ripetere!'; }
 }
 function lalloParrot(){
   if(!lalloHasRecording) return;
   sayParrot('Ciao Lallo!');
+  lalloFire('trigRepeat');
   document.getElementById('lalloTalkCap').textContent="Ahah! Lallo l'ha ripetuta 🦜";
 }
 
@@ -1564,6 +1604,7 @@ async function submitWL(){
 renderMap();
 renderPet();
 setupFoodDrag();
+initLalloRive();
 </script>
 </body>
 </html>
