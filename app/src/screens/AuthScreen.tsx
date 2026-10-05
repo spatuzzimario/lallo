@@ -8,6 +8,7 @@ import { ensureTherapistProfile, registerTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { PhonemeKey } from "../constants/wordBank";
+import { DEFAULT_AVATAR_ID } from "../constants/avatars";
 
 const C = {
   bg: "#FBF6EE",
@@ -44,6 +45,8 @@ export default function AuthScreen({ navigation, route }: any) {
   const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
   const setSupabaseChildId = useGamificationStore((s) => s.setSupabaseChildId);
   const setChildInfo = useGamificationStore((s) => s.setChildInfo);
+  const children = useGamificationStore((s) => s.children);
+  const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
 
   async function sendCode() {
     if (!email.includes("@")) return;
@@ -101,7 +104,15 @@ export default function AuthScreen({ navigation, route }: any) {
       setErrorMsg("Accesso riuscito, ma non siamo riusciti a salvare il profilo di " + name + ". Riprova.");
       return;
     }
-    if (child) setSupabaseChildId(child.id);
+    if (child) {
+      setSupabaseChildId(child.id);
+      // Senza questo, il bambino appena creato non comparirebbe nel selettore (ChildSwitcher)
+      // finché l'app non viene riavviata (vedi il ripristino sessione in App.tsx, che
+      // ripopola il roster da zero da Supabase) — bug segnalato: aggiungendo un secondo
+      // bambino con "Aggiungi un altro bambino", il roster locale partiva vuoto e finiva
+      // per contenere SOLO il nuovo, facendo sembrare sparito il primo.
+      setChildrenRoster([...children, { id: child.id, displayName: child.name, avatarId: child.avatar_id || DEFAULT_AVATAR_ID }]);
+    }
     setChildInfo({ displayName: name, gender, avatarId });
     if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
     navigation.navigate("Paywall");
