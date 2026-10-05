@@ -91,7 +91,8 @@
 
   .card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:13px;margin-bottom:11px;cursor:pointer;transition:transform .12s, box-shadow .12s;display:flex;align-items:center;gap:12px}
   .card:hover{transform:translateY(-2px);box-shadow:6px 6px 0 rgba(31,46,43,.06)}
-  .card .ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:21px;flex-shrink:0}
+  .card .ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex-shrink:0}
+  .card .ic img{width:26px;height:26px;object-fit:contain}
   .card h4{font-family:"Figtree";font-weight:700;font-size:14.5px}
   .card .meta{font-size:11.5px;color:var(--ink-soft)}
   .card .chev{margin-left:auto;color:var(--line);font-size:18px}
@@ -155,6 +156,7 @@
   .tabbar{display:flex;border-top:1.5px solid var(--line);background:#fff}
   .tab{flex:1;border:none;background:transparent;padding:9px 0 11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink-soft);font-family:"Figtree";font-size:10.5px;font-weight:600}
   .tab .ti{font-size:19px;line-height:1}
+  .tab .ti.ti-icon{width:19px;height:19px;object-fit:contain}
   .tab.active{color:var(--jade)}
   .snd-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:17px;cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .14s}
   .snd-btn:active{transform:scale(.92)}
@@ -282,7 +284,7 @@
   .ex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
   .exq{background:var(--paper);border:1.5px solid var(--line);border-radius:18px;padding:22px;transition:transform .14s, box-shadow .14s}
   .exq:hover{transform:translateY(-3px);box-shadow:10px 10px 0 rgba(31,46,43,.05)}
-  .exq .emoji{font-size:30px;margin-bottom:12px}
+  .exq .emoji{width:40px;height:40px;object-fit:contain;margin-bottom:12px;display:block}
   .exq h3{font-size:19px;font-weight:700;margin-bottom:6px}
   .exq .role{font-size:13.5px;color:var(--jade-deep);font-weight:600;margin-bottom:8px}
   .exq p{font-size:14px;color:var(--ink-soft)}
@@ -692,7 +694,7 @@
               </div>
               <div class="tabbar">
                 <button class="tab active" data-tab="lallo" onclick="goChild('lallo')"><span class="ti">🦜</span>Lallo</button>
-                <button class="tab" data-tab="giochi" onclick="goChild('giochi')"><span class="ti">🎮</span>Giochi</button>
+                <button class="tab" data-tab="giochi" onclick="goChild('giochi')"><img class="ti ti-icon" src="img/icons/tab_giochi.webp" alt="">Giochi</button>
                 <button class="tab" data-tab="album" onclick="goChild('album')"><span class="ti">📸</span>Album</button>
                 <button class="tab" data-tab="progressi" onclick="goChild('progressi')"><span class="ti">📈</span>Progressi</button>
               </div>
@@ -792,14 +794,14 @@
     </div>
     <p style="font-size:13px;color:var(--ink-soft);margin:0 0 26px">Al Livello 0 non c'è scelta tra giochi: solo le sillabe isolate col suono target, da toccare e ripetere. Dal Livello 1 in poi si parte sempre dal più semplice — <b>Ripeti</b> (nessuna risposta sbagliata) — fino al più difficile — <b>Caccia al suono</b>, che richiede aver già capito bene il suono.</p>
     <div class="ex-grid">
-      <div class="exq"><div class="emoji">🔁</div><h3>Ripeti</h3><div class="role">Produzione guidata</div><p>Ascolta il modello e ripeti ad alta voce. Nessuna risposta sbagliata: il primo passo, senza rischio.</p><span class="lvl">Livello L1–L2</span></div>
-      <div class="exq"><div class="emoji">👂</div><h3>Ascolta e scegli</h3><div class="role">Discriminazione</div><p>Ascolta la parola e tocca l'immagine giusta tra più opzioni.</p><span class="lvl">Livello L1–L2</span></div>
-      <div class="exq"><div class="emoji">🧩</div><h3>Memory</h3><div class="role">Discriminazione + lessico</div><p>Abbina coppie con lo stesso suono, allenando memoria di lavoro.</p><span class="lvl">Livello L1–L2</span></div>
-      <div class="exq"><div class="emoji">🔎</div><h3>Caccia al suono</h3><div class="role">Discriminazione percettiva</div><p>Trova le parole che contengono il fonema target: il più difficile del gruppo.</p><span class="lvl">Livello L1–L2</span></div>
-      <div class="exq"><div class="emoji">🎤</div><h3>Registratore</h3><div class="role">Produzione + autoascolto</div><p>Ascolta il modello, registra, riascolta e confronta. Il cuore del lavoro a casa.</p><span class="lvl">Livello L2–L4</span></div>
-      <div class="exq"><div class="emoji">👯</div><h3>Coppie minime</h3><div class="role">Discriminazione fine</div><p>Sole/sale, pala/bala: tocca la parola pronunciata. L'esercizio più clinico del set.</p><span class="lvl">Livello L2</span></div>
-      <div class="exq"><div class="emoji">🎲</div><h3>Gioco dell'oca</h3><div class="role">Produzione ripetuta + motivazione</div><p>Avanzi di una casella solo pronunciando bene. Ripetizione che non annoia.</p><span class="lvl">Livello L2–L3</span></div>
-      <div class="exq"><div class="emoji">📖</div><h3>Sequenze illustrate</h3><div class="role">Narrazione e generalizzazione</div><p>Racconta la storia in ordine: il fonema nell'eloquio quasi spontaneo.</p><span class="lvl">Livello L4</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_ripeti.webp" alt=""><h3>Ripeti</h3><div class="role">Produzione guidata</div><p>Ascolta il modello e ripeti ad alta voce. Nessuna risposta sbagliata: il primo passo, senza rischio.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_ascolta.webp" alt=""><h3>Ascolta e scegli</h3><div class="role">Discriminazione</div><p>Ascolta la parola e tocca l'immagine giusta tra più opzioni.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_memory.webp" alt=""><h3>Memory</h3><div class="role">Discriminazione + lessico</div><p>Abbina coppie con lo stesso suono, allenando memoria di lavoro.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_caccia.webp" alt=""><h3>Caccia al suono</h3><div class="role">Discriminazione percettiva</div><p>Trova le parole che contengono il fonema target: il più difficile del gruppo.</p><span class="lvl">Livello L1–L2</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_registratore.webp" alt=""><h3>Registratore</h3><div class="role">Produzione + autoascolto</div><p>Ascolta il modello, registra, riascolta e confronta. Il cuore del lavoro a casa.</p><span class="lvl">Livello L2–L4</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_coppie.webp" alt=""><h3>Coppie minime</h3><div class="role">Discriminazione fine</div><p>Sole/sale, pala/bala: tocca la parola pronunciata. L'esercizio più clinico del set.</p><span class="lvl">Livello L2</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_oca.webp" alt=""><h3>Gioco dell'oca</h3><div class="role">Produzione ripetuta + motivazione</div><p>Avanzi di una casella solo pronunciando bene. Ripetizione che non annoia.</p><span class="lvl">Livello L2–L3</span></div>
+      <div class="exq"><img class="emoji" src="img/icons/game_sequenze.webp" alt=""><h3>Sequenze illustrate</h3><div class="role">Narrazione e generalizzazione</div><p>Racconta la storia in ordine: il fonema nell'eloquio quasi spontaneo.</p><span class="lvl">Livello L4</span></div>
     </div>
     <div class="ita-note">
       <p><b>Pensato per l'italiano, non tradotto dall'inglese.</b> Le app straniere lavorano la posizione "fine parola" (final /s/, /t/), che in italiano — lingua a sillabe aperte — conta pochissimo. Lallo lavora dove serve davvero: <b>iniziale, intervocalica, gruppi consonantici (tr, str, pr) e digrammi (gn, gl, sc)</b>, i veri scogli del bambino italiano.</p>
@@ -1053,19 +1055,19 @@ function openGame(type){ openEx(type, 'giochi'); }
    differenza dell'app vera, tutti i livelli restano esplorabili da subito (niente
    sblocco progressivo) per far vedere tutto il ventaglio di giochi nella demo. */
 const GAMES = [
-  { type:'ripeti',     label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', emoji:'🔁', levels:[1,2] },
-  { type:'ascolta',    label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[1,2] },
-  { type:'memory',     label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', emoji:'🧩', levels:[1,2] },
-  { type:'caccia',     label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', emoji:'🔎', levels:[1,2] },
-  { type:'rec',        label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎤', levels:[1,2] },
-  { type:'coppie',     label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', emoji:'👯', levels:[1,2] },
-  { type:'oca',        label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎲', levels:[1,2] },
-  { type:'ripfrase',   label:'Ripeti la frase',     meta:'Produzione',                   bg:'#E9F5F1', emoji:'🔁', levels:[3] },
-  { type:'indfrase',   label:'Indica la frase',     meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[3] },
-  { type:'sequenze',   label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[4] },
-  { type:'racconta',   label:'Racconta la storia',  meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📚', levels:[4] },
-  { type:'rima',       label:'Completa la rima',    meta:'Discriminazione',              bg:'#FDECE7', emoji:'👯', levels:[4] },
-  { type:'filastrocca',label:'Filastrocca',         meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[4] },
+  { type:'ripeti',     label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', icon:'img/icons/game_ripeti.webp', levels:[1,2] },
+  { type:'ascolta',    label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', icon:'img/icons/game_ascolta.webp', levels:[1,2] },
+  { type:'memory',     label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', icon:'img/icons/game_memory.webp', levels:[1,2] },
+  { type:'caccia',     label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', icon:'img/icons/game_caccia.webp', levels:[1,2] },
+  { type:'rec',        label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', icon:'img/icons/game_registratore.webp', levels:[1,2] },
+  { type:'coppie',     label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', icon:'img/icons/game_coppie.webp', levels:[1,2] },
+  { type:'oca',        label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', icon:'img/icons/game_oca.webp', levels:[1,2] },
+  { type:'ripfrase',   label:'Ripeti la frase',     meta:'Produzione',                   bg:'#E9F5F1', icon:'img/icons/game_ripeti.webp', levels:[3] },
+  { type:'indfrase',   label:'Indica la frase',     meta:'Discriminazione',              bg:'#FFF3D6', icon:'img/icons/game_ascolta.webp', levels:[3] },
+  { type:'sequenze',   label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', icon:'img/icons/game_sequenze.webp', levels:[4] },
+  { type:'racconta',   label:'Racconta la storia',  meta:'Narrazione',                   bg:'#FFF3D6', icon:'img/icons/game_sequenze.webp', levels:[4] },
+  { type:'rima',       label:'Completa la rima',    meta:'Discriminazione',              bg:'#FDECE7', icon:'img/icons/game_coppie.webp', levels:[4] },
+  { type:'filastrocca',label:'Filastrocca',         meta:'Narrazione',                   bg:'#FFF3D6', icon:'img/icons/game_sequenze.webp', levels:[4] },
 ];
 // Stessa scala di app/src/types/gamification.ts (ClinicalLevel/LEVEL_LABELS): L0 suono
 // isolato, L1 parola iniziale, L2 parola mediana, L3 frase, L4 racconto — qui tenuta come
@@ -1096,7 +1098,7 @@ function renderMap(){
       const games = GAMES.filter(g=>g.levels.includes(lvl));
       html += `<div class="node-games">` + games.map(g =>
         `<div class="card" onclick="openGame('${g.type}')">`
-        + `<div class="ic" style="background:${g.bg}">${g.emoji}</div>`
+        + `<div class="ic" style="background:${g.bg}"><img src="${g.icon}" alt=""></div>`
         + `<div><h4>${g.label}</h4><div class="meta">${g.meta}</div></div>`
         + `<div class="chev">›</div>`
         + `</div>`
