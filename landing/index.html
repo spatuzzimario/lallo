@@ -414,7 +414,7 @@
             <!-- ===== CHILD VIEW ===== -->
             <div id="view-child" style="display:flex;flex-direction:column;flex:1;min-height:0">
               <div class="app-top">
-                <div><div class="who" id="topTitle">Giochi</div></div>
+                <div><div class="who" id="topTitle">Lallo</div></div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <button class="snd-btn" id="sndBtn" onclick="toggleSound(this)" title="Attiva/disattiva audio">🔊</button>
                   <div class="pill">🔥 4 giorni</div>
@@ -423,7 +423,7 @@
               <div class="app-body">
 
                 <!-- GIOCHI (mappa dei livelli — com'è nell'app oggi, niente più tab "Oggi") -->
-                <div class="screen on" data-c="giochi">
+                <div class="screen" data-c="giochi">
                   <div class="who" style="margin-bottom:2px">Ciao, Marco! 👋</div>
                   <div class="sub" style="margin-bottom:16px">Scegli un suono e continua da dove eri</div>
 
@@ -572,17 +572,67 @@
                 <!-- SEQUENZE ILLUSTRATE -->
                 <div class="screen" data-c="sequenze">
                   <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Sequenze illustrate</div></div>
-                  <div class="ex-q">Tocca le immagini in ordine per raccontare la storia.</div>
+                  <div class="ex-q">Tocca le immagini in ordine per raccontare la storia con R.</div>
                   <div class="seq-row">
-                    <div class="seq-card" onclick="seqTap(this,2)"><span class="seq-badge"></span><span class="emo">🌈</span></div>
-                    <div class="seq-card" onclick="seqTap(this,1)"><span class="seq-badge"></span><span class="emo">🌧️</span></div>
-                    <div class="seq-card" onclick="seqTap(this,3)"><span class="seq-badge"></span><span class="emo">☀️</span></div>
+                    <div class="seq-card" onclick="seqTap(this,2)"><span class="seq-badge"></span><img class="emo-img" style="width:42px;height:42px" src="img/parole/rosa.webp" alt=""></div>
+                    <div class="seq-card" onclick="seqTap(this,1)"><span class="seq-badge"></span><img class="emo-img" style="width:42px;height:42px" src="img/parole/rana.webp" alt=""></div>
+                    <div class="seq-card" onclick="seqTap(this,3)"><span class="seq-badge"></span><img class="emo-img" style="width:42px;height:42px" src="img/parole/robot.webp" alt=""></div>
                   </div>
                   <div class="seq-story" id="seqStory">Tocca l'immagine giusta per iniziare…</div>
                 </div>
 
+                <!-- RIPETI LA FRASE (Livello L3 · Frase) -->
+                <div class="screen" data-c="ripfrase">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Ripeti la frase</div></div>
+                  <div class="ex-q">Ascolta la frase e ripetila ad alta voce</div>
+                  <div style="text-align:center;margin:8px 0 2px" id="ripFraseImg"><img src="img/parole/rana.webp" alt="" style="width:64px;height:64px;object-fit:contain"></div>
+                  <div class="seq-story" id="ripFraseText" style="text-align:center;font-size:16px;font-weight:700;margin-bottom:14px">La rana salta nello stagno.</div>
+                  <div class="rec-row">
+                    <button class="rec-btn rec-listen" onclick="ripFrasePlay()" title="Ascolta">▶</button>
+                  </div>
+                  <button class="oca-say" onclick="ripFraseNext()">Fatto, ho ripetuto! 🦜</button>
+                  <div class="rec-cap" id="ripFraseCap">Frase 1 di 4</div>
+                </div>
+
+                <!-- INDICA LA FRASE (Livello L3 · Frase) -->
+                <div class="screen" data-c="indfrase">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Indica la frase</div></div>
+                  <div class="ex-q" id="indFraseQ">Ascolta, poi tocca la scena giusta · 1 di 4</div>
+                  <div class="cm-play"><button class="rec-btn rec-listen" onclick="indFrasePlay()" title="Ascolta">▶</button></div>
+                  <div class="grid2" id="indFraseGrid"></div>
+                </div>
+
+                <!-- COMPLETA LA RIMA (Livello L4 · Racconto) -->
+                <div class="screen" data-c="rima">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Completa la rima</div></div>
+                  <div class="ex-q">Ascolta la filastrocca e completa la rima</div>
+                  <div class="seq-story" id="rimaText" style="text-align:center;font-size:15px;font-weight:700;margin-bottom:10px"></div>
+                  <div class="cm-play"><button class="rec-btn rec-listen" onclick="rimaPlay()" title="Ascolta">▶</button></div>
+                  <div class="grid2" id="rimaGrid"></div>
+                  <div class="rec-cap" id="rimaCap">Rima 1 di 2</div>
+                </div>
+
+                <!-- FILASTROCCA (Livello L4 · Racconto) -->
+                <div class="screen" data-c="filastrocca">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title">Filastrocca</div></div>
+                  <div class="ex-q">Ascolta la filastrocca, poi tocca per scoprire come finisce</div>
+                  <div class="seq-story" id="filaText" style="text-align:center;font-size:15px;font-weight:700;margin-bottom:10px"></div>
+                  <div style="text-align:center;min-height:68px" id="filaReveal"></div>
+                  <button class="oca-say" id="filaBtn" onclick="filaReveal()">Come finisce? 🦜</button>
+                  <div class="rec-cap" id="filaCap">Filastrocca 1 di 2</div>
+                </div>
+
+                <!-- RACCONTA LA STORIA (Livello L4 · Racconto) -->
+                <div class="screen" data-c="racconta">
+                  <div class="ex-head"><button class="ex-back" onclick="exBack()">‹</button><div class="ex-title" id="raccontaTitle">Racconta la storia</div></div>
+                  <div style="text-align:center;margin:4px 0 10px" id="raccontaImg"></div>
+                  <div class="seq-story" id="raccontaText" style="text-align:center;font-size:14.5px;margin-bottom:14px"></div>
+                  <button class="oca-say" id="raccontaBtn" onclick="raccontaNext()">E poi? 🦜</button>
+                  <div class="rec-cap" id="raccontaCap">Scena 1 di 4</div>
+                </div>
+
                 <!-- LALLO (tamagotchi — 2ª tab dell'app, non più un "gioco" tra gli altri) -->
-                <div class="screen" data-c="lallo">
+                <div class="screen on" data-c="lallo">
                   <div class="pet-card">
                     <img class="pet-img" id="petImg" src="img/lallo-felice.webp" alt="Lallo" onclick="pokeLallo()">
                     <div class="pet-mood-title" id="petMoodTitle">Lallo è felice!</div>
@@ -642,10 +692,10 @@
 
               </div>
               <div class="tabbar">
-                <button class="tab active" data-tab="giochi" onclick="goChild('giochi')"><span class="ti">🎮</span>Giochi</button>
-                <button class="tab" data-tab="lallo" onclick="goChild('lallo')"><span class="ti">🦜</span>Lallo</button>
-                <button class="tab" data-tab="progressi" onclick="goChild('progressi')"><span class="ti">📈</span>Progressi</button>
+                <button class="tab active" data-tab="lallo" onclick="goChild('lallo')"><span class="ti">🦜</span>Lallo</button>
+                <button class="tab" data-tab="giochi" onclick="goChild('giochi')"><span class="ti">🎮</span>Giochi</button>
                 <button class="tab" data-tab="album" onclick="goChild('album')"><span class="ti">📸</span>Album</button>
+                <button class="tab" data-tab="progressi" onclick="goChild('progressi')"><span class="ti">📈</span>Progressi</button>
               </div>
             </div>
 
@@ -864,14 +914,19 @@ function loadVoice(){
 }
 if(window.speechSynthesis){ loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
 
-const KNOWN_WORDS = new Set(['rana','rosa','robot','gatto','limone','mela','sole','sale','pera','mare','fiore','torre']);
+const KNOWN_WORDS = new Set([
+  'rana','rosa','robot','gatto','limone','mela','sole','sale','pera','mare','fiore','torre',
+  'ra','re','ri','ro','ru','razzo','torta','ruota','pane'
+]);
 const KNOWN_LINES = new Set([
   'sess_tocca_sillabe','sess_ascolta_ripeti','sess_ascolta_tocca_parola','tpl_caccia_r',
   'tpl_memory_r','sess_di_parola_oca','sess_tocca_immagini_ordine','album_scegli_parola',
   'giochi_scegli_suono','lallo_ha_fame','lallo_trascina_cibo','lallo_intro','album_intro',
   'lallo_poke_1','lallo_poke_2','lallo_poke_3','lallo_poke_4','lallo_poke_5',
   'lallo_grazie_cibo','sess_lallo_ti_ha_sentito_m','album_foto_aggiunta_m',
-  'sess_registratore_bravo_m','titolo_esploratore_m','lallo_celebra_sblocco'
+  'sess_registratore_bravo_m','titolo_esploratore_m','lallo_celebra_sblocco',
+  'frase_r_0','frase_r_1','frase_r_2','frase_r_3','sess_ascolta_tocca_scena',
+  'rima_r_0','rima_r_1','storia_r_0','storia_r_1','storia_r_2','storia_r_3'
 ]);
 const AUDIO_CACHE = {};
 function realAudio(folder, slug){
@@ -946,10 +1001,10 @@ function setView(v){
   document.getElementById('tgPro').classList.toggle('active', v==='pro');
 }
 
-/* ---------- child navigation (4 tab, come nell'app oggi: Giochi · Lallo · Progressi ·
-   Album — non c'è più una tab "Oggi" separata, vedi App.tsx/GiochiScreen.tsx) ---------- */
-const TOP_TABS = ['giochi','lallo','progressi','album'];
-const TOP_TITLES = { giochi:'Giochi', lallo:'Lallo', progressi:'Progressi', album:'Album' };
+/* ---------- child navigation (4 tab, come nell'app oggi: Lallo · Giochi · Album ·
+   Progressi, in questo ordine — vedi App.tsx MainTabs) ---------- */
+const TOP_TABS = ['lallo','giochi','album','progressi'];
+const TOP_TITLES = { lallo:'Lallo', giochi:'Giochi', album:'Album', progressi:'Progressi' };
 function goChild(name){
   document.querySelectorAll('#view-child .screen').forEach(s=>s.classList.toggle('on', s.dataset.c===name));
   const activeTab = TOP_TABS.includes(name) ? name : 'giochi';
@@ -965,6 +1020,11 @@ function goChild(name){
   if(name==='coppie') cmReset();
   if(name==='oca') ocaReset();
   if(name==='sequenze') seqReset();
+  if(name==='ripfrase') ripFraseReset();
+  if(name==='indfrase') indFraseReset();
+  if(name==='rima') rimaReset();
+  if(name==='filastrocca') filaReset();
+  if(name==='racconta') raccontaReset();
   if(name==='lallo') renderPet();
   // Istruzione vocale ad ogni apertura di schermo/tab — il bambino non sa leggere,
   // stessa scelta della vera app (useFocusEffect su ogni schermata). Testi e slug allineati
@@ -988,14 +1048,19 @@ function openGame(type){ openEx(type, 'giochi'); }
    differenza dell'app vera, tutti i livelli restano esplorabili da subito (niente
    sblocco progressivo) per far vedere tutto il ventaglio di giochi nella demo. */
 const GAMES = [
-  { type:'ripeti',   label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', emoji:'🔁', levels:[1,2] },
-  { type:'ascolta',  label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[1,2] },
-  { type:'memory',   label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', emoji:'🧩', levels:[1,2] },
-  { type:'caccia',   label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', emoji:'🔎', levels:[1,2] },
-  { type:'rec',      label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎤', levels:[2,3,4] },
-  { type:'coppie',   label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', emoji:'👯', levels:[2] },
-  { type:'oca',      label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎲', levels:[2,3] },
-  { type:'sequenze', label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[4] },
+  { type:'ripeti',     label:'Ripeti',              meta:'Produzione · tutte le parole', bg:'#E9F5F1', emoji:'🔁', levels:[1,2] },
+  { type:'ascolta',    label:'Ascolta e scegli',    meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[1,2] },
+  { type:'memory',     label:'Memory',              meta:'Discriminazione',              bg:'#FFF3D6', emoji:'🧩', levels:[1,2] },
+  { type:'caccia',     label:'Caccia al suono',     meta:'Discriminazione',              bg:'#FDECE7', emoji:'🔎', levels:[1,2] },
+  { type:'rec',        label:'Registratore',        meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎤', levels:[1,2] },
+  { type:'coppie',     label:'Coppie minime',       meta:'Discriminazione fine',         bg:'#FDECE7', emoji:'👯', levels:[1,2] },
+  { type:'oca',        label:"Gioco dell'oca",      meta:'Produzione',                   bg:'#E9F5F1', emoji:'🎲', levels:[1,2] },
+  { type:'ripfrase',   label:'Ripeti la frase',     meta:'Produzione',                   bg:'#E9F5F1', emoji:'🔁', levels:[3] },
+  { type:'indfrase',   label:'Indica la frase',     meta:'Discriminazione',              bg:'#FFF3D6', emoji:'👂', levels:[3] },
+  { type:'sequenze',   label:'Sequenze illustrate', meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[4] },
+  { type:'racconta',   label:'Racconta la storia',  meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📚', levels:[4] },
+  { type:'rima',       label:'Completa la rima',    meta:'Discriminazione',              bg:'#FDECE7', emoji:'👯', levels:[4] },
+  { type:'filastrocca',label:'Filastrocca',         meta:'Narrazione',                   bg:'#FFF3D6', emoji:'📖', levels:[4] },
 ];
 // Stessa scala di app/src/types/gamification.ts (ClinicalLevel/LEVEL_LABELS): L0 suono
 // isolato, L1 parola iniziale, L2 parola mediana, L3 frase, L4 racconto — qui tenuta come
@@ -1046,7 +1111,7 @@ function sylReset(){
 }
 function sylTap(el, syl){
   if(el.classList.contains('done')) return;
-  say(syl);
+  sayWord(syl.toLowerCase());
   el.classList.add('done');
   sylDone.add(syl);
   if(sylDone.size===SYL_LIST.length){
@@ -1250,10 +1315,11 @@ function updateOca(){
 function sayOcaWord(){ if(ocaPos===5){ say('Lallo ti ha sentito! Bravissimo!', 'sess_lallo_ti_ha_sentito_m'); } else { sayWord(ocaWords[ocaPos].w); } }
 function ocaSay(){ if(ocaPos<5){ ocaPos++; updateOca(); sayOcaWord(); } }
 
-/* sequenze illustrate */
+/* sequenze illustrate — 3 parole vere del suono R (non più una storia fissa slegata dal
+   suono in allenamento, stesso bug già corretto in SessionScreen.tsx/SequenzeIllustrate) */
 let seqNext=1;
-const seqChunks={1:'Prima piove… 🌧️ ',2:'poi esce l\'arcobaleno… 🌈 ',3:'e infine torna il sole! ☀️'};
-const seqSpeak={1:'Prima piove',2:'Poi esce l\'arcobaleno',3:'E infine torna il sole'};
+const SEQ_CONNECTORS={1:'Prima incontriamo',2:'Poi arriva',3:'E infine ecco'};
+const SEQ_WORDS={1:'rana',2:'rosa',3:'robot'};
 function seqReset(){
   seqNext=1;
   document.querySelectorAll('[data-c="sequenze"] .seq-card').forEach(c=>{ c.classList.remove('done','wrong'); const b=c.querySelector('.seq-badge'); if(b) b.textContent=''; });
@@ -1263,14 +1329,162 @@ function seqTap(el,order){
   if(el.classList.contains('done')) return;
   if(order===seqNext){
     el.classList.add('done'); el.querySelector('.seq-badge').textContent = order;
+    const word=SEQ_WORDS[order];
+    say(SEQ_CONNECTORS[order], 'seq_connector_'+order);
+    setTimeout(()=>sayWord(word), 900);
     const s=document.getElementById('seqStory');
-    s.textContent = (seqNext===1 ? '' : s.textContent) + seqChunks[order];
-    say(seqSpeak[order]);
+    const line=`${SEQ_CONNECTORS[order]} ${word}...`;
+    s.textContent = (seqNext===1 ? '' : s.textContent+' ') + line;
     seqNext++;
-    if(seqNext>3) s.textContent += '  Bravo! 🦜';
+    if(seqNext>3){ s.textContent += '  Bravo! 🦜'; setTimeout(()=>exBack(),1800); }
   } else {
     el.classList.add('wrong'); setTimeout(()=>el.classList.remove('wrong'),420);
   }
+}
+
+/* ripeti la frase (L3 · Frase) */
+const RIPFRASE_POOL=[
+  {testo:'La rana salta nello stagno.', parola:'rana', img:'rana.webp', slug:'frase_r_0'},
+  {testo:'Il razzo vola nello spazio.', parola:'razzo', img:'razzo.webp', slug:'frase_r_1'},
+  {testo:'La rosa è profumata.', parola:'rosa', img:'rosa.webp', slug:'frase_r_2'},
+  {testo:'Il robot cammina piano.', parola:'robot', img:'robot.webp', slug:'frase_r_3'},
+];
+let ripFraseIdx=0;
+function ripFraseReset(){ ripFraseIdx=0; updateRipFrase(); }
+function updateRipFrase(){
+  const r=RIPFRASE_POOL[ripFraseIdx];
+  document.getElementById('ripFraseImg').innerHTML='<img src="img/parole/'+r.img+'" alt="" style="width:64px;height:64px;object-fit:contain">';
+  document.getElementById('ripFraseText').textContent=r.testo;
+  document.getElementById('ripFraseCap').textContent='Frase '+(ripFraseIdx+1)+' di '+RIPFRASE_POOL.length;
+  say(r.testo, r.slug);
+}
+function ripFrasePlay(){ const r=RIPFRASE_POOL[ripFraseIdx]; say(r.testo, r.slug); }
+function ripFraseNext(){
+  if(ripFraseIdx+1<RIPFRASE_POOL.length){ ripFraseIdx++; updateRipFrase(); }
+  else exBack();
+}
+
+/* indica la frase (L3 · Frase) */
+let indFraseIdx=0;
+let indFraseOptions=[];
+let indFrasePicked=false;
+function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
+function indFraseReset(){ indFraseIdx=0; updateIndFrase(); }
+function updateIndFrase(){
+  indFrasePicked=false;
+  const target=RIPFRASE_POOL[indFraseIdx];
+  const others=RIPFRASE_POOL.filter(p=>p.parola!==target.parola);
+  indFraseOptions=shuffle([target, ...shuffle(others).slice(0,2)]);
+  document.getElementById('indFraseQ').textContent='Ascolta, poi tocca la scena giusta · '+(indFraseIdx+1)+' di '+RIPFRASE_POOL.length;
+  const grid=document.getElementById('indFraseGrid');
+  grid.innerHTML = indFraseOptions.map(o =>
+    `<div class="tile" onclick="indFrasePick('${o.parola}')"><img class="emo-img" src="img/parole/${o.img}" alt=""></div>`
+  ).join('');
+  say('Ascolta, poi tocca la scena giusta', 'sess_ascolta_tocca_scena');
+  setTimeout(()=>say(target.testo, target.slug), 1400);
+}
+function indFrasePlay(){ const target=RIPFRASE_POOL[indFraseIdx]; say(target.testo, target.slug); }
+function indFrasePick(parola){
+  if(indFrasePicked) return;
+  indFrasePicked=true;
+  const target=RIPFRASE_POOL[indFraseIdx];
+  const tiles=[...document.getElementById('indFraseGrid').children];
+  indFraseOptions.forEach((o,i)=>{
+    if(o.parola===target.parola) tiles[i].classList.add('correct');
+    else if(o.parola===parola) tiles[i].classList.add('wrong');
+  });
+  sayWord(parola);
+  setTimeout(()=>{
+    if(indFraseIdx+1<RIPFRASE_POOL.length){ indFraseIdx++; updateIndFrase(); }
+    else exBack();
+  }, 1100);
+}
+
+/* completa la rima (L4 · Racconto in rima) */
+const RIMA_POOL=[
+  {righe:['Ogni giorno della settimana,','nello stagno gracida la...'], finale:'rana', distrattori:['sole','torta'], slug:'rima_r_0'},
+  {righe:['La valigia oggi è vuota,','la bici cammina sulla sua...'], finale:'ruota', distrattori:['sole','pane'], slug:'rima_r_1'},
+];
+let rimaIdx=0;
+let rimaPicked=false;
+function rimaReset(){ rimaIdx=0; updateRima(); }
+function updateRima(){
+  rimaPicked=false;
+  const r=RIMA_POOL[rimaIdx];
+  document.getElementById('rimaText').textContent=r.righe.join(' ');
+  document.getElementById('rimaCap').textContent='Rima '+(rimaIdx+1)+' di '+RIMA_POOL.length;
+  const options=shuffle([r.finale, ...r.distrattori]);
+  document.getElementById('rimaGrid').innerHTML = options.map(w =>
+    `<div class="tile" onclick="rimaPick('${w}')"><img class="emo-img" src="img/parole/${w}.webp" alt=""><span style="margin-top:4px">${w.toUpperCase()}</span></div>`
+  ).join('');
+  say(r.righe.join(' '), r.slug);
+}
+function rimaPlay(){ const r=RIMA_POOL[rimaIdx]; say(r.righe.join(' '), r.slug); }
+function rimaPick(word){
+  if(rimaPicked) return;
+  rimaPicked=true;
+  const r=RIMA_POOL[rimaIdx];
+  const tiles=[...document.getElementById('rimaGrid').children];
+  const options=tiles.map(t=>t.querySelector('span').textContent.toLowerCase());
+  options.forEach((w,i)=>{
+    if(w===r.finale) tiles[i].classList.add('correct');
+    else if(w===word) tiles[i].classList.add('wrong');
+  });
+  if(word===r.finale) setTimeout(()=>sayWord(word),400);
+  setTimeout(()=>{
+    if(rimaIdx+1<RIMA_POOL.length){ rimaIdx++; updateRima(); }
+    else exBack();
+  }, 1300);
+}
+
+/* filastrocca (L4 · Racconto in rima) */
+let filaIdx=0;
+function filaReset(){ filaIdx=0; updateFila(); }
+function updateFila(){
+  const r=RIMA_POOL[filaIdx];
+  document.getElementById('filaText').textContent=r.righe.join(' ');
+  document.getElementById('filaReveal').innerHTML='';
+  document.getElementById('filaCap').textContent='Filastrocca '+(filaIdx+1)+' di '+RIMA_POOL.length;
+  document.getElementById('filaBtn').textContent='Come finisce? 🦜';
+  document.getElementById('filaBtn').disabled=false;
+  say(r.righe.join(' '), r.slug);
+}
+function filaReveal(){
+  const r=RIMA_POOL[filaIdx];
+  document.getElementById('filaReveal').innerHTML='<img src="img/parole/'+r.finale+'.webp" alt="" style="width:64px;height:64px;object-fit:contain">';
+  document.getElementById('filaBtn').textContent='🎉';
+  document.getElementById('filaBtn').disabled=true;
+  sayWord(r.finale);
+  setTimeout(()=>{
+    if(filaIdx+1<RIMA_POOL.length){ filaIdx++; updateFila(); }
+    else exBack();
+  }, 1500);
+}
+
+/* racconta la storia (L4 · Racconto in prosa, "Rocco il robot") */
+const RACCONTA_SCENES=[
+  {testo:'Rocco il robot vive in una fabbrica di giocattoli.', parola:'robot', slug:'storia_r_0', img:'scena_r_0.webp'},
+  {testo:'Un giorno trova una rana che salta nel cortile.', parola:'rana', slug:'storia_r_1', img:'scena_r_1.webp'},
+  {testo:'Insieme guardano un razzo volare nel cielo stellato.', parola:'razzo', slug:'storia_r_2', img:'scena_r_2.webp'},
+  {testo:'Rocco regala alla rana una rosa rossa come ricordo.', parola:'rosa', slug:'storia_r_3', img:'scena_r_3.webp'},
+];
+let raccontaIdx=0;
+function raccontaReset(){ raccontaIdx=0; updateRacconta(); }
+function updateRacconta(){
+  const scene=RACCONTA_SCENES[raccontaIdx];
+  document.getElementById('raccontaTitle').textContent='Rocco il robot';
+  document.getElementById('raccontaImg').innerHTML='<img src="img/racconti/'+scene.img+'" alt="" style="width:160px;height:160px;object-fit:contain">';
+  document.getElementById('raccontaText').textContent=scene.testo;
+  document.getElementById('raccontaCap').textContent='Scena '+(raccontaIdx+1)+' di '+RACCONTA_SCENES.length;
+  const last=raccontaIdx+1===RACCONTA_SCENES.length;
+  document.getElementById('raccontaBtn').textContent = last ? 'Fine della storia! 🎉' : 'E poi? 🦜';
+  say(scene.testo, scene.slug);
+}
+function raccontaNext(){
+  const scene=RACCONTA_SCENES[raccontaIdx];
+  sayWord(scene.parola);
+  if(raccontaIdx+1<RACCONTA_SCENES.length){ raccontaIdx++; updateRacconta(); }
+  else setTimeout(()=>exBack(), 900);
 }
 
 /* registratore */
@@ -1350,6 +1564,7 @@ async function submitWL(){
 
 /* ---------- init demo telefono ---------- */
 renderMap();
+renderPet();
 setupFoodDrag();
 </script>
 </body>
