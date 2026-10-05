@@ -13,11 +13,12 @@ interface ReinforcementLine {
   maschile: string;
   femminile: string;
   neutro: string;
-  // Se presente, cerca "<audioSlugBase>_m" / "<audioSlugBase>_f" nelle righe audio
-  // pre-registrate (vedi assets/audio/lines/, lineAudio.ts). Il caso neutro non ha mai un
-  // audio pre-registrato dedicato: usa sempre il fallback TTS di useVoice().speak(), che
-  // legge comunque la forma testuale corretta — stesso pattern "copertura parziale, mai
-  // un'app muta" già usato per le altre righe.
+  // Se presente, cerca "<audioSlugBase>_m" / "_f" / "_n" nelle righe audio pre-registrate
+  // (vedi assets/audio/lines/, lineAudio.ts) — tutte e tre le forme hanno un audio reale
+  // (ottobre 2026: niente più TTS per nessun rinforzo, nemmeno per il genere non
+  // specificato). Resta comunque opzionale: se manca del tutto, i chiamanti prevedono
+  // sempre il fallback TTS (stesso pattern "copertura parziale, mai un'app muta" di
+  // useVoice().speak()).
   audioSlugBase?: string;
 }
 
@@ -26,6 +27,7 @@ const REINFORCEMENT: Record<ReinforcementKey, ReinforcementLine> = {
     maschile: "Bravo! 🎉",
     femminile: "Brava! 🎉",
     neutro: "Evviva! 🎉",
+    audioSlugBase: "sess_registratore_bravo",
   },
   oca_lallo_sentito: {
     maschile: "Lallo ti ha sentito! Bravissimo!",
@@ -52,10 +54,10 @@ function resolveGenderForm(gender: ChildProfile["gender"]): GenderForm {
   return "neutro";
 }
 
-function audioSuffix(form: GenderForm): "m" | "f" | null {
+function audioSuffix(form: GenderForm): "m" | "f" | "n" {
   if (form === "maschile") return "m";
   if (form === "femminile") return "f";
-  return null;
+  return "n";
 }
 
 export function getReinforcement(

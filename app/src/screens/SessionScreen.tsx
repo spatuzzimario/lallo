@@ -1024,7 +1024,7 @@ function SequenzeIllustrate({ phonemeKey, onDone }: { phonemeKey: PhonemeKey; on
   function tap(step: typeof steps[number]) {
     if (step.order < next) return;
     if (step.order === next) {
-      speak(`${step.connector} ${step.parola}.`);
+      speak(step.connector, `seq_connector_${step.order}`);
       setTimeout(() => speakWord(step.parola), 900);
       const line = `${step.connector} ${step.parola}...`;
       setStory((s) => (next === 1 ? line : `${s} ${line}`));
