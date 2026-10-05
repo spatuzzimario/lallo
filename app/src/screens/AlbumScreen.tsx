@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { WORD_ILLUSTRATIONS } from "../constants/illustrations";
 import { currentTitle, nextTitle } from "../constants/album";
+import { getReinforcement, getNewTitleReinforcement } from "../constants/reinforcement";
 import { useVoice } from "../hooks/useVoice";
 
 const C = {
@@ -98,11 +99,13 @@ export default function AlbumScreen() {
       if (after && after.threshold !== before?.threshold) {
         setNewTitleBanner(`${after.emoji} Nuovo titolo: ${after.name}!`);
         setTimeout(() => setNewTitleBanner(null), 2500);
-        speak(`Bravo! Hai un nuovo titolo: ${after.name}!`, after.audioSlug);
+        const { text, audioSlug } = getNewTitleReinforcement(after.name, after.audioSlugBase, profile?.gender);
+        speak(text, audioSlug ?? undefined);
         return;
       }
     }
-    speak("Foto aggiunta al tuo album, bravo!", "album_foto_aggiunta");
+    const { text, audioSlug } = getReinforcement("album_foto_aggiunta", profile?.gender);
+    speak(text, audioSlug ?? undefined);
   }
 
   if (!profile) return null;

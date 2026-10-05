@@ -18,6 +18,7 @@ import {
 import { PHRASES, RHYMES, PhraseEntry } from "../constants/phrases";
 import { STORIES } from "../constants/stories";
 import { getWordImage } from "../constants/wordImage";
+import { getReinforcement } from "../constants/reinforcement";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
@@ -551,6 +552,7 @@ function Registratore({ navigation, phonemeKey, position, onAttempt, onDone }: {
   const [recording, setRecording] = useState(false);
   const [justDone, setJustDone] = useState(false);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+  const gender = useGamificationStore((s) => s.profile?.gender);
   const { speakWord } = useVoice();
 
   useEffect(() => {
@@ -584,7 +586,9 @@ function Registratore({ navigation, phonemeKey, position, onAttempt, onDone }: {
 
   return (
     <View style={{ flex: 1, alignItems: "center" }}>
-      <Text style={styles.question}>{justDone ? "Bravo! 🎉" : "Ascolta, poi prova tu"}</Text>
+      <Text style={styles.question}>
+        {justDone ? getReinforcement("registratore_bravo", gender).text : "Ascolta, poi prova tu"}
+      </Text>
       <WordVisual parola={word.parola} emoji={word.emoji} size={150} textStyle={styles.recEmoji} imageMarginTop={20} />
       <Text style={styles.recWord}>{word.parola}</Text>
       <Text style={styles.recMeta}>
@@ -883,11 +887,13 @@ function GiocoDellOca({ navigation, phonemeKey, position, onAttempt, onDone }: {
   const [celebrating, setCelebrating] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const hasConsent = useGamificationStore((s) => !!s.profile?.audioRecordingConsent);
+  const gender = useGamificationStore((s) => s.profile?.gender);
 
   function celebrate() {
     playCorrect();
     setCelebrating(true);
-    speak("Lallo ti ha sentito! Bravissimo!", "sess_lallo_ti_ha_sentito");
+    const { text, audioSlug } = getReinforcement("oca_lallo_sentito", gender);
+    speak(text, audioSlug ?? undefined);
     setTimeout(() => {
       setCelebrating(false);
       setFailedAttempts(0);

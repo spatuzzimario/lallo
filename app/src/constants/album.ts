@@ -5,18 +5,23 @@
 
 export interface AlbumTitle {
   threshold: number;
+  // Scelto apposta invariante per genere grammaticale (vedi constants/reinforcement.ts) —
+  // niente "Esploratore"/"Esploratrice" da scegliere in base al bambino, lo stesso nome vale
+  // per tutti. Solo il saluto che lo introduce ("Bravo!"/"Brava!"/"Evviva!") cambia.
   name: string;
   emoji: string;
-  audioSlug: string; // vedi app/assets/audio/lines/titolo_*.mp3 e src/constants/lineAudio.ts
+  // vedi app/assets/audio/lines/titolo_*_m.mp3 / _f.mp3 e src/constants/lineAudio.ts — la
+  // frase intera (saluto + nome titolo) è pre-registrata, non solo il nome.
+  audioSlugBase: string;
 }
 
 // Soglie sul numero di parole DIVERSE fotografate almeno una volta (non sul totale scatti:
 // fotografare 10 volte la stessa banana non deve valere quanto 10 parole diverse).
 export const ALBUM_TITLES: AlbumTitle[] = [
-  { threshold: 5, name: "Esploratore", emoji: "🔎", audioSlug: "titolo_esploratore" },
-  { threshold: 15, name: "Cercatore d'oro", emoji: "🏅", audioSlug: "titolo_cercatore_oro" },
-  { threshold: 30, name: "Grande esploratore", emoji: "🗺️", audioSlug: "titolo_grande_esploratore" },
-  { threshold: 60, name: "Maestro delle parole", emoji: "👑", audioSlug: "titolo_maestro_parole" },
+  { threshold: 5, name: "Mente curiosa", emoji: "🔎", audioSlugBase: "titolo_esploratore" },
+  { threshold: 15, name: "Detective delle parole", emoji: "🏅", audioSlugBase: "titolo_cercatore_oro" },
+  { threshold: 30, name: "Asso dell'esplorazione", emoji: "🗺️", audioSlugBase: "titolo_grande_esploratore" },
+  { threshold: 60, name: "Fenomeno delle parole", emoji: "👑", audioSlugBase: "titolo_maestro_parole" },
 ];
 
 export function currentTitle(distinctWordsCaught: number): AlbumTitle | null {
