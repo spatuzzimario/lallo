@@ -917,11 +917,16 @@ function GiocoDellOca({ navigation, phonemeKey, position, onAttempt, onDone }: {
 
   useEffect(() => {
     speak("Dì la parola per far avanzare il pappagallo!", "sess_di_parola_oca");
-    if (current) setTimeout(() => speakWord(current.parola), 900);
   }, []);
 
+  // Pronuncia la parola della casella corrente ogni volta che si avanza — prima succedeva
+  // solo al mount (la primissima parola): dopo "Lallo ti ha sentito!" il bambino passava
+  // alla parola successiva senza mai sentirla, a meno di toccare l'immagine a mano (bug
+  // segnalato). Il mount iniziale resta coperto: questo effetto gira anche al primo render
+  // (pos parte da 0), nello stesso ordine/ritardo di prima rispetto all'istruzione sopra.
   useEffect(() => {
     setFailedAttempts(0);
+    if (current) setTimeout(() => speakWord(current.parola), 900);
   }, [pos]);
 
   function tapAdvance() {
