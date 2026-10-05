@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lallo — Informativa sulla privacy</title>
+<meta name="description" content="Come Lallo tratta i dati delle famiglie e dei bambini: cosa raccogliamo, perché, e i diritti del genitore.">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF6EE;
+    --paper-2:#F3EBDD;
+    --ink:#1F2E2B;
+    --ink-soft:#4A5A56;
+    --jade:#137A6E;
+    --jade-deep:#0E5C53;
+    --coral:#FF6A4D;
+    --coral-deep:#E84B30;
+    --sun:#FFC53D;
+    --mist:#E4EFEA;
+    --line:#D9CEBC;
+    --shadow: 18px 18px 0 rgba(31,46,43,.07);
+    --radius:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Figtree",system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.1;letter-spacing:-.01em;}
+  a{color:var(--jade-deep);text-decoration:underline}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  header.top{padding:28px 0;border-bottom:1px solid var(--line);background:#fff}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand img{width:34px;height:34px;border-radius:10px}
+  .back{font-size:14px;font-weight:600;color:var(--jade-deep)}
+  main{padding:48px 0 90px}
+  h1.page-title{font-size:clamp(28px,5vw,40px);margin-bottom:10px}
+  .updated{color:var(--ink-soft);font-size:13.5px;margin-bottom:30px}
+  .tldr{
+    background:var(--mist);
+    border:1.5px solid var(--jade);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin-bottom:40px;
+  }
+  .tldr h2{font-size:17px;color:var(--jade-deep);margin-bottom:10px}
+  .tldr ul{margin-left:18px;color:var(--ink)}
+  .tldr li{margin-bottom:6px;font-size:14.5px}
+  section{margin-bottom:34px}
+  h2.sec{font-size:21px;margin-bottom:12px;color:var(--ink);padding-top:6px}
+  h3.sub{font-size:15.5px;margin:16px 0 6px;color:var(--jade-deep)}
+  p{margin-bottom:12px;font-size:15px;color:var(--ink)}
+  ul,ol{margin:0 0 12px 20px}
+  li{margin-bottom:6px;font-size:15px}
+  .todo{
+    display:inline-block;
+    background:var(--sun);
+    color:var(--ink);
+    font-size:11.5px;
+    font-weight:800;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 20px;
+    margin:14px 0;
+  }
+  .card strong{color:var(--jade-deep)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--ink-soft);font-weight:700;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+  footer{border-top:1px solid var(--line);padding:30px 0;background:#fff}
+  footer .wrap{color:var(--ink-soft);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media(max-width:600px){
+    .tldr{padding:18px}
+    footer .wrap{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a href="/" class="brand"><img src="img/favicon.png" alt=""> Lallo</a>
+    <a href="/" class="back">← Torna al sito</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1 class="page-title">Informativa sulla privacy</h1>
+    <p class="updated">Ultimo aggiornamento: ottobre 2026</p>
+
+    <div class="tldr">
+      <h2>In parole semplici</h2>
+      <ul>
+        <li>Lallo è un'app per bambini (3-6 anni): è sempre un genitore ad attivarla, a dare i consensi e a gestire l'account — mai il bambino da solo.</li>
+        <li>La voce del bambino resta sul telefono: il riconoscimento vocale dei giochi avviene <strong>sul dispositivo</strong>, non la inviamo a nessun server, e non la carichiamo da nessuna parte a meno che tu (genitore) non scelga esplicitamente di salvare/condividere una clip.</li>
+        <li>Le foto dell'Album restano solo sul telefono: non le carichiamo mai.</li>
+        <li>Niente pubblicità, niente tracker di terze parti rivolti ai bambini.</li>
+        <li>Puoi chiedere in qualsiasi momento di vedere, correggere o cancellare i dati della tua famiglia — vedi "I tuoi diritti" più sotto.</li>
+      </ul>
+    </div>
+
+    <section>
+      <h2 class="sec">1. Chi tratta i tuoi dati (titolare del trattamento)</h2>
+      <div class="card">
+        <p><strong>Mario Spatuzzi</strong><span class="todo">DA CONFERMARE — nome esatto</span><br>
+        San Vittore Olona (MI), Italia<span class="todo">DA COMPLETARE se disponibile un indirizzo completo</span><br>
+        Email: <a href="mailto:info@lallo.app">info@lallo.app</a></p>
+        <p style="margin-top:10px;font-size:13.5px;color:var(--ink-soft)">
+          Lallo non è ancora costituito in una società con partita IVA propria<span class="todo">DA AGGIORNARE quando esiste</span>: fino a quel momento il titolare del trattamento è la persona fisica indicata sopra.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec">2. Il modello: il genitore è sempre al comando</h2>
+      <p>
+        Lallo è pensata per bambini di circa 3-6 anni. In Italia la legge fissa a 16 anni l'età in cui un minore
+        può dare da solo un consenso digitale valido (art. 8 del Regolamento UE 2016/679, come recepito
+        dalla normativa italiana) — ben più dell'età dei bambini che usano questa app. Per questo:
+      </p>
+      <ul>
+        <li>è sempre un genitore (o chi esercita la responsabilità genitoriale) a creare l'account, con la propria email;</li>
+        <li>è sempre il genitore a dare — o negare — ogni consenso specifico (microfono, fotocamera, promemoria);</li>
+        <li>il bambino non ha un proprio account né può modificare consensi, abbonamento o dati da solo — le aree
+        "Genitori" e "Progressi" sono protette da un filtro pensato per un adulto (un piccolo calcolo matematico),
+        così come l'acquisto dell'abbonamento.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="sec">3. Che dati raccogliamo</h2>
+
+      <h3 class="sub">3.1 Dati del genitore</h3>
+      <table>
+        <tr><th>Dato</th><th>Perché</th></tr>
+        <tr><td>Email</td><td>Accesso all'app (codice temporaneo via email, nessuna password) e comunicazioni di servizio</td></tr>
+        <tr><td>Dati di abbonamento</td><td>Gestiti da Apple/Google/RevenueCat — vedi sezione 5. Noi vediamo solo se l'abbonamento è attivo, mai il numero della carta</td></tr>
+      </table>
+
+      <h3 class="sub">3.2 Dati del bambino (inseriti dal genitore)</h3>
+      <table>
+        <tr><th>Dato</th><th>Perché</th></tr>
+        <tr><td>Nome, data di nascita, interessi</td><td>Personalizzare i giochi e i contenuti proposti</td></tr>
+        <tr><td>Suoni allenati, livello, progressi, stelle, sessioni completate</td><td>Far funzionare il gioco e mostrare i progressi nel tempo</td></tr>
+        <tr><td>Consenso alla registrazione audio (sì/no)</td><td>Attivare o meno gli esercizi che usano il microfono</td></tr>
+      </table>
+      <p>Non chiediamo e non vogliamo altri dati sul bambino (scuola, indirizzo, documenti, dati di salute).</p>
+
+      <h3 class="sub">3.3 La voce del bambino — trattamento speciale</h3>
+      <p>
+        Microfono e riconoscimento vocale (Registratore, Gioco dell'oca, "Ripeti con Lallo") si attivano solo dopo
+        un consenso esplicito del genitore, dato in una schermata dedicata prima di qualunque accesso al microfono.
+        Il riconoscimento di cosa dice il bambino avviene <strong>interamente sul dispositivo</strong>: l'audio non
+        viene inviato a un server nostro né di terzi per essere analizzato. L'effetto "voce da pappagallo" di
+        "Ripeti con Lallo" è anch'esso elaborato sul dispositivo.
+      </p>
+      <p>
+        Se il genitore sceglie di salvare una clip, questa resta memorizzata sul dispositivo; qualunque condivisione
+        (ad es. con terze persone) è una scelta esplicita del genitore, mai un comportamento automatico dell'app.
+      </p>
+
+      <h3 class="sub">3.4 Foto dell'Album</h3>
+      <p>
+        Le foto che il bambino scatta nell'Album restano salvate solo sul dispositivo: non vengono mai caricate
+        su nostri server. L'app non analizza né riconosce il contenuto delle foto.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="sec">4. Il logopedista (collegamento opzionale)</h2>
+      <p>
+        Se la famiglia ha un logopedista e sceglie di collegarlo tramite un codice invito, il logopedista potrà
+        vedere i progressi del bambino collegato e proporre un piano di esercizi. Il collegamento è sempre una
+        scelta del genitore, mai un requisito per usare l'app, e può essere rimosso in qualsiasi momento dall'area
+        Genitori.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="sec">5. Con chi condividiamo i dati</h2>
+      <p>Usiamo alcuni fornitori specializzati per far funzionare l'app. Nessuno di loro riceve l'audio del bambino.</p>
+      <table>
+        <tr><th>Fornitore</th><th>A cosa serve</th><th>Cosa riceve</th></tr>
+        <tr><td>Supabase</td><td>Database, autenticazione, conservazione dei dati dell'account</td><td>Email del genitore, dati del bambino elencati al punto 3.2</td></tr>
+        <tr><td>ElevenLabs</td><td>Voce della mascotte Lallo (testi fissi dell'app, letti da una voce sintetica)</td><td>Solo i testi dell'app da leggere ad alta voce — mai la voce del bambino</td></tr>
+        <tr><td>RevenueCat</td><td>Gestione degli abbonamenti in-app</td><td>Stato dell'abbonamento, identificativo anonimo collegato all'account</td></tr>
+        <tr><td>Apple / Google</td><td>Pagamento dell'abbonamento tramite App Store / Play Store</td><td>Dati di pagamento — mai visti da noi</td></tr>
+      </table>
+      <p style="font-size:13.5px;color:var(--ink-soft)">
+        Alcuni di questi fornitori hanno sede fuori dall'Unione Europea e possono trattare i dati su server
+        extra-UE, nel qual caso si affidano alle clausole contrattuali standard approvate dalla Commissione
+        Europea o ad altre garanzie equivalenti previste dal GDPR.
+        <span class="todo">DA VERIFICARE: regione server effettiva di ciascun fornitore per questo account, da confermare con i rispettivi Data Processing Agreement prima della pubblicazione definitiva</span>
+      </p>
+      <p><strong>Non usiamo pubblicità, né SDK pubblicitari, né tracker di terze parti rivolti ai bambini.</strong></p>
+    </section>
+
+    <section>
+      <h2 class="sec">6. Per quanto tempo conserviamo i dati</h2>
+      <p>
+        Conserviamo i dati dell'account finché resta attivo. Se il genitore chiede la cancellazione dell'account,
+        cancelliamo i dati personali entro 30 giorni, salvo quanto dobbiamo conservare più a lungo per obblighi
+        di legge (ad es. dati fiscali legati a un abbonamento pagato).
+        <span class="todo">DA CONFERMARE: politica di conservazione definitiva</span>
+      </p>
+    </section>
+
+    <section>
+      <h2 class="sec">7. I tuoi diritti</h2>
+      <p>Come genitore, in qualsiasi momento puoi chiederci, scrivendo a <a href="mailto:info@lallo.app">info@lallo.app</a>:</p>
+      <ul>
+        <li><strong>Accesso</strong>: una copia dei dati che abbiamo sulla tua famiglia;</li>
+        <li><strong>Rettifica</strong>: correggere dati inesatti;</li>
+        <li><strong>Cancellazione</strong>: eliminare l'account e i dati collegati;</li>
+        <li><strong>Portabilità</strong>: ricevere i dati in un formato leggibile da altri servizi;</li>
+        <li><strong>Opposizione/limitazione</strong>: opporti a un trattamento specifico;</li>
+        <li><strong>Revoca del consenso</strong> (es. al microfono) in qualsiasi momento, dall'area Genitori → Privacy.</li>
+      </ul>
+      <p>
+        Se ritieni che i tuoi diritti non siano stati rispettati, puoi presentare reclamo al
+        <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">Garante per la protezione dei dati personali</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="sec">8. Sicurezza</h2>
+      <p>
+        I dati sono conservati con cifratura a riposo lato database. L'accesso ai dati di ciascuna famiglia è
+        limitato tecnicamente al genitore proprietario dell'account e, se collegato, al logopedista attivo —
+        nessun altro utente dell'app può vederli.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="sec">9. Modifiche a questa informativa</h2>
+      <p>
+        Se cambiamo in modo sostanziale come trattiamo i dati, aggiorniamo questa pagina e, se il cambiamento
+        riguarda dati del bambino, avvisiamo il genitore anche in-app prima che il cambiamento diventi effettivo.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="sec">10. Contatti</h2>
+      <p>Per qualunque domanda su questa informativa o sui dati della tua famiglia: <a href="mailto:info@lallo.app">info@lallo.app</a></p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Lallo</span>
+    <a href="/">lallo.app</a>
+  </div>
+</footer>
+
+</body>
+</html>

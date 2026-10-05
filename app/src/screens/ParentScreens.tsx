@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, Switch, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Switch, Alert, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { getLinkedTherapist } from "../api/therapists";
@@ -319,8 +319,8 @@ const dashStyles = StyleSheet.create({
    Consenso esplicito alla registrazione audio (punto 5 del feedback clinico/legale,
    luglio 2026): raggiungibile solo dalla sezione genitori, dietro l'adult gate. Finché
    audioRecordingConsent è false, esercizi come il Registratore restano bloccati (vedi
-   SessionScreen.tsx). Link a Privacy Policy/Cookie Policy: strutturati qui ma i documenti
-   legali veri non esistono ancora — vedi TODO sotto, non inventarne il contenuto. */
+   SessionScreen.tsx). Link alla Privacy Policy: vedi landing/privacy.html (ottobre 2026) —
+   apre il documento reale su lallo.app, non più un placeholder. */
 export function PrivacyConsentScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const profile = useGamificationStore((s) => s.profile);
@@ -341,11 +341,11 @@ export function PrivacyConsentScreen({ navigation }: any) {
     }
   }
 
-  function openLegalDoc(name: string) {
-    // TODO: collegare l'URL vero della Privacy Policy / Cookie Policy (probabilmente
-    // ospitata sul dominio della landing page) prima della submission App Store/Play Store.
-    // Non fabbricare qui un testo legale placeholder: meglio segnalare che manca.
-    Alert.alert(`${name} — in preparazione`, "Il documento sarà collegato qui prima della pubblicazione sugli store.");
+  // Un solo documento (lallo.app/privacy.html) copre sia il trattamento dati sia l'assenza
+  // di cookie/tracker di terze parti (vedi sezione 5 della pagina) — niente Cookie Policy
+  // separata da scrivere, non avremmo comunque contenuto diverso da dirci.
+  function openLegalDoc() {
+    Linking.openURL("https://lallo.app/privacy.html");
   }
 
   if (!profile) return null;
@@ -421,12 +421,8 @@ export function PrivacyConsentScreen({ navigation }: any) {
         </View>
       </View>
 
-      <Pressable style={privacyStyles.linkRow} onPress={() => openLegalDoc("Privacy Policy")}>
+      <Pressable style={privacyStyles.linkRow} onPress={openLegalDoc}>
         <Text style={privacyStyles.linkRowText}>Privacy Policy</Text>
-        <Text style={privacyStyles.chevronLink}>›</Text>
-      </Pressable>
-      <Pressable style={privacyStyles.linkRow} onPress={() => openLegalDoc("Cookie Policy")}>
-        <Text style={privacyStyles.linkRowText}>Cookie Policy</Text>
         <Text style={privacyStyles.chevronLink}>›</Text>
       </Pressable>
     </ScrollView>
