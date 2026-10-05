@@ -119,7 +119,7 @@ dispositivo medico, che Lallo esplicitamente non è.
 | URL Privacy Policy | `https://lallo.app/privacy.html` |
 | URL Termini d'uso (EULA personalizzata) | `https://lallo.app/terms.html` |
 | URL Marketing | `https://lallo.app` |
-| URL Supporto | ⚠️ non esiste ancora una pagina/contatto di supporto dedicato — serve prima di sottomettere. Più semplice: `mailto:info@lallo.app` come contatto, o una sezione `/support` sul sito |
+| URL Supporto | `https://lallo.app/support.html` |
 
 ## Una decisione da prendere prima di sottomettere: Apple "Kids Category"
 

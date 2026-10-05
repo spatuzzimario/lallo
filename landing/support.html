@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lallo — Assistenza</title>
+<meta name="description" content="Assistenza per l'app Lallo: come contattarci, domande frequenti su accesso, abbonamento e privacy.">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link href="fonts/fonts.css" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF6EE;
+    --paper-2:#F3EBDD;
+    --ink:#1F2E2B;
+    --ink-soft:#4A5A56;
+    --jade:#137A6E;
+    --jade-deep:#0E5C53;
+    --coral:#FF6A4D;
+    --coral-deep:#E84B30;
+    --sun:#FFC53D;
+    --mist:#E4EFEA;
+    --line:#D9CEBC;
+    --shadow: 18px 18px 0 rgba(31,46,43,.07);
+    --radius:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Figtree",system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.1;letter-spacing:-.01em;}
+  a{color:var(--jade-deep);text-decoration:underline}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  header.top{padding:28px 0;border-bottom:1px solid var(--line);background:#fff}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand img{width:34px;height:34px;border-radius:10px}
+  .back{font-size:14px;font-weight:600;color:var(--jade-deep)}
+  main{padding:48px 0 90px}
+  h1.page-title{font-size:clamp(28px,5vw,40px);margin-bottom:10px}
+  .updated{color:var(--ink-soft);font-size:13.5px;margin-bottom:30px}
+  .tldr{
+    background:var(--mist);
+    border:1.5px solid var(--jade);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin-bottom:40px;
+  }
+  .tldr h2{font-size:17px;color:var(--jade-deep);margin-bottom:10px}
+  .tldr p{font-size:14.5px;margin-bottom:0}
+  .contact-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+  .btn{
+    display:inline-block;
+    background:var(--coral);
+    color:#fff;
+    font-weight:700;
+    font-size:14.5px;
+    padding:12px 20px;
+    border-radius:999px;
+    text-decoration:none;
+  }
+  .btn.secondary{background:#fff;color:var(--jade-deep);border:1.5px solid var(--jade)}
+  section{margin-bottom:34px}
+  h2.sec{font-size:21px;margin-bottom:12px;color:var(--ink);padding-top:6px}
+  .faq{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 20px;
+    margin:12px 0;
+  }
+  .faq h3{font-size:16px;color:var(--jade-deep);margin-bottom:8px}
+  p{margin-bottom:12px;font-size:15px;color:var(--ink)}
+  ul,ol{margin:0 0 12px 20px}
+  li{margin-bottom:6px;font-size:15px}
+  .todo{
+    display:inline-block;
+    background:var(--sun);
+    color:var(--ink);
+    font-size:11.5px;
+    font-weight:800;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  footer{border-top:1px solid var(--line);padding:30px 0;background:#fff}
+  footer .wrap{color:var(--ink-soft);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media(max-width:600px){
+    .tldr{padding:18px}
+    footer .wrap{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a href="/" class="brand"><img src="img/favicon.png" alt=""> Lallo</a>
+    <a href="/" class="back">← Torna al sito</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1 class="page-title">Assistenza</h1>
+    <p class="updated">Come possiamo aiutarti</p>
+
+    <div class="tldr">
+      <h2>Scrivici direttamente</h2>
+      <p>
+        Per qualunque problema con l'app — accesso, abbonamento, un bug, o una domanda sulla privacy
+        della tua famiglia — scrivici: rispondiamo personalmente, di solito entro 2 giorni lavorativi.
+      </p>
+      <div class="contact-row">
+        <a class="btn" href="mailto:info@lallo.app">✉️ info@lallo.app</a>
+      </div>
+    </div>
+
+    <section>
+      <h2 class="sec">Domande frequenti</h2>
+
+      <div class="faq">
+        <h3>Non ricevo il codice di accesso, o mi dice "codice non valido o scaduto"</h3>
+        <p>
+          Lallo non usa password: a ogni accesso inviamo un codice temporaneo via email. Controlla che
+          l'email sia scritta correttamente e guarda anche nello spam. Il codice scade dopo pochi minuti:
+          se è passato troppo tempo, torna alla schermata di accesso e richiedine uno nuovo invece di
+          riusare quello vecchio.
+        </p>
+      </div>
+
+      <div class="faq">
+        <h3>Come annullo l'abbonamento o la prova gratuita?</h3>
+        <p>
+          L'abbonamento è gestito da Apple o Google, non da noi: va annullato dalle impostazioni del tuo
+          account Apple (Impostazioni → il tuo nome → Abbonamenti) o Google Play (Play Store → Abbonamenti),
+          almeno 24 ore prima del rinnovo per evitare l'addebito. Non possiamo annullarlo noi al posto tuo,
+          perché il pagamento passa interamente da loro.
+        </p>
+      </div>
+
+      <div class="faq">
+        <h3>Posso usare l'app con più di un figlio?</h3>
+        <p>
+          Sì: un solo abbonamento copre più profili bambino sotto lo stesso account genitore. Puoi
+          aggiungere un nuovo bambino dall'area Genitori o dal selettore in alto nell'app.
+        </p>
+      </div>
+
+      <div class="faq">
+        <h3>Come cancello l'account e i dati di mio figlio?</h3>
+        <p>
+          Scrivi a <a href="mailto:info@lallo.app">info@lallo.app</a> dall'email con cui hai creato
+          l'account, indicando che vuoi cancellare l'account. Cancelliamo i dati personali entro 30 giorni,
+          come spiegato nella <a href="privacy.html">Privacy Policy</a>.
+        </p>
+      </div>
+
+      <div class="faq">
+        <h3>Un gioco non funziona, o il microfono non si attiva</h3>
+        <p>
+          Controlla prima che Lallo abbia il permesso di usare il microfono nelle impostazioni del telefono
+          (Impostazioni → Lallo → Microfono) e di aver dato il consenso alla registrazione nella schermata
+          dedicata in-app. Se il problema resta, scrivici a <a href="mailto:info@lallo.app">info@lallo.app</a>
+          descrivendo cosa succede e su che dispositivo — più dettagli ci dai, più in fretta troviamo la causa.
+        </p>
+      </div>
+
+      <div class="faq">
+        <h3>Ho un logopedista: come collego la terapia di mio figlio?</h3>
+        <p>
+          Dall'area Genitori trovi "Hai un logopedista? Collega la terapia": basta il codice invito che ti
+          dà il tuo logopedista. È sempre facoltativo e puoi rimuovere il collegamento quando vuoi.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec">Altre risorse</h2>
+      <ul>
+        <li><a href="privacy.html">Informativa sulla privacy</a> — come trattiamo i dati della tua famiglia</li>
+        <li><a href="terms.html">Termini d'uso</a> — regole di utilizzo e abbonamento</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Lallo</span>
+    <span><a href="terms.html">Termini d'uso</a> · <a href="privacy.html">Privacy</a> · <a href="/">lallo.app</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
