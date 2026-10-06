@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#FBF6EE",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.lallo.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
