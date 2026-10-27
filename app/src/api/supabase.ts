@@ -8,6 +8,7 @@
 // Nessuna schermata scrive ancora su queste tabelle: questo file è solo lo scheletro del
 // client + lo schema (supabase/schema.sql) pronti per quando le credenziali arriveranno.
 import { createClient } from "@supabase/supabase-js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -23,7 +24,21 @@ if (!isSupabaseConfigured) {
 
 // Client "no-op" quando non configurato: evita di far esplodere l'app con una URL fittizia,
 // ma qualunque chiamata reale fallirà finché non vengono impostate le env var vere.
+//
+// Senza `auth.storage` qui, il client supabase-js in React Native non ha nessun posto dove
+// scrivere la sessione su disco: sopravvive solo finché il processo dell'app resta vivo, e
+// sparisce ogni volta che l'app viene chiusa del tutto (il comportamento riportato dal
+// founder su TestFlight — richiesto di nuovo login e onboarding a ogni riavvio, perché
+// App.tsx non trovava più nessuna sessione da cui ripartire).
 export const supabase = createClient(
   supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key"
+  supabaseAnonKey || "placeholder-anon-key",
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  }
 );
