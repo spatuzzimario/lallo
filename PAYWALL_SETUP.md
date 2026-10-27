@@ -11,7 +11,7 @@ Hai già l'account sviluppatore Apple attivo, quindi:
 1. App Store Connect → la tua app → **Funzionalità → Acquisti in-app** → **+**
 2. Crea un **gruppo di abbonamenti** (es. "Lallo Premium") se non esiste già
 3. Dentro il gruppo, crea due abbonamenti auto-rinnovabili:
-   - **Annuale**: ID prodotto `lallo_annual` — prezzo che corrisponda a ~€47,88/anno
+   - **Annuale**: ID prodotto `lallo_annual` — prezzo che corrisponda a ~€47,99/anno
      (framing "€3,99/mese" nell'app)
    - **Mensile**: ID prodotto `lallo_monthly` — prezzo ~€7,99/mese
 4. Su entrambi, configura **3 giorni di prova gratuita** (Introductory Offer → Free Trial)

@@ -14,7 +14,7 @@ const C = { bg: "#FBF6EE", primary: "#FF6A4D", primaryDeep: "#E84B30", jade: "#1
 // offerte non ancora configurate) — vedi PAYWALL_SETUP.md. Quando è disponibile, i prezzi
 // veri arrivano dall'offerta RevenueCat/store (localizzati, sempre aggiornati).
 const FALLBACK_PLANS = [
-  { id: "annual", label: "Annuale", price: "3,99 €", period: "anno", renewalPrice: "47,88 €", sub: "/mese · 47,88 €/anno · 3 giorni gratis", badge: "Risparmia ~50%" },
+  { id: "annual", label: "Annuale", price: "3,99 €", period: "anno", renewalPrice: "47,99 €", sub: "/mese · 47,99 €/anno · 3 giorni gratis", badge: "Risparmia ~50%" },
   { id: "monthly", label: "Mensile", price: "7,99 €", period: "mese", renewalPrice: "7,99 €", sub: "/mese · disdici quando vuoi", badge: null as string | null },
 ];
 
