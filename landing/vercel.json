@@ -1,7 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/guide", "destination": "https://lallo-guide.vercel.app/guide/" },
+    { "source": "/guide", "destination": "https://lallo-guide.vercel.app/guide/index.html" },
+    { "source": "/guide/", "destination": "https://lallo-guide.vercel.app/guide/index.html" },
+    { "source": "/guide/:slug([a-z0-9-]+)", "destination": "https://lallo-guide.vercel.app/guide/:slug/index.html" },
+    { "source": "/guide/:slug([a-z0-9-]+)/", "destination": "https://lallo-guide.vercel.app/guide/:slug/index.html" },
     { "source": "/guide/:path*", "destination": "https://lallo-guide.vercel.app/guide/:path*" }
   ]
 }
