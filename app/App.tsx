@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text, Image } from "react-native";
+import { Text, Image, View, StyleSheet, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import IntroSplashScreen from "./src/screens/IntroSplashScreen";
@@ -247,36 +247,53 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer ref={navigationRef}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Trust" component={TrustScreen} />
-          <Stack.Screen name="TherapistLink" component={TherapistLinkScreen} />
-          <Stack.Screen name="TherapistCodeEntry" component={TherapistCodeEntryScreen} />
-          <Stack.Screen name="TherapistOnboarding" component={TherapistOnboardingScreen} />
-          <Stack.Screen name="TherapistCodeReady" component={TherapistCodeReadyScreen} />
-          <Stack.Screen name="FindTherapist" component={FindTherapistScreen} />
-          <Stack.Screen name="ChildName" component={ChildNameScreen} />
-          <Stack.Screen name="ChildGender" component={ChildGenderScreen} />
-          <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
-          <Stack.Screen name="AvatarPicker" component={AvatarPickerScreen} />
-          <Stack.Screen name="WordCount" component={WordCountScreen} />
-          <Stack.Screen name="EvaluatedByTherapist" component={EvaluatedByTherapistScreen} />
-          <Stack.Screen name="DiagnosedConditions" component={DiagnosedConditionsScreen} />
-          <Stack.Screen name="StrugglingSounds" component={StrugglingSoundsScreen} />
-          <Stack.Screen name="TrustStat" component={TrustStatScreen} />
-          <Stack.Screen name="Results" component={ResultsScreen} />
-          <Stack.Screen name="Auth" component={AuthScreen} />
-          <Stack.Screen name="Paywall" component={PaywallScreen} />
-          <Stack.Screen name="Permissions" component={PermissionsScreen} />
-          <Stack.Screen name="MainTabs" component={MainTabs} />
-          <Stack.Screen name="Livelli" component={LivelliScreen} />
-          <Stack.Screen name="Session" component={SessionScreen} />
-          <Stack.Screen name="PrivacyConsent" component={PrivacyConsentScreen} />
-          <Stack.Screen name="MicConsent" component={MicConsentScreen} options={{ presentation: "modal" }} />
-        </Stack.Navigator>
-      </NavigationContainer>
-      {showIntro && <IntroSplashScreen onDone={() => setShowIntro(false)} />}
-    </SafeAreaProvider>
+    <View style={webStyles.outer}>
+      <View style={webStyles.frame}>
+        <SafeAreaProvider>
+          <NavigationContainer ref={navigationRef}>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="Trust" component={TrustScreen} />
+              <Stack.Screen name="TherapistLink" component={TherapistLinkScreen} />
+              <Stack.Screen name="TherapistCodeEntry" component={TherapistCodeEntryScreen} />
+              <Stack.Screen name="TherapistOnboarding" component={TherapistOnboardingScreen} />
+              <Stack.Screen name="TherapistCodeReady" component={TherapistCodeReadyScreen} />
+              <Stack.Screen name="FindTherapist" component={FindTherapistScreen} />
+              <Stack.Screen name="ChildName" component={ChildNameScreen} />
+              <Stack.Screen name="ChildGender" component={ChildGenderScreen} />
+              <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
+              <Stack.Screen name="AvatarPicker" component={AvatarPickerScreen} />
+              <Stack.Screen name="WordCount" component={WordCountScreen} />
+              <Stack.Screen name="EvaluatedByTherapist" component={EvaluatedByTherapistScreen} />
+              <Stack.Screen name="DiagnosedConditions" component={DiagnosedConditionsScreen} />
+              <Stack.Screen name="StrugglingSounds" component={StrugglingSoundsScreen} />
+              <Stack.Screen name="TrustStat" component={TrustStatScreen} />
+              <Stack.Screen name="Results" component={ResultsScreen} />
+              <Stack.Screen name="Auth" component={AuthScreen} />
+              <Stack.Screen name="Paywall" component={PaywallScreen} />
+              <Stack.Screen name="Permissions" component={PermissionsScreen} />
+              <Stack.Screen name="MainTabs" component={MainTabs} />
+              <Stack.Screen name="Livelli" component={LivelliScreen} />
+              <Stack.Screen name="Session" component={SessionScreen} />
+              <Stack.Screen name="PrivacyConsent" component={PrivacyConsentScreen} />
+              <Stack.Screen name="MicConsent" component={MicConsentScreen} options={{ presentation: "modal" }} />
+            </Stack.Navigator>
+          </NavigationContainer>
+          {showIntro && <IntroSplashScreen onDone={() => setShowIntro(false)} />}
+        </SafeAreaProvider>
+      </View>
+    </View>
   );
 }
+
+// Ogni schermata è stata pensata per la larghezza di un telefono (griglie, card, testo) — su
+// un browser desktop largo, senza questo contenitore, tutto si allarga a riempire la finestra
+// invece di restare leggibile (segnalato dal founder: caselle enormi a schermo intero). Invece
+// di riscrivere il layout di ogni schermata per il desktop, si contiene l'intera app dentro
+// una cornice larga quanto un telefono e centrata — stesso approccio della demo "a cornice
+// telefono" già su landing/index.html. Su un telefono vero (anche aprendo il sito da lì) width
+// reale < 480 quindi la cornice coincide con lo schermo, nessuna differenza rispetto a oggi.
+// Su nativo (iOS/Android) questi stili sono un View in più del tutto neutro: flex:1 passthrough.
+const webStyles = StyleSheet.create({
+  outer: Platform.OS === "web" ? { flex: 1, alignItems: "center", backgroundColor: "#DDD3C0" } : { flex: 1 },
+  frame: Platform.OS === "web" ? { flex: 1, width: "100%", maxWidth: 480, backgroundColor: "#FBF6EE" } : { flex: 1 },
+});
