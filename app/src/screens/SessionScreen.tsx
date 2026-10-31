@@ -23,18 +23,21 @@ import { useGamificationStore } from "../store/useGamificationStore";
 import { AttemptResult, ClinicalLevel, SessionResult, LEVEL_LABELS, LEVEL_ORDER } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
 import { useOcaListening } from "../hooks/useOcaListening";
-import { useResponsiveColumns } from "../hooks/useResponsiveColumns";
+import { useFillGrid } from "../hooks/useFillGrid";
 
 // Config condivisa dalle griglie a tile delle schermate di discriminazione (Caccia al suono,
 // Ascolta e scegli, Coppie minime, Indica la frase, Completa la rima) — stessa dimensione
-// "sentita" su ogni gioco invece di ripetere gli stessi numeri 5 volte. 150-220px tiene conto
-// dell'icona da 112px dentro ogni tile più la parola sotto; il pavimento dà sempre almeno 2
-// colonne su un telefono (uguale a com'era prima con "47%"), il soffitto evita tile enormi su
-// schermi larghissimi, e in mezzo si riempie lo spazio con più colonne.
+// "sentita" su ogni gioco invece di ripetere gli stessi numeri 5 volte. Il pavimento (150px)
+// dà sempre almeno 2 colonne su un telefono (uguale a com'era prima con "47%"); il soffitto
+// (vedi sotto) lascia che le carte crescano parecchio quando lo schermo è grande e gli
+// elementi pochi — useFillGrid (non più solo la larghezza) sceglie righe/colonne/dimensione
+// per riempire anche lo spazio verticale, invece di lasciarlo vuoto sotto una griglia piccola.
 const TILE_GRID_GAP = 10;
 const TILE_MIN_WIDTH = 150;
-const TILE_MAX_WIDTH = 220;
-const TILE_SCREEN_PADDING = 16; // combacia con styles.container.padding più sotto
+// Soffitto alto apposta: con pochi elementi e uno schermo grande (iPad) le carte devono poter
+// crescere parecchio per riempire lo spazio, non fermarsi alla dimensione "giusta per un
+// telefono" (vedi useFillGrid).
+const TILE_MAX_WIDTH = 320;
 
 type ExerciseType =
   | "caccia" | "memory" | "registratore" | "coppie" | "oca" | "sequenze"
@@ -299,8 +302,8 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   const targetCount = tiles.filter((t) => t.correct).length;
   const { playCorrect, playWrong } = useFeedbackSounds();
   const { speak, speakWord } = useVoice();
-  const { cardWidth } = useResponsiveColumns({
-    minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP, horizontalPadding: TILE_SCREEN_PADDING,
+  const { cardWidth, onLayout } = useFillGrid({
+    itemCount: tiles.length, minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP,
   });
 
   useEffect(() => {
@@ -325,7 +328,7 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.question}>Trova le {targetCount} parole con il suono {meta.label} 🦜</Text>
-      <View style={styles.grid}>
+      <View style={styles.grid} onLayout={onLayout}>
         {tiles.map((t) => {
           const state = picked[t.parola];
           return (
@@ -339,7 +342,7 @@ function CacciaAlSuono({ phonemeKey, position, onAttempt, onDone }: {
                 state === false && styles.tileWrong,
               ]}
             >
-              <WordVisual parola={t.parola} emoji={t.emoji} size={Math.min(112, cardWidth - 50)} textStyle={styles.tileEmoji} />
+              <WordVisual parola={t.parola} emoji={t.emoji} size={cardWidth - 50} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{t.parola}</Text>
               {state === true && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
               {state === false && <Text style={styles.feedbackBadge}>🔄</Text>}
@@ -439,16 +442,18 @@ const syllableStyles = StyleSheet.create({
    settembre 2026): 3 → 6 → 9 coppie, cioè 6 → 12 → 18 carte. Il pool è quello della sola
    posizione in allenamento (iniziale per Livello 2, mediana per Livello 3) — prima pescava
    iniziale+mediana insieme, ma i due livelli vanno tenuti separati come gli altri giochi.
-   Sempre 3 carte per riga (2 → 4 → 6 file man mano che le partite crescono), non più 4 o 5
-   per riga alle partite più difficili: le carte restavano piccole proprio quando il bambino
-   doveva tenerne a mente di più. Larghezza fissa anche per le carte coperte, non solo per
-   quelle scoperte (vedi MEMORY_CARD_IMAGE_SIZE sotto — era la causa reale del "le carte
-   sembrano più grandi quando si girano", bug segnalato). */
+   Le colonne dipendono solo dalla larghezza disponibile (useFillGrid con
+   columnsFromWidthOnly), mai dal numero di coppie in gioco — più file quando le partite
+   crescono, non più colonne, altrimenti le carte si rimpiccioliscono proprio quando il
+   bambino deve tenerne a mente di più. Larghezza fissa anche per le carte coperte, non solo
+   per quelle scoperte (era la causa reale del "le carte sembrano più grandi quando si
+   girano", bug segnalato). */
 const MEMORY_TIERS = [3, 6, 9]; // coppie per partita
 const MEMORY_GRID_GAP = 8;
 const MEMORY_MIN_CARD_WIDTH = 90; // sempre lo stesso indipendentemente dal numero di coppie in gioco (vedi sopra) — qui varia solo con la larghezza reale della finestra, non con la difficoltà
-const MEMORY_MAX_CARD_WIDTH = 140;
-const MEMORY_CARD_IMAGE_SIZE = 64; // resta sotto MEMORY_MIN_CARD_WIDTH in ogni configurazione, nessun bisogno di scalarla
+// Soffitto alzato (prima 140) perché ora le carte possono crescere anche in verticale per
+// riempire lo spazio quando ce n'è tanto (es. iPad) — vedi useFillGrid con columnsFromWidthOnly.
+const MEMORY_MAX_CARD_WIDTH = 200;
 
 function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   phonemeKey: PhonemeKey; position: "iniziale" | "mediana";
@@ -471,9 +476,11 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
   const [firstUid, setFirstUid] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
   const { speak, speakWord } = useVoice();
-  const { cardWidth: memCardWidth } = useResponsiveColumns({
-    minCardWidth: MEMORY_MIN_CARD_WIDTH, maxCardWidth: MEMORY_MAX_CARD_WIDTH, gap: MEMORY_GRID_GAP, horizontalPadding: TILE_SCREEN_PADDING,
+  const { cardWidth: memCardWidth, onLayout: memOnLayout } = useFillGrid({
+    itemCount: cards.length, gap: MEMORY_GRID_GAP, minCardWidth: MEMORY_MIN_CARD_WIDTH, maxCardWidth: MEMORY_MAX_CARD_WIDTH,
+    columnsFromWidthOnly: true,
   });
+  const memImageSize = Math.max(40, memCardWidth - 30);
 
   useEffect(() => {
     speak(`Trova le coppie con il suono ${meta.label}`, `tpl_memory_${phonemeKey}`);
@@ -524,7 +531,7 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
       <Text style={styles.question}>
         Trova le coppie con {meta.label} · {cards.length} carte · partita {round + 1} di {MEMORY_TIERS.length} 🦜
       </Text>
-      <ScrollView contentContainerStyle={styles.memGrid}>
+      <ScrollView style={{ flex: 1 }} onLayout={memOnLayout} contentContainerStyle={[styles.memGrid, { flexGrow: 1 }]}>
         {cards.map((c) => {
           const shown = flipped.includes(c.uid) || matched.includes(c.parola);
           const isMatched = matched.includes(c.parola);
@@ -542,7 +549,7 @@ function MemoryGame({ phonemeKey, position, onAttempt, onDone }: {
               ]}
             >
               {shown ? (
-                <WordVisual parola={c.parola} emoji={c.emoji} size={MEMORY_CARD_IMAGE_SIZE} textStyle={styles.memCardText} />
+                <WordVisual parola={c.parola} emoji={c.emoji} size={memImageSize} textStyle={styles.memCardText} />
               ) : (
                 <Text style={styles.memCardText}>?</Text>
               )}
@@ -709,9 +716,6 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
   const [picked, setPicked] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
   const { speak, speakWord } = useVoice();
-  const { cardWidth } = useResponsiveColumns({
-    minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP, horizontalPadding: TILE_SCREEN_PADDING,
-  });
 
   const roundData = useMemo(() => {
     const pool = wordsFor(phonemeKey, position);
@@ -730,6 +734,10 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
     const options = pickRandom([target, ...distractors.slice(0, 5)], Math.min(6, distractors.length + 1));
     return { target, options };
   }, [phonemeKey, position, round]);
+
+  const { cardWidth, onLayout } = useFillGrid({
+    itemCount: roundData.options.length, minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP,
+  });
 
   useEffect(() => {
     if (round === 0) {
@@ -761,7 +769,7 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
       <Pressable style={styles.playBtn} onPress={() => speakWord(roundData.target.parola)}>
         <Text style={styles.recBtnText}>▶</Text>
       </Pressable>
-      <View style={styles.grid}>
+      <View style={styles.grid} onLayout={onLayout}>
         {roundData.options.map((w) => {
           const isTarget = w.parola === roundData.target.parola;
           const wasPicked = picked === w.parola;
@@ -773,7 +781,7 @@ function AscoltaEScegli({ phonemeKey, position, onAttempt, onDone }: {
               onPress={() => pick(w)}
               style={[styles.tile, { width: cardWidth, height: cardWidth }, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
             >
-              <WordVisual parola={w.parola} emoji={w.emoji} size={Math.min(90, cardWidth - 50)} textStyle={styles.tileEmoji} />
+              <WordVisual parola={w.parola} emoji={w.emoji} size={cardWidth - 50} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{w.parola}</Text>
               {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
               {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
@@ -823,8 +831,8 @@ function CoppieMinime({ phonemeKey, position, onAttempt, onDone }: {
   const [picked, setPicked] = useState<string | null>(null);
   const { playCorrect, playWrong } = useFeedbackSounds();
   const { speak, speakWord } = useVoice();
-  const { cardWidth } = useResponsiveColumns({
-    minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP, horizontalPadding: TILE_SCREEN_PADDING,
+  const { cardWidth, onLayout } = useFillGrid({
+    itemCount: pair.length, minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP,
   });
 
   function playTarget() { speakWord(target.parola); }
@@ -863,7 +871,7 @@ function CoppieMinime({ phonemeKey, position, onAttempt, onDone }: {
       <Pressable style={styles.playBtn} onPress={playTarget}>
         <Text style={styles.recBtnText}>▶</Text>
       </Pressable>
-      <View style={styles.grid}>
+      <View style={styles.grid} onLayout={onLayout}>
         {pair.map((w) => {
           const state = picked === null ? null : w.parola === picked;
           const isTarget = w.parola === target.parola;
@@ -875,7 +883,7 @@ function CoppieMinime({ phonemeKey, position, onAttempt, onDone }: {
               onPress={() => pick(w)}
               style={[styles.tile, { width: cardWidth, height: cardWidth }, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
             >
-              <WordVisual parola={w.parola} emoji={w.emoji} size={Math.min(112, cardWidth - 50)} textStyle={styles.tileEmoji} />
+              <WordVisual parola={w.parola} emoji={w.emoji} size={cardWidth - 50} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{w.parola.toUpperCase()}</Text>
               {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
               {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
@@ -1158,9 +1166,6 @@ function IndicaLaFrase({ phonemeKey, onAttempt, onDone }: {
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const { speak } = useVoice();
-  const { cardWidth } = useResponsiveColumns({
-    minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP, horizontalPadding: TILE_SCREEN_PADDING,
-  });
   const totalRounds = Math.min(PRODUCTION_ROUNDS, pool.length);
   const target: PhraseEntry | undefined = pool[round];
 
@@ -1170,6 +1175,10 @@ function IndicaLaFrase({ phonemeKey, onAttempt, onDone }: {
     const distractors = pickRandom(others, Math.min(2, others.length));
     return pickRandom([target, ...distractors], distractors.length + 1);
   }, [round]);
+
+  const { cardWidth, onLayout } = useFillGrid({
+    itemCount: options.length, minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP,
+  });
 
   useEffect(() => {
     if (pool.length < 2) {
@@ -1200,7 +1209,7 @@ function IndicaLaFrase({ phonemeKey, onAttempt, onDone }: {
       <Pressable style={styles.playBtn} onPress={() => speak(target.testo, target.slug)}>
         <Text style={styles.recBtnText}>▶</Text>
       </Pressable>
-      <View style={styles.grid}>
+      <View style={styles.grid} onLayout={onLayout}>
         {options.map((opt) => {
           const entry = findWordEntry(opt.parola);
           const state = picked === null ? null : opt.parola === picked;
@@ -1213,7 +1222,7 @@ function IndicaLaFrase({ phonemeKey, onAttempt, onDone }: {
               onPress={() => pick(opt)}
               style={[styles.tile, { width: cardWidth, height: cardWidth }, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
             >
-              {entry && <WordVisual parola={entry.parola} emoji={entry.emoji} size={Math.min(100, cardWidth - 50)} textStyle={styles.tileEmoji} />}
+              {entry && <WordVisual parola={entry.parola} emoji={entry.emoji} size={cardWidth - 50} textStyle={styles.tileEmoji} />}
               {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
               {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
             </Pressable>
@@ -1236,9 +1245,6 @@ function CompletaLaRima({ phonemeKey, onAttempt, onDone }: {
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const { speak, speakWord } = useVoice();
-  const { cardWidth } = useResponsiveColumns({
-    minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP, horizontalPadding: TILE_SCREEN_PADDING,
-  });
   const totalRounds = Math.min(pool.length, 2);
   const rhyme = pool[round];
 
@@ -1247,6 +1253,10 @@ function CompletaLaRima({ phonemeKey, onAttempt, onDone }: {
     const words = [rhyme.parolaFinale, ...rhyme.distrattori].map(findWordEntry).filter((w): w is WordEntry => !!w);
     return pickRandom(words, words.length);
   }, [round]);
+
+  const { cardWidth, onLayout } = useFillGrid({
+    itemCount: options.length, minCardWidth: TILE_MIN_WIDTH, maxCardWidth: TILE_MAX_WIDTH, gap: TILE_GRID_GAP,
+  });
 
   useEffect(() => {
     if (pool.length === 0) {
@@ -1278,7 +1288,7 @@ function CompletaLaRima({ phonemeKey, onAttempt, onDone }: {
       <Pressable style={styles.recListenBtn} onPress={() => speak(rhyme.righe.join(" "), rhyme.slug)}>
         <Text style={styles.recBtnText}>▶</Text>
       </Pressable>
-      <View style={styles.grid}>
+      <View style={styles.grid} onLayout={onLayout}>
         {options.map((w) => {
           const state = picked === null ? null : w.parola === picked;
           const isTarget = w.parola === rhyme.parolaFinale;
@@ -1290,7 +1300,7 @@ function CompletaLaRima({ phonemeKey, onAttempt, onDone }: {
               onPress={() => pick(w)}
               style={[styles.tile, { width: cardWidth, height: cardWidth }, showCorrect && styles.tileCorrect, showWrong && styles.tileWrong]}
             >
-              <WordVisual parola={w.parola} emoji={w.emoji} size={Math.min(100, cardWidth - 50)} textStyle={styles.tileEmoji} />
+              <WordVisual parola={w.parola} emoji={w.emoji} size={cardWidth - 50} textStyle={styles.tileEmoji} />
               <Text style={styles.tileWord}>{w.parola.toUpperCase()}</Text>
               {showCorrect && <Text style={[styles.feedbackBadge, styles.feedbackBadgeCorrect]}>✓</Text>}
               {showWrong && <Text style={styles.feedbackBadge}>🔄</Text>}
@@ -1409,7 +1419,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: "800" },
   subtitle: { fontSize: 12, color: "#4A5A56", marginTop: 2 },
   question: { fontSize: 15, color: "#4A5A56", marginBottom: 14, textAlign: "center" },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: TILE_GRID_GAP },
+  grid: { flex: 1, flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignContent: "center", gap: TILE_GRID_GAP },
   tile: {
     borderWidth: 2, borderColor: "#D9CEBC", borderRadius: 15,
     alignItems: "center", justifyContent: "center", backgroundColor: "#fff", marginBottom: 10,
@@ -1423,7 +1433,7 @@ const styles = StyleSheet.create({
   // l'errore" (CLAUDE.md §8) — 🔄 invita a riprovare invece di segnalare una colpa.
   feedbackBadge: { position: "absolute", top: 6, right: 6, fontSize: 20 },
   feedbackBadgeCorrect: { color: "#0E5C53", fontWeight: "800" },
-  memGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: MEMORY_GRID_GAP },
+  memGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignContent: "center", gap: MEMORY_GRID_GAP },
   memCard: {
     borderRadius: 13, borderWidth: 2, borderColor: "#D9CEBC",
     backgroundColor: "#137A6E", alignItems: "center", justifyContent: "center", marginBottom: 8,
