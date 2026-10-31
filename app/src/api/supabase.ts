@@ -7,6 +7,7 @@
 // devono continuare a funzionare sullo store locale (useGamificationStore), come fanno oggi.
 // Nessuna schermata scrive ancora su queste tabelle: questo file è solo lo scheletro del
 // client + lo schema (supabase/schema.sql) pronti per quando le credenziali arriveranno.
+import { Platform } from "react-native";
 import { createClient } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -38,7 +39,12 @@ export const supabase = createClient(
       storage: AsyncStorage,
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false,
+      // Su web, dopo il redirect di ritorno da Google/Facebook la sessione arriva dentro
+      // l'URL della pagina (hash o ?code=): true fa sì che supabase-js la legga da sola al
+      // caricamento. Su nativo questo non si applica (non c'è un "URL della pagina" — il
+      // ritorno da Google/Facebook lo intercettiamo noi via expo-web-browser in auth.ts) e
+      // andava lasciato false per non far cercare a supabase-js un URL che qui non esiste.
+      detectSessionInUrl: Platform.OS === "web",
     },
   }
 );
