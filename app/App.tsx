@@ -293,7 +293,14 @@ export default function App() {
 // telefono" già su landing/index.html. Su un telefono vero (anche aprendo il sito da lì) width
 // reale < 480 quindi la cornice coincide con lo schermo, nessuna differenza rispetto a oggi.
 // Su nativo (iOS/Android) questi stili sono un View in più del tutto neutro: flex:1 passthrough.
+// flex:1 da solo su web dipende dal genitore avere già un'altezza definita per risolversi —
+// se quella catena si rompe anche su un solo antenato (incluso il nodo radice che Expo monta
+// nella pagina), i figli flex:1 crescono senza limite invece di fermarsi all'altezza della
+// finestra, e lo scroll interno delle schermate smette di funzionare (segnalato: il contenuto
+// sotto spariva invece di scorrere quando la finestra era bassa). "100vh" sul contenitore più
+// esterno è ancorato alla finestra del browser stessa, non a un antenato che potrebbe non
+// avere un'altezza propria — non dipende da come Expo monta la pagina.
 const webStyles = StyleSheet.create({
-  outer: Platform.OS === "web" ? { flex: 1, alignItems: "center", backgroundColor: "#DDD3C0" } : { flex: 1 },
-  frame: Platform.OS === "web" ? { flex: 1, width: "100%", maxWidth: 480, backgroundColor: "#FBF6EE" } : { flex: 1 },
+  outer: Platform.OS === "web" ? ({ flex: 1, minHeight: "100vh", alignItems: "center", backgroundColor: "#DDD3C0" } as any) : { flex: 1 },
+  frame: Platform.OS === "web" ? ({ flex: 1, width: "100%", maxWidth: 480, height: "100%", overflow: "hidden", backgroundColor: "#FBF6EE" } as any) : { flex: 1 },
 });
