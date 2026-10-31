@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator, Linking } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { FREE_PHONEMES, PHONEME_ORDER, WORD_BANK } from "../constants/wordBank";
@@ -95,7 +95,9 @@ export default function PaywallScreen({ navigation, route }: any) {
       setErrorMsg(
         isPurchasesConfigured()
           ? "Offerta non disponibile al momento. Riprova più tardi."
-          : "Gli acquisti non sono disponibili in questa modalità di anteprima — servono una build reale e le offerte configurate (vedi PAYWALL_SETUP.md)."
+          : Platform.OS === "web"
+            ? "Gli abbonamenti dal sito arrivano presto — per ora puoi abbonarti dall'app."
+            : "Gli acquisti non sono disponibili in questa modalità di anteprima — servono una build reale e le offerte configurate (vedi PAYWALL_SETUP.md)."
       );
       return;
     }

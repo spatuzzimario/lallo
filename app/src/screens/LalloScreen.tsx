@@ -13,7 +13,8 @@ import {
   requestRecordingPermissionsAsync,
   setAudioModeAsync,
 } from "expo-audio";
-import Rive, { Fit, RiveRef } from "rive-react-native";
+import type { RiveRef } from "rive-react-native";
+import { LalloRig } from "../components/LalloRig";
 import { useGamificationStore, getDayStreak } from "../store/useGamificationStore";
 import { getHunger, getMood, LALLO_MOOD_COPY, LALLO_FOODS, LALLO_CELEBRATE_FOODS } from "../constants/lalloPet";
 import { getWordImage } from "../constants/wordImage";
@@ -259,15 +260,7 @@ export default function LalloScreen({ navigation }: any) {
         <View style={styles.petCard}>
           <View ref={petBoxRef} collapsable={false} style={{ width: petSize, height: petSize }}>
             <Pressable onPress={pokeLallo} style={{ width: petSize, height: petSize }}>
-              <Rive
-                ref={riveRef}
-                source={require("../../assets/lallo.riv")}
-                artboardName="Lallo"
-                stateMachineName="LalloStateMachine"
-                autoplay
-                fit={Fit.Contain}
-                style={{ width: petSize, height: petSize }}
-              />
+              <LalloRig riveRef={riveRef} size={petSize} />
             </Pressable>
           </View>
           {isSleepy ? (
