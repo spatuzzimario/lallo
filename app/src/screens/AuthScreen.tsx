@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { requestOtpCode, verifyOtpCode } from "../api/auth";
+import { requestOtpCode, verifyOtpCode, signInWithGoogle, signInWithFacebook } from "../api/auth";
 import { ensureParentProfile } from "../api/profiles";
 import { createChild } from "../api/children";
 import { ensureTherapistProfile, registerTherapist } from "../api/therapists";
@@ -40,6 +40,7 @@ export default function AuthScreen({ navigation, route }: any) {
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
@@ -61,49 +62,29 @@ export default function AuthScreen({ navigation, route }: any) {
     setStep("code");
   }
 
-  async function verifyCode() {
-    if (code.trim().length < 4) return;
-    setLoading(true);
-    setErrorMsg(null);
-    const { error } = await verifyOtpCode(email.trim(), code.trim());
-    if (error) {
-      setLoading(false);
-      setErrorMsg("Codice non valido o scaduto. Richiedine uno nuovo.");
-      return;
-    }
-
+  // Tutto quello che succede DOPO che Supabase ha una sessione valida — identico sia che ci
+  // si sia arrivati con email+codice sia con Google/Facebook, quindi vive qui una volta sola
+  // invece che duplicato in verifyCode() e handleOAuth(). Ritorna un messaggio d'errore da
+  // mostrare, o null se è andato tutto bene (la navigazione l'ha già fatta lei stessa).
+  async function completeSignIn(): Promise<string | null> {
     if (role === "therapist") {
       const { error: profileError } = await ensureTherapistProfile();
-      if (profileError) {
-        setLoading(false);
-        setErrorMsg("Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.");
-        return;
-      }
+      if (profileError) return "Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.";
       const { data: therapist, error: registerError } = await registerTherapist({
         fullName: therapistFullName,
         alboNumber: therapistAlboNumber,
       });
-      setLoading(false);
       if (registerError || !therapist) {
-        setErrorMsg("Accesso riuscito, ma non siamo riusciti a registrarti come logopedista. Riprova.");
-        return;
+        return "Accesso riuscito, ma non siamo riusciti a registrarti come logopedista. Riprova.";
       }
       navigation.navigate("TherapistCodeReady", { inviteCode: therapist.invite_code, fullName: therapist.full_name });
-      return;
+      return null;
     }
 
     const { error: profileError } = await ensureParentProfile();
-    if (profileError) {
-      setLoading(false);
-      setErrorMsg("Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.");
-      return;
-    }
+    if (profileError) return "Accesso riuscito, ma non siamo riusciti a creare il tuo profilo. Riprova.";
     const { data: child, error: childError } = await createChild({ name, birthdate, gender, avatarId });
-    setLoading(false);
-    if (childError) {
-      setErrorMsg("Accesso riuscito, ma non siamo riusciti a salvare il profilo di " + name + ". Riprova.");
-      return;
-    }
+    if (childError) return "Accesso riuscito, ma non siamo riusciti a salvare il profilo di " + name + ". Riprova.";
     if (child) {
       setSupabaseChildId(child.id);
       // Senza questo, il bambino appena creato non comparirebbe nel selettore (ChildSwitcher)
@@ -116,6 +97,43 @@ export default function AuthScreen({ navigation, route }: any) {
     setChildInfo({ displayName: name, gender, avatarId });
     if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
     navigation.navigate("Paywall");
+    return null;
+  }
+
+  async function verifyCode() {
+    if (code.trim().length < 4) return;
+    setLoading(true);
+    setErrorMsg(null);
+    const { error } = await verifyOtpCode(email.trim(), code.trim());
+    if (error) {
+      setLoading(false);
+      setErrorMsg("Codice non valido o scaduto. Richiedine uno nuovo.");
+      return;
+    }
+    const resultError = await completeSignIn();
+    setLoading(false);
+    if (resultError) setErrorMsg(resultError);
+  }
+
+  async function handleOAuth(provider: "google" | "facebook") {
+    setOauthLoading(provider);
+    setErrorMsg(null);
+    const { error, cancelled } = (await (provider === "google" ? signInWithGoogle() : signInWithFacebook())) as {
+      error: Error | null;
+      cancelled?: boolean;
+    };
+    if (cancelled) {
+      setOauthLoading(null);
+      return;
+    }
+    if (error) {
+      setOauthLoading(null);
+      setErrorMsg(`Accesso con ${provider === "google" ? "Google" : "Facebook"} non riuscito. Riprova.`);
+      return;
+    }
+    const resultError = await completeSignIn();
+    setOauthLoading(null);
+    if (resultError) setErrorMsg(resultError);
   }
 
   if (!isSupabaseConfigured) {
@@ -185,6 +203,35 @@ export default function AuthScreen({ navigation, route }: any) {
           ) : (
             <ContinueButton label="Invia il codice" disabled={!email.includes("@")} onPress={sendCode} />
           )}
+
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>oppure</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <Pressable
+            onPress={() => handleOAuth("google")}
+            disabled={!!oauthLoading}
+            style={[styles.oauthBtn, oauthLoading && oauthLoading !== "google" && { opacity: 0.4 }]}
+          >
+            {oauthLoading === "google" ? (
+              <ActivityIndicator color={C.text} />
+            ) : (
+              <Text style={styles.oauthBtnText}>Continua con Google</Text>
+            )}
+          </Pressable>
+          <Pressable
+            onPress={() => handleOAuth("facebook")}
+            disabled={!!oauthLoading}
+            style={[styles.oauthBtn, { marginTop: 10 }, oauthLoading && oauthLoading !== "facebook" && { opacity: 0.4 }]}
+          >
+            {oauthLoading === "facebook" ? (
+              <ActivityIndicator color={C.text} />
+            ) : (
+              <Text style={styles.oauthBtnText}>Continua con Facebook</Text>
+            )}
+          </Pressable>
         </>
       ) : (
         <>
@@ -247,4 +294,16 @@ const styles = StyleSheet.create({
   ctaText: { color: "#fff", fontSize: 18, fontWeight: "700" },
   retryLink: { alignItems: "center", marginTop: 16 },
   retryLinkText: { color: C.subtext, textDecorationLine: "underline" },
+  dividerRow: { flexDirection: "row", alignItems: "center", marginTop: 20, marginBottom: 14 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: C.line },
+  dividerText: { color: C.subtext, fontSize: 12.5, marginHorizontal: 10 },
+  oauthBtn: {
+    borderWidth: 1.5,
+    borderColor: C.line,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  oauthBtnText: { color: C.text, fontSize: 15.5, fontWeight: "700" },
 });

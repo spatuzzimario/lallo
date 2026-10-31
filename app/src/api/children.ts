@@ -52,3 +52,13 @@ export async function getChildren() {
     .returns<ChildRow[]>();
   return { data, error };
 }
+
+// RLS garantisce che si possa cancellare solo una riga del proprio owner_id — nessun filtro
+// aggiuntivo va aggiunto qui lato client. Lo schema ha `on delete cascade` su
+// targets/sessions/achievements (vedi supabase/schema.sql): cancellare un bambino cancella
+// anche tutti i suoi progressi, non è recuperabile — il chiamante deve aver già mostrato una
+// conferma esplicita a un adulto prima di arrivare qui.
+export async function deleteChild(childId: string) {
+  const { error } = await supabase.from("children").delete().eq("id", childId);
+  return { error };
+}

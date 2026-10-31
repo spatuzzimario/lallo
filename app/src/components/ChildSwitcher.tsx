@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, Image, Pressable, Modal, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Image, Pressable, Modal, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { getAvatarImage } from "../constants/avatars";
-import { getChildren } from "../api/children";
+import { getChildren, deleteChild } from "../api/children";
 import { isSupabaseConfigured } from "../api/supabase";
 
 const C = {
@@ -22,8 +22,10 @@ export function ChildSwitcher({ navigation }: { navigation: any }) {
   const profile = useGamificationStore((s) => s.profile);
   const roster = useGamificationStore((s) => s.children);
   const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
+  const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   if (!profile) return null;
 
@@ -52,6 +54,42 @@ export function ChildSwitcher({ navigation }: { navigation: any }) {
     navigation.navigate("ChildName", { addingChild: true });
   }
 
+  function confirmRemove(childId: string, childName: string) {
+    Alert.alert(
+      `Rimuovere ${childName}?`,
+      "Cancella per sempre tutti i suoi progressi (suoni allenati, livelli, traguardi) — non si può annullare.",
+      [
+        { text: "Annulla", style: "cancel" },
+        { text: "Rimuovi", style: "destructive", onPress: () => removeChild(childId) },
+      ]
+    );
+  }
+
+  async function removeChild(childId: string) {
+    setRemoving(childId);
+    const { error } = await deleteChild(childId);
+    if (error) {
+      setRemoving(null);
+      Alert.alert("Non siamo riusciti a rimuoverlo", "Riprova tra poco.");
+      return;
+    }
+    const remaining = roster.filter((c) => c.id !== childId);
+    setChildrenRoster(remaining);
+    setRemoving(null);
+
+    // Se era il bambino attivo, bisogna ripartire da un profilo valido: passa al primo
+    // rimasto, o — se era l'unico — apre subito la creazione di uno nuovo, perché il resto
+    // dell'app (ChildSwitcher compreso) non sa stare senza un profilo attivo.
+    if (childId === profile?.supabaseChildId) {
+      if (remaining.length > 0) {
+        await switchTo(remaining[0].id);
+      } else {
+        setOpen(false);
+        navigation.navigate("ChildName", { addingChild: true });
+      }
+    }
+  }
+
   return (
     <>
       <Pressable style={switcherStyles.chip} onPress={() => setOpen(true)}>
@@ -71,12 +109,27 @@ export function ChildSwitcher({ navigation }: { navigation: any }) {
             ) : (
               roster.map((c) => {
                 const active = c.id === profile.supabaseChildId;
+                const busy = switching === c.id || removing === c.id;
                 return (
-                  <Pressable key={c.id} style={switcherStyles.row} onPress={() => switchTo(c.id)}>
+                  <Pressable key={c.id} style={switcherStyles.row} onPress={() => switchTo(c.id)} disabled={!!removing}>
                     <Image source={getAvatarImage(c.avatarId)} style={switcherStyles.rowImage} resizeMode="contain" />
                     <Text style={[switcherStyles.rowName, active && switcherStyles.rowNameActive]}>{c.displayName}</Text>
-                    {switching === c.id && <ActivityIndicator color={C.jade} />}
-                    {active && switching !== c.id && <Text style={switcherStyles.activeBadge}>✓</Text>}
+                    {busy ? (
+                      <ActivityIndicator color={C.jade} />
+                    ) : (
+                      <>
+                        {active && <Text style={switcherStyles.activeBadge}>✓</Text>}
+                        <Pressable
+                          hitSlop={8}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            confirmRemove(c.id, c.displayName);
+                          }}
+                        >
+                          <Text style={switcherStyles.removeText}>Rimuovi</Text>
+                        </Pressable>
+                      </>
+                    )}
                   </Pressable>
                 );
               })
@@ -111,6 +164,7 @@ const switcherStyles = StyleSheet.create({
   rowName: { flex: 1, fontSize: 15.5, fontWeight: "600", color: C.ink },
   rowNameActive: { color: C.jadeDeep, fontWeight: "800" },
   activeBadge: { color: C.jadeDeep, fontWeight: "800", fontSize: 16 },
+  removeText: { color: C.coral, fontSize: 12.5, fontWeight: "600" },
   addRow: { alignItems: "center", marginTop: 16 },
   addRowText: { color: C.coral, fontWeight: "700", fontSize: 15 },
 });
