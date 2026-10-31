@@ -6,7 +6,11 @@ import { useGamificationStore } from "../store/useGamificationStore";
 import { PHONEME_ORDER, PhonemeKey, WORD_BANK, isPremium } from "../constants/wordBank";
 import { ClinicalLevel, LEVEL_ORDER, LEVEL_LABELS } from "../types/gamification";
 import { useVoice } from "../hooks/useVoice";
+import { useResponsiveColumns } from "../hooks/useResponsiveColumns";
 import { ChildSwitcher } from "../components/ChildSwitcher";
+
+const SCREEN_PADDING = 18;
+const GRID_GAP = 12;
 
 const C = {
   paper: "#FBF6EE", ink: "#1F2E2B", inkSoft: "#4A5A56", line: "#D9CEBC",
@@ -35,6 +39,12 @@ export default function GiochiScreen({ navigation }: any) {
   const profile = useGamificationStore((s) => s.profile);
   const subscriptionActive = !!profile?.subscriptionActive;
   const { speak } = useVoice();
+  const { cardWidth } = useResponsiveColumns({
+    minCardWidth: 100,
+    maxCardWidth: 160,
+    gap: GRID_GAP,
+    horizontalPadding: SCREEN_PADDING,
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -53,7 +63,7 @@ export default function GiochiScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 18, paddingTop: insets.top + 12 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ padding: SCREEN_PADDING, paddingTop: insets.top + 12 }}>
       <View style={styles.header}>
         <Image source={require("../../assets/lallo-splash.png")} style={styles.mascot} resizeMode="contain" />
         <View style={{ flex: 1 }}>
@@ -73,7 +83,7 @@ export default function GiochiScreen({ navigation }: any) {
             <Pressable
               key={key}
               onPress={() => openLivelli(key)}
-              style={[styles.card, locked && styles.cardLocked]}
+              style={[styles.card, { width: cardWidth, height: cardWidth }, locked && styles.cardLocked]}
             >
               <Text style={[styles.cardLabel, locked && styles.cardLabelLocked]}>{WORD_BANK[key].label}</Text>
               {locked ? (
@@ -98,9 +108,9 @@ const styles = StyleSheet.create({
   // La scelta del suono è la cosa più grande e prioritaria della schermata (segnalato:
   // prima erano chip piccoli mischiati con la mappa dei livelli) — griglia di card larghe,
   // niente più scorrimento orizzontale da capire al volo.
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: GRID_GAP },
   card: {
-    width: "31%", aspectRatio: 1, borderRadius: 18, borderWidth: 2, borderColor: C.line,
+    borderRadius: 18, borderWidth: 2, borderColor: C.line,
     backgroundColor: "#fff", alignItems: "center", justifyContent: "center", gap: 4,
   },
   cardLocked: { opacity: 0.55, backgroundColor: C.paper },
