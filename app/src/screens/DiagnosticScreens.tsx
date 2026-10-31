@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PHONEME_ORDER, WORD_BANK, PhonemeKey } from "../constants/wordBank";
+import { useResponsiveColumns } from "../hooks/useResponsiveColumns";
+
+const CHIP_GRID_GAP = 8;
+const CHIP_SCREEN_PADDING = 24;
 
 const C = {
   bg: "#FBF6EE",
@@ -167,6 +171,12 @@ export function StrugglingSoundsScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<PhonemeKey[]>([]);
   const toggle = (k: PhonemeKey) => setSelected((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
+  const { cardWidth: chipWidth } = useResponsiveColumns({
+    minCardWidth: 95,
+    maxCardWidth: 150,
+    gap: CHIP_GRID_GAP,
+    horizontalPadding: CHIP_SCREEN_PADDING,
+  });
   return (
     <View style={styles.screen}>
       <View style={{ padding: 24, paddingTop: insets.top + 16, flex: 1 }}>
@@ -179,7 +189,11 @@ export function StrugglingSoundsScreen({ navigation, route }: any) {
               const on = selected.includes(key);
               const example = WORD_BANK[key].iniziale[0] || WORD_BANK[key].mediana[0];
               return (
-                <Pressable key={key} onPress={() => toggle(key)} style={[styles.soundChip, on && styles.soundChipOn]}>
+                <Pressable
+                  key={key}
+                  onPress={() => toggle(key)}
+                  style={[styles.soundChip, { width: chipWidth }, on && styles.soundChipOn]}
+                >
                   <Text style={[styles.soundChipLabel, on && styles.soundChipLabelOn]}>{WORD_BANK[key].label}</Text>
                   {example && <Text style={[styles.soundChipExample, on && styles.soundChipLabelOn]}>{example.parola}</Text>}
                 </Pressable>
@@ -322,7 +336,7 @@ const styles = StyleSheet.create({
   ctaText: { color: "#fff", fontWeight: "700", fontSize: 16 },
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   soundChip: {
-    width: "31%", borderWidth: 1.5, borderColor: C.line, borderRadius: 12, padding: 10, alignItems: "center",
+    borderWidth: 1.5, borderColor: C.line, borderRadius: 12, padding: 10, alignItems: "center",
     backgroundColor: "#fff", marginBottom: 8,
   },
   soundChipOn: { backgroundColor: C.jade, borderColor: C.jade },

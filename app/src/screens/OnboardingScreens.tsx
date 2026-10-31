@@ -6,6 +6,12 @@ import { isSupabaseConfigured } from "../api/supabase";
 import { createChild } from "../api/children";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AVATAR_OPTIONS, DEFAULT_AVATAR_ID, getAvatarImage } from "../constants/avatars";
+import { useResponsiveColumns } from "../hooks/useResponsiveColumns";
+
+// AVATAR_SCREEN_PADDING replica il padding orizzontale di styles.container (24) — costante
+// separata invece di leggerla dallo style object, come già fatto in SessionScreen.tsx.
+const AVATAR_SCREEN_PADDING = 24;
+const AVATAR_GRID_GAP = 12;
 
 const COLORS = {
   bg: "#FBF6EE", // --paper della demo HTML
@@ -425,6 +431,12 @@ export function AvatarPickerScreen({ navigation, route }: any) {
   const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
   const children = useGamificationStore((s) => s.children);
   const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
+  const { cardWidth: avatarTileWidth } = useResponsiveColumns({
+    minCardWidth: 100,
+    maxCardWidth: 150,
+    gap: AVATAR_GRID_GAP,
+    horizontalPadding: AVATAR_SCREEN_PADDING,
+  });
 
   async function finish() {
     if (!route?.params?.addingChild) {
@@ -471,7 +483,11 @@ export function AvatarPickerScreen({ navigation, route }: any) {
             <Pressable
               key={opt.id}
               onPress={() => setAvatarId(opt.id)}
-              style={[avatarStyles.tile, selected && avatarStyles.tileSelected]}
+              style={[
+                avatarStyles.tile,
+                { width: avatarTileWidth, height: avatarTileWidth / 0.85 },
+                selected && avatarStyles.tileSelected,
+              ]}
             >
               <Image source={getAvatarImage(opt.id)} style={avatarStyles.tileImage} resizeMode="contain" />
               <Text style={[avatarStyles.tileLabel, selected && avatarStyles.tileLabelSelected]}>{opt.label}</Text>
@@ -491,9 +507,9 @@ export function AvatarPickerScreen({ navigation, route }: any) {
 }
 
 const avatarStyles = StyleSheet.create({
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginTop: 20 },
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: AVATAR_GRID_GAP, marginTop: 20 },
   tile: {
-    width: "31%", aspectRatio: 0.85, borderWidth: 2, borderColor: "transparent", borderRadius: 16,
+    borderWidth: 2, borderColor: "transparent", borderRadius: 16,
     alignItems: "center", justifyContent: "center", marginBottom: 12, backgroundColor: "#fff", padding: 6,
   },
   tileSelected: { borderColor: COLORS.primary, backgroundColor: "#FFF3EF" },
