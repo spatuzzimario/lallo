@@ -3,8 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lallo — l'app di logopedia che i bambini vogliono giocare</title>
-<meta name="description" content="Lallo trasforma gli esercizi di logopedia in giochi pensati per l'italiano. Il genitore inizia subito da solo; se c'è già un logopedista, si collega la sua terapia.">
+<title>Lallo — giochi per allenare suoni, parole e ascolto</title>
+<meta name="description" content="Lallo trasforma attività ispirate alla logopedia in giochi che i bambini vogliono fare. 25 suoni da esplorare, i primi 6 gratis. Prova subito un gioco, senza registrazione.">
+<link rel="canonical" href="https://www.lallo.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lallo">
+<meta property="og:url" content="https://www.lallo.app/">
+<meta property="og:title" content="Lallo — giochi per allenare suoni, parole e ascolto">
+<meta property="og:description" content="Attività ispirate alla logopedia, trasformate in giochi che i bambini vogliono fare — con o senza un logopedista. 25 suoni da esplorare, i primi 6 gratis.">
+<meta property="og:image" content="https://www.lallo.app/img/lallo-felice.webp">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lallo — giochi per allenare suoni, parole e ascolto">
+<meta name="twitter:description" content="Attività ispirate alla logopedia, trasformate in giochi che i bambini vogliono fare. Prova subito un gioco, senza registrazione.">
+<meta name="twitter:image" content="https://www.lallo.app/img/lallo-felice.webp">
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link href="fonts/fonts.css" rel="stylesheet">
@@ -352,6 +364,50 @@
   .price-fine{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:22px}
   @media(max-width:640px){.price-grid{grid-template-columns:1fr;max-width:420px}}
 
+  /* nav: accesso all'app — un link più leggero della CTA coral, stesso trattamento di un link testuale */
+  .nav-links .navlogin{font-weight:600;color:var(--jade)}
+  .nav-links .navlogin:hover{text-decoration:underline}
+
+  /* evidenza "6 suoni gratis" sotto il subheadline dell'hero */
+  .hero-highlight{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:700;color:var(--jade-deep);margin-bottom:24px}
+  .hero-highlight b{color:var(--coral)}
+  .demo-note{font-size:12.5px;font-weight:600;color:var(--jade-deep);text-align:center;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+
+  /* banner di conversione post-demo: barra fissa in basso, non invasiva — non copre il gioco,
+     si chiude con la X, non serve chiuderla per continuare a giocare */
+  .demo-convert{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:2px solid var(--jade);box-shadow:0 -8px 24px rgba(31,46,43,.12);transform:translateY(110%);transition:transform .35s ease}
+  .demo-convert.show{transform:translateY(0)}
+  .dc-in{max-width:1140px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:18px}
+  .dc-txt{flex:1;min-width:0}
+  .dc-txt b{font-family:"Bricolage Grotesque";font-size:15.5px;display:block}
+  .dc-txt span{font-size:13px;color:var(--ink-soft);display:block;margin-top:2px}
+  .dc-close{background:transparent;border:none;color:var(--ink-soft);font-size:20px;cursor:pointer;padding:6px;line-height:1;flex-shrink:0;order:3}
+  .dc-cta{flex-shrink:0;order:2}
+  @media(max-width:640px){.dc-in{padding:12px 16px;gap:10px}.dc-txt span{display:none}.dc-cta{padding:11px 16px;font-size:14px}}
+
+  /* offerta beta nella sezione iscrizione */
+  .wl-offer{background:var(--mist);border:1.5px solid var(--jade);border-radius:16px;padding:16px 18px;margin-bottom:22px}
+  .wl-offer b{color:var(--jade-deep)}
+  .wl-offer p{font-size:13.5px;color:var(--ink-soft);margin-top:4px}
+  .wl-refbox{background:var(--paper);border:1.5px dashed var(--line);border-radius:12px;padding:12px 14px;margin-top:16px;text-align:left}
+  .wl-refbox label{font-size:11.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+  .wl-refrow{display:flex;gap:8px;margin-top:6px}
+  .wl-refrow input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;background:#fff;color:var(--ink)}
+  .wl-refrow button{border:1.5px solid var(--jade);background:#fff;color:var(--jade-deep);border-radius:10px;padding:0 14px;font-weight:700;font-size:13px;cursor:pointer}
+
+  /* FAQ — <details>/<summary> nativi: accessibili da tastiera senza JS extra */
+  .faq{max-width:760px;margin:44px auto 0}
+  .faq details{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:18px 22px;margin-bottom:12px}
+  .faq summary{font-family:"Bricolage Grotesque";font-weight:700;font-size:16.5px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';font-size:22px;color:var(--jade);flex-shrink:0;transition:transform .18s}
+  .faq details[open] summary::after{transform:rotate(45deg)}
+  .faq details[open] summary{margin-bottom:10px}
+  .faq p{font-size:14.5px;color:var(--ink-soft)}
+
+  /* focus visibile su tutti gli elementi interattivi nuovi (navigazione da tastiera) */
+  a:focus-visible,button:focus-visible,summary:focus-visible,.inp:focus-visible{outline:2.5px solid var(--jade);outline-offset:2px}
+
   footer{background:var(--paper-2);border-top:1px solid var(--line);padding:40px 0;font-size:14px;color:var(--ink-soft)}
   .foot-in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;align-items:center}
 
@@ -377,10 +433,11 @@
     </div>
     <div class="nav-links">
       <a href="#demo">Demo</a>
-      <a href="#esercizi">Esercizi</a>
+      <a href="#esercizi">Giochi</a>
       <a href="#prezzi">Prezzi</a>
       <a href="#logopedisti">Col logopedista</a>
-      <a href="#lista" class="btn btn-coral navcta">Entra in lista</a>
+      <a href="https://app.lallo.app" class="navlogin" onclick="trackEvent('signup_cta_clicked',{placement:'nav'})">Accedi</a>
+      <a href="#demo" class="btn btn-coral navcta">Prova gratis</a>
     </div>
   </div>
 </nav>
@@ -389,18 +446,20 @@
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow">🦜 Logopedia che sembra un gioco</span>
-      <h1>Aiuta tuo figlio a <em>parlare meglio,</em> giocando.</h1>
-      <p class="lead">Lallo trasforma gli esercizi di logopedia in giochi che il bambino vuole fare. Pensato per l'italiano, con il contributo di una logopedista. Inizi da solo — e se hai già un logopedista, colleghi gli esercizi alla sua terapia.</p>
+      <span class="eyebrow">🦜 Giochi per suoni, parole e ascolto</span>
+      <h1>Le parole diventano <em>un gioco.</em></h1>
+      <p class="lead">Aiuta il tuo bambino a esercitarsi con suoni e parole attraverso giochi divertenti da fare insieme, anche solo pochi minuti al giorno.</p>
+      <div class="hero-highlight">🔓 25 suoni da esplorare. <b>I primi 6 sono gratis.</b></div>
       <div class="hero-cta">
-        <a href="#prezzi" class="btn btn-coral">Inizia gratis</a>
-        <a href="#demo" class="btn btn-ghost">Prova la demo ↓</a>
+        <a href="#demo" class="btn btn-coral">Prova un gioco gratis</a>
+        <a href="#come" class="btn btn-ghost">Scopri come funziona</a>
       </div>
       <div class="trust"><span class="dot"></span> Sviluppato con una logopedista italiana · Niente pubblicità · In italiano</div>
     </div>
 
     <!-- ===== INTERACTIVE PHONE DEMO ===== -->
     <div>
+      <div class="demo-note">✨ Nessuna registrazione necessaria — prova subito</div>
       <div class="view-toggle">
         <button id="tgChild" class="active" onclick="setView('child')">👦 Vista bambino</button>
         <button id="tgPro" onclick="setView('pro')">👨‍👩‍👧 Vista genitore</button>
@@ -781,9 +840,9 @@
 <!-- ===== EXERCISES TAXONOMY ===== -->
 <section class="band" id="esercizi" style="background:var(--paper-2)">
   <div class="wrap">
-    <div class="kicker">Gli esercizi</div>
-    <h2 class="big">Ogni gioco ha uno scopo clinico preciso.</h2>
-    <p class="lead2">Mappati alla scala terapeutica reale — dal suono isolato al racconto. Non "dei giochi", ma una progressione.</p>
+    <div class="kicker">I giochi di Lallo</div>
+    <h2 class="big">Ogni gioco allena qualcosa di preciso.</h2>
+    <p class="lead2">Attività ispirate agli esercizi di logopedia, organizzate in una progressione — dal suono isolato al racconto. Non servono conoscenze tecniche per usarle: scegli un suono e si parte.</p>
     <div class="scala">
       <span class="lab">La scala clinica:</span>
       <span class="lv"><b>L0</b> Suono isolato</span>
@@ -825,11 +884,11 @@
 <!-- ===== ANTI-THREAT / THERAPIST-CENTRED ===== -->
 <section class="band center-band" id="logopedisti">
   <div class="wrap">
-    <div class="kicker">Con o senza logopedista</div>
-    <h2 class="big">Usalo da solo. O collegalo alla terapia.</h2>
+    <div class="kicker">Per chi è Lallo</div>
+    <h2 class="big">Per giocare e basta. O per allenarsi insieme al percorso del logopedista.</h2>
     <div class="ct-grid">
-      <div class="ct"><div class="em">👨‍👩‍👧</div><h3>Da solo, a casa</h3><p>Scegli i suoni, il bambino gioca, tu segui i progressi. Non serve altro per iniziare oggi.</p></div>
-      <div class="ct"><div class="em">🩺</div><h3>Collegato al logopedista</h3><p>Hai già un logopedista? Può impostare il piano e seguire i progressi: gli esercizi seguono la sua terapia. È un'opzione, non un obbligo.</p></div>
+      <div class="ct"><div class="em">👨‍👩‍👧</div><h3>Per i genitori</h3><p>Scegli i suoni, il bambino gioca, tu segui i progressi. Non serve seguire una terapia per iniziare oggi.</p></div>
+      <div class="ct"><div class="em">🩺</div><h3>Per chi segue un percorso logopedico</h3><p>Hai già un logopedista? Può impostare il piano e seguire i progressi: gli esercizi seguono le sue indicazioni. È un'opzione, non un obbligo.</p></div>
       <div class="ct"><div class="em">✓</div><h3>Mai al posto della terapia</h3><p>Sviluppato con il contributo di una logopedista italiana. Lallo affianca la terapia, non la sostituisce — e se emergono segnali importanti, ti invita a rivolgerti a un professionista.</p></div>
     </div>
   </div>
@@ -840,7 +899,7 @@
   <div class="wrap" style="text-align:center">
     <div class="kicker" style="justify-content:center">Prezzi</div>
     <h2 class="big" style="margin:0 auto">Prova gratis. Poi scegli tu.</h2>
-    <p class="lead2" style="margin:16px auto 0">3 giorni di prova gratuita. Nessun addebito finché non decidi. Per i logopedisti, Lallo è sempre gratis.</p>
+    <p class="lead2" style="margin:16px auto 0">6 suoni sono sempre gratuiti, senza carta di credito. L'abbonamento sblocca tutti e 25 i suoni, con 3 giorni di prova gratuita. Per i logopedisti, Lallo è sempre gratis.</p>
     <div class="price-grid">
       <div class="price-card feat">
         <div class="price-badge">★ Più scelto</div>
@@ -848,26 +907,31 @@
         <div class="price-name">Annuale</div>
         <div class="price-amt">€3,99<small> /mese</small></div>
         <div class="price-note">Fatturato €47,99/anno · 3 giorni gratis, poi si rinnova</div>
-        <button class="price-cta primary" onclick="document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Inizia la prova gratuita</button>
+        <button class="price-cta primary" onclick="trackEvent('subscription_cta_clicked',{plan:'annual'});document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Inizia la prova gratuita</button>
       </div>
       <div class="price-card">
         <div class="price-name">Mensile</div>
         <div class="price-amt">€7,99<small> /mese</small></div>
         <div class="price-note">Flessibile · disdici quando vuoi</div>
-        <button class="price-cta ghost" onclick="document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Abbonati</button>
+        <button class="price-cta ghost" onclick="trackEvent('subscription_cta_clicked',{plan:'monthly'});document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Abbonati</button>
       </div>
     </div>
-    <p class="price-fine">Prezzi in fase di test · disdici quando vuoi · l'annuale costa come ~2 mesi in meno rispetto al mensile 🦜</p>
+    <p class="price-fine">6 suoni gratis per sempre · 25 suoni totali con l'abbonamento · disdici quando vuoi 🦜</p>
   </div>
 </section>
 
-<!-- ===== WAITLIST ===== -->
+<!-- ===== WAITLIST / BETA OFFER ===== -->
 <section class="band" id="lista">
   <div class="wrap wl-grid">
     <div>
-      <div class="kicker">Lista d'attesa</div>
-      <h2 class="big">Entra tra i primi.</h2>
-      <p class="lead2">Stiamo costruendo Lallo insieme alle prime famiglie. Iscriviti: avrai accesso prioritario alla beta. Sei un logopedista? Iscriviti comunque — la dashboard pro è sempre gratuita per te.</p>
+      <div class="kicker">L'app per iPhone e Android è in sviluppo</div>
+      <h2 class="big">Iscriviti alla newsletter e prova la beta prima di tutti.</h2>
+      <p class="lead2">Stiamo costruendo le app iOS e Android, oltre alla versione web già giocabile. Iscriviti per essere avvisato ad ogni novità.</p>
+      <div class="wl-offer">
+        <b>🎁 Offerta fondatori</b>
+        <p>Le prime 100 famiglie che si iscrivono avranno accesso gratuito a tutte le funzioni per 3 mesi, in cambio del loro feedback. Puoi anche invitare un amico: dopo l'iscrizione trovi un link personale da condividere.</p>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft);margin-top:14px">Sei un logopedista? Iscriviti comunque — la dashboard pro è sempre gratuita per te.</p>
     </div>
     <div class="wl-form">
       <div id="wlFormInner">
@@ -880,14 +944,55 @@
         <input class="inp" id="wlName" type="text" placeholder="Nome">
         <input class="inp" id="wlEmail" type="email" placeholder="Email">
         <input class="inp" id="wlExtra" type="text" placeholder="Città / studio (facoltativo)">
-        <button class="wl-submit" onclick="submitWL()">Avvisami al lancio</button>
-        <p class="wl-note">Niente spam. Solo l'avviso quando la beta è pronta. 🦜</p>
+        <button class="wl-submit" onclick="submitWL()">Iscrivimi e avvisami</button>
+        <p class="wl-note">Niente spam. Solo le novità su Lallo. 🦜</p>
       </div>
       <div class="wl-success" id="wlSuccess">
         <div class="big">🦜</div>
         <h3 class="display" style="font-size:24px;margin:8px 0">Sei in lista!</h3>
-        <p style="color:var(--ink-soft)">Ti scriviamo appena Lallo è pronto. Grazie per crederci.</p>
+        <p style="color:var(--ink-soft)">Ti scriviamo appena c'è una novità. Se sei tra le prime 100 famiglie, ti contattiamo anche per l'accesso beta gratuito di 3 mesi.</p>
+        <div class="wl-refbox">
+          <label>Porta un amico</label>
+          <div class="wl-refrow">
+            <input id="wlRefLink" type="text" readonly onclick="this.select()">
+            <button type="button" onclick="copyRefLink()" id="wlRefCopyBtn">Copia</button>
+          </div>
+        </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="band" id="faq" style="background:var(--paper-2)">
+  <div class="wrap" style="text-align:center">
+    <div class="kicker" style="justify-content:center">Domande frequenti</div>
+    <h2 class="big" style="margin:0 auto">Le domande più comuni.</h2>
+    <div class="faq" style="text-align:left">
+      <details>
+        <summary>Lallo è gratuito?</summary>
+        <p>Sì — 6 suoni su 25 sono gratuiti per sempre, senza carta di credito. Gli altri 19 si sbloccano con l'abbonamento, che include 3 giorni di prova gratuita.</p>
+      </details>
+      <details>
+        <summary>Serve essere seguiti da un logopedista?</summary>
+        <p>No. Puoi scegliere tu i suoni da allenare e iniziare da solo oggi stesso. Se hai già un logopedista, puoi collegare la sua terapia come opzione — non è un obbligo, e Lallo non sostituisce mai la terapia.</p>
+      </details>
+      <details>
+        <summary>A chi è rivolto Lallo?</summary>
+        <p>Ai genitori di bambini piccoli che vogliono esercitarsi con suoni e parole giocando — sia che seguano già un percorso logopedico, sia che vogliano semplicemente allenarsi a casa.</p>
+      </details>
+      <details>
+        <summary>Posso provarlo senza registrarmi?</summary>
+        <p>Sì. La demo qui sopra è giocabile subito, senza creare nessun account.</p>
+      </details>
+      <details>
+        <summary>Posso usarlo da smartphone?</summary>
+        <p>Sì, la versione web funziona da smartphone, tablet e computer. Le app per iPhone e Android sono in sviluppo.</p>
+      </details>
+      <details>
+        <summary>Come funziona l'abbonamento?</summary>
+        <p>3 giorni di prova gratuita, poi si rinnova automaticamente al prezzo scelto (mensile o annuale) finché non disdici. Puoi disdire quando vuoi.</p>
+      </details>
     </div>
   </div>
 </section>
@@ -899,6 +1004,20 @@
     <div>© 2026 Lallo</div>
   </div>
 </footer>
+
+<!-- Banner di conversione: appare la prima volta che il bambino indovina/completa qualcosa
+     in uno dei giochi della demo (vedi demoEngaged() più sotto) — fisso in basso, non un
+     popup: non copre il gioco, si chiude con la X, si può continuare a giocare senza chiuderlo. -->
+<div class="demo-convert" id="demoConvert">
+  <div class="dc-in">
+    <div class="dc-txt">
+      <b id="dcTitle">Ti è piaciuto giocare con Lallo?</b>
+      <span id="dcSub">Crea un account gratuito per continuare con i primi 6 suoni e salvare i progressi.</span>
+    </div>
+    <a class="btn btn-coral dc-cta" id="dcCta" href="https://app.lallo.app" onclick="trackEvent('signup_cta_clicked',{placement:'demo_banner'})">Continua gratis con Lallo</a>
+    <button class="dc-close" onclick="hideDemoConvert()" aria-label="Chiudi">✕</button>
+  </div>
+</div>
 
 <!-- Runtime Rive: anima lo stesso rig .riv usato nell'app vera (app/assets/lallo.riv, copiato
      qui come lallo.riv) — niente animazione reinventata solo per il sito. Caricato come
@@ -1153,7 +1272,7 @@ function ascPlay(){ sayWord('rana'); document.getElementById('ascCap').textConte
 function ascPick(el, word){
   if(el.classList.contains('correct')||el.classList.contains('wrong')) return;
   sayWord(word);
-  if(word==='rana'){ el.classList.add('correct'); document.getElementById('ascCap').textContent='✓ Esatto!'; }
+  if(word==='rana'){ el.classList.add('correct'); document.getElementById('ascCap').textContent='✓ Esatto!'; demoEngaged(); }
   else { el.classList.add('wrong'); document.getElementById('ascCap').textContent='Riascolta e riprova 🦜'; setTimeout(()=>el.classList.remove('wrong'),420); }
 }
 
@@ -1286,6 +1405,7 @@ function albCatch(el, word){
     b.textContent='🔎 Nuovo titolo: Mente curiosa!';
     b.style.display='block';
     say('Bravo! Hai un nuovo titolo: Mente curiosa!', 'titolo_esploratore_m');
+    demoEngaged();
   } else {
     say('Foto aggiunta al tuo album, bravo!', 'album_foto_aggiunta_m');
   }
@@ -1296,6 +1416,7 @@ function hit(el,correct,word){
   if(el.classList.contains('correct')||el.classList.contains('wrong')) return;
   el.classList.add(correct?'correct':'wrong');
   if(word) sayWord(word);
+  if(correct) demoEngaged();
 }
 function cacciaReset(){ document.querySelectorAll('[data-c="caccia"] .tile').forEach(t=>t.classList.remove('correct','wrong')); }
 
@@ -1313,7 +1434,7 @@ function memFlip(el){
   if(!memFirst){ memFirst=el; return; }
   if(memFirst.dataset.id===el.dataset.id){
     memFirst.classList.add('matched'); el.classList.add('matched'); memFirst=null; memDone++;
-    if(memDone===3) document.getElementById('memMsg').textContent='Bravo! Tutte le coppie con la R 🦜';
+    if(memDone===3){ document.getElementById('memMsg').textContent='Bravo! Tutte le coppie con la R 🦜'; demoEngaged(); }
   } else {
     memLock=true; const a=memFirst, b=el; memFirst=null;
     setTimeout(()=>{ a.classList.remove('flip'); b.classList.remove('flip'); memLock=false; }, 750);
@@ -1330,7 +1451,7 @@ function cmPlay(){ sayWord('sale'); document.getElementById('cmCap').textContent
 function cmPick(el,word){
   if(el.classList.contains('correct')) return;
   sayWord(word);
-  if(word===cmTarget){ el.classList.add('correct'); document.getElementById('cmCap').textContent='✓ Esatto! Hai distinto sole da sale.'; }
+  if(word===cmTarget){ el.classList.add('correct'); document.getElementById('cmCap').textContent='✓ Esatto! Hai distinto sole da sale.'; demoEngaged(); }
   else { el.classList.add('wrong'); document.getElementById('cmCap').textContent='Riascolta e riprova 🦜'; setTimeout(()=>el.classList.remove('wrong'),420); }
 }
 
@@ -1351,7 +1472,7 @@ function updateOca(){
   const w=document.getElementById('ocaWord'); if(w) w.textContent=ocaWords[ocaPos].w;
   const cap=document.getElementById('ocaCap'); if(cap) cap.textContent = ocaPos===5 ? '🏆 Arrivato! Tutte le parole con la R.' : ('Casella '+(ocaPos+1)+' di 6');
 }
-function sayOcaWord(){ if(ocaPos===5){ say('Lallo ti ha sentito! Bravissimo!', 'sess_lallo_ti_ha_sentito_m'); } else { sayWord(ocaWords[ocaPos].w); } }
+function sayOcaWord(){ if(ocaPos===5){ say('Lallo ti ha sentito! Bravissimo!', 'sess_lallo_ti_ha_sentito_m'); demoEngaged(); } else { sayWord(ocaWords[ocaPos].w); } }
 function ocaSay(){ if(ocaPos<5){ ocaPos++; updateOca(); sayOcaWord(); } }
 
 /* sequenze illustrate — 3 parole vere del suono R (non più una storia fissa slegata dal
@@ -1375,7 +1496,7 @@ function seqTap(el,order){
     const line=`${SEQ_CONNECTORS[order]} ${word}...`;
     s.textContent = (seqNext===1 ? '' : s.textContent+' ') + line;
     seqNext++;
-    if(seqNext>3){ s.textContent += '  Bravo! 🦜'; setTimeout(()=>exBack(),1800); }
+    if(seqNext>3){ s.textContent += '  Bravo! 🦜'; demoEngaged(); setTimeout(()=>exBack(),1800); }
   } else {
     el.classList.add('wrong'); setTimeout(()=>el.classList.remove('wrong'),420);
   }
@@ -1400,7 +1521,7 @@ function updateRipFrase(){
 function ripFrasePlay(){ const r=RIPFRASE_POOL[ripFraseIdx]; say(r.testo, r.slug); }
 function ripFraseNext(){
   if(ripFraseIdx+1<RIPFRASE_POOL.length){ ripFraseIdx++; updateRipFrase(); }
-  else exBack();
+  else { demoEngaged(); exBack(); }
 }
 
 /* indica la frase (L3 · Frase) */
@@ -1435,7 +1556,7 @@ function indFrasePick(parola){
   sayWord(parola);
   setTimeout(()=>{
     if(indFraseIdx+1<RIPFRASE_POOL.length){ indFraseIdx++; updateIndFrase(); }
-    else exBack();
+    else { demoEngaged(); exBack(); }
   }, 1100);
 }
 
@@ -1472,7 +1593,7 @@ function rimaPick(word){
   if(word===r.finale) setTimeout(()=>sayWord(word),400);
   setTimeout(()=>{
     if(rimaIdx+1<RIMA_POOL.length){ rimaIdx++; updateRima(); }
-    else exBack();
+    else { demoEngaged(); exBack(); }
   }, 1300);
 }
 
@@ -1548,6 +1669,77 @@ function resetRec(){
   const cap=document.getElementById('recCap'); if(cap)cap.textContent='Tocca ▶ per il modello, 🎤 per registrarti';
 }
 
+/* ---------- analytics ----------
+   Nessun provider analytics è collegato oggi su questa pagina (PostHog esiste solo sul
+   sito separato delle guide, /guide/, altra repo — niente chiave disponibile qui). trackEvent
+   chiama window.posthog se un domani viene caricato (stesso provider già in uso nello stack),
+   altrimenti non fa nulla di silenzioso: logga in console così l'evento resta verificabile
+   durante lo sviluppo, invece di sparire senza lasciare traccia. Non invia mai dati del
+   bambino (nome, voce, foto) — solo eventi di navigazione/conversione su questa pagina. */
+function trackEvent(name, props){
+  try{
+    if(window.posthog && typeof window.posthog.capture==='function'){ window.posthog.capture(name, props||{}); }
+    else { console.debug('[track]', name, props||{}); }
+  }catch(e){ console.warn('trackEvent fallito:', name, e); }
+}
+trackEvent('homepage_view');
+
+/* demo_started: la primissima interazione del visitatore dentro il telefono demo, chiunque
+   sia il punto d'ingresso (CTA hero, scroll diretto, nav). Un solo listener delegato invece
+   di aggiungerlo a ogni singolo bottone della demo. */
+let demoStartedFired=false;
+document.getElementById('demo')?.addEventListener('click', function(){
+  if(demoStartedFired) return;
+  demoStartedFired=true;
+  trackEvent('demo_started',{placement:'in_demo'});
+}, true);
+
+/* ---------- banner di conversione post-demo ----------
+   demoEngaged() scatta la prima volta che il bambino indovina/completa qualcosa in uno dei
+   giochi della demo (vedi i punti in cui è richiamata più sotto) — non ad ogni singolo tocco,
+   per non essere invadente. Mostra una barra fissa in basso (mai un popup che blocca il
+   gioco) con una CTA diversa a seconda che la registrazione sulla versione web sia già
+   disponibile (lo è: vedi CLAUDE.md) o no. */
+let demoEngagedFired=false;
+function demoEngaged(){
+  if(demoEngagedFired) return;
+  demoEngagedFired=true;
+  trackEvent('demo_completed');
+  document.getElementById('demoConvert').classList.add('show');
+}
+function hideDemoConvert(){
+  document.getElementById('demoConvert').classList.remove('show');
+}
+
+/* ---------- referral ("porta un amico") ----------
+   Niente contatore live finto di "posti rimasti" (l'offerta delle prime 100 famiglie resta un
+   impegno dichiarato, verificato manualmente — vedi CLAUDE.md, mai urgenza artificiale).
+   Il link di invito invece è reale: ?ref=<codice> viene salvato nella riga di chi si iscrive
+   grazie a quel link (referred_by), e ogni iscritto riceve il proprio codice (referral_code)
+   da condividere — niente round-trip verso Supabase per generarlo, basta un id casuale creato
+   qui e salvato insieme al resto dei dati. */
+const incomingRef = new URLSearchParams(location.search).get('ref');
+function makeReferralCode(){
+  return Math.random().toString(36).slice(2,8) + Math.random().toString(36).slice(2,5);
+}
+function copyRefLink(){
+  const input=document.getElementById('wlRefLink');
+  input.select();
+  const btn=document.getElementById('wlRefCopyBtn');
+  const done=()=>{ if(btn){ const prev=btn.textContent; btn.textContent='Copiato!'; setTimeout(()=>btn.textContent=prev,1600); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(input.value).then(done).catch(()=>document.execCommand('copy')&&done()); }
+  else { document.execCommand('copy'); done(); }
+}
+
+/* pricing_viewed: una sola volta, quando la sezione prezzi entra davvero nello schermo */
+const prezziEl = document.getElementById('prezzi');
+if(prezziEl && 'IntersectionObserver' in window){
+  const po = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ trackEvent('pricing_viewed'); po.disconnect(); } });
+  }, { threshold: 0.4 });
+  po.observe(prezziEl);
+}
+
 /* ---------- vista genitore (statica: non ha sotto-schede, vedi ParentScreens.tsx) ---------- */
 function openLegalDemo(){
   alert('Nell\'app vera questa sezione apre consenso microfono/fotocamera, promemoria e il link alla Privacy Policy (lallo.app/privacy.html).');
@@ -1560,6 +1752,10 @@ function openLegalDemo(){
    2) Settings → API: copia "Project URL" e "anon public" key e incollale qui sotto.
    La anon key nel codice pubblico è SICURA: con RLS può solo INSERIRE, non leggere.
    Leggi/esporta le mail dal dashboard: Table Editor → waitlist → Export to CSV.
+   3) Per l'offerta "prime 100 famiglie + porta un amico": esegui una volta
+   supabase/migrations/0004_waitlist_referral.sql (aggiunge referral_code/referred_by) —
+   finché non la esegui, submitWL() sotto continuerà a fallire silenziosamente su questi due
+   campi (stesso comportamento "non configurato" già gestito più sotto).
 --------------------------------- */
 const SUPABASE_URL  = 'https://zrzrmarrhiityuoszdze.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyenJtYXJyaGlpdHl1b3N6ZHplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTg4MDcsImV4cCI6MjA5Nzg3NDgwN30._41IPPaOZZLUcFevmPZeaytFEFE1uoLB3c8Wcemyvnk';
@@ -1575,7 +1771,13 @@ async function submitWL(){
   }
   const role=document.querySelector('input[name="role"]:checked').value;
   const extra=document.getElementById('wlExtra').value.trim();
-  const payload={ role, name, email, extra, source:'landing' };
+  const referralCode=makeReferralCode();
+  // referral_code/referred_by: colonne aggiunte da supabase/migrations/0004_waitlist_referral.sql
+  // — se quella migrazione non è ancora stata eseguita, Supabase rifiuta l'insert con queste
+  // colonne in più; per questo restano fuori dal payload quando sono vuote non serve, ma se la
+  // migrazione non esiste ancora l'insert fallirà finché non viene eseguita (vedi commento sopra
+  // su SUPABASE_URL/ANON — stesso principio "serve un passo manuale lato Supabase").
+  const payload={ role, name, email, extra, source:'landing', referral_code: referralCode, referred_by: incomingRef || null };
 
   const btn=document.querySelector('.wl-submit');
   wlSending=true; if(btn){ btn.textContent='Invio…'; btn.style.opacity='.7'; }
@@ -1599,6 +1801,9 @@ async function submitWL(){
   }
   document.getElementById('wlFormInner').style.display='none';
   document.getElementById('wlSuccess').classList.add('show');
+  const refLink=document.getElementById('wlRefLink');
+  if(refLink) refLink.value = 'https://www.lallo.app/?ref='+referralCode;
+  trackEvent('waitlist_submitted', { role });
 }
 
 /* ---------- init demo telefono ---------- */

@@ -147,6 +147,11 @@ create table if not exists waitlist (
   email text not null,
   extra text,
   source text,
+  -- Offerta fondatori "prime 100 famiglie + porta un amico" (vedi migrazione 0004):
+  -- referral_code è il codice generato per ogni iscritto da condividere, referred_by è
+  -- il codice di chi lo ha invitato, se arrivato da un link ?ref=.
+  referral_code text,
+  referred_by text,
   created_at timestamptz not null default now()
 );
 
