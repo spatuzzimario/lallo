@@ -385,8 +385,27 @@
   .dc-cta{flex-shrink:0;order:2}
   @media(max-width:640px){.dc-in{padding:12px 16px;gap:10px}.dc-txt span{display:none}.dc-cta{padding:11px 16px;font-size:14px}}
 
+  /* popup newsletter: vero overlay centrato, a differenza della barra non invasiva sopra —
+     scelta esplicita (più aggressivo, converte di più), chiudibile in 3 modi (X, Esc, click
+     fuori dalla card) e mai sopra al gioco della demo (trigger legato allo scroll, non al
+     caricamento né al gioco) */
+  .modal-overlay{position:fixed;inset:0;background:rgba(31,46,43,.55);z-index:80;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal-card{background:#fff;border-radius:var(--radius);padding:34px 28px 28px;max-width:420px;width:100%;position:relative;box-shadow:18px 18px 0 rgba(31,46,43,.12);text-align:center}
+  .modal-close{position:absolute;top:12px;right:12px;background:transparent;border:none;font-size:18px;color:var(--ink-soft);cursor:pointer;padding:8px;line-height:1}
+  .modal-mascot{font-size:42px;margin-bottom:4px}
+  .modal-card h3{font-size:21px;margin-bottom:10px}
+  .modal-card p{font-size:13.5px;color:var(--ink-soft);margin-bottom:16px}
+  .modal-card .inp{margin-bottom:12px}
+
+  /* sezione newsletter/offerta fondatori — demota a box secondario e centrato, non più a
+     doppia colonna come prima: la conversione principale è "Registrati gratis" verso l'app */
+  .wl-compact{text-align:center;max-width:620px;margin:0 auto}
+  .wl-compact .kicker{font-size:13px}
+  .store-pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+  .store-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink-soft)}
   /* offerta beta nella sezione iscrizione */
-  .wl-offer{background:var(--mist);border:1.5px solid var(--jade);border-radius:16px;padding:16px 18px;margin-bottom:22px}
+  .wl-offer{background:var(--mist);border:1.5px solid var(--jade);border-radius:16px;padding:16px 18px;margin-bottom:22px;text-align:left}
   .wl-offer b{color:var(--jade-deep)}
   .wl-offer p{font-size:13.5px;color:var(--ink-soft);margin-top:4px}
   .wl-refbox{background:var(--paper);border:1.5px dashed var(--line);border-radius:12px;padding:12px 14px;margin-top:16px;text-align:left}
@@ -436,8 +455,9 @@
       <a href="#esercizi">Giochi</a>
       <a href="#prezzi">Prezzi</a>
       <a href="#logopedisti">Col logopedista</a>
-      <a href="https://app.lallo.app" class="navlogin" onclick="trackEvent('signup_cta_clicked',{placement:'nav'})">Accedi</a>
-      <a href="#demo" class="btn btn-coral navcta">Prova gratis</a>
+      <a href="/guide/">Guide</a>
+      <a href="https://app.lallo.app" class="navlogin" onclick="trackEvent('signup_cta_clicked',{placement:'nav_login'})">Accedi</a>
+      <a href="https://app.lallo.app" class="btn btn-coral navcta" onclick="trackEvent('signup_cta_clicked',{placement:'nav_primary'})">Registrati gratis</a>
     </div>
   </div>
 </nav>
@@ -452,9 +472,10 @@
       <div class="hero-highlight">🔓 25 suoni da esplorare. <b>I primi 6 sono gratis.</b></div>
       <div class="hero-cta">
         <a href="#demo" class="btn btn-coral">Prova un gioco gratis</a>
-        <a href="#come" class="btn btn-ghost">Scopri come funziona</a>
+        <a href="https://app.lallo.app" class="btn btn-ghost" onclick="trackEvent('signup_cta_clicked',{placement:'hero'})">Registrati gratis su Lallo</a>
       </div>
-      <div class="trust"><span class="dot"></span> Sviluppato con una logopedista italiana · Niente pubblicità · In italiano</div>
+      <a href="#come" style="display:inline-block;margin-top:14px;font-size:13.5px;color:var(--ink-soft);text-decoration:underline">Scopri come funziona ↓</a>
+      <div class="trust" style="margin-top:18px"><span class="dot"></span> Sviluppato con una logopedista italiana · Niente pubblicità · In italiano</div>
     </div>
 
     <!-- ===== INTERACTIVE PHONE DEMO ===== -->
@@ -907,33 +928,35 @@
         <div class="price-name">Annuale</div>
         <div class="price-amt">€3,99<small> /mese</small></div>
         <div class="price-note">Fatturato €47,99/anno · 3 giorni gratis, poi si rinnova</div>
-        <button class="price-cta primary" onclick="trackEvent('subscription_cta_clicked',{plan:'annual'});document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Inizia la prova gratuita</button>
+        <button class="price-cta primary" onclick="trackEvent('subscription_cta_clicked',{plan:'annual'});window.location.href='https://app.lallo.app'">Inizia la prova gratuita</button>
       </div>
       <div class="price-card">
         <div class="price-name">Mensile</div>
         <div class="price-amt">€7,99<small> /mese</small></div>
         <div class="price-note">Flessibile · disdici quando vuoi</div>
-        <button class="price-cta ghost" onclick="trackEvent('subscription_cta_clicked',{plan:'monthly'});document.getElementById('lista').scrollIntoView({behavior:'smooth'})">Abbonati</button>
+        <button class="price-cta ghost" onclick="trackEvent('subscription_cta_clicked',{plan:'monthly'});window.location.href='https://app.lallo.app'">Abbonati</button>
       </div>
     </div>
     <p class="price-fine">6 suoni gratis per sempre · 25 suoni totali con l'abbonamento · disdici quando vuoi 🦜</p>
   </div>
 </section>
 
-<!-- ===== WAITLIST / BETA OFFER ===== -->
-<section class="band" id="lista">
-  <div class="wrap wl-grid">
-    <div>
-      <div class="kicker">L'app per iPhone e Android è in sviluppo</div>
-      <h2 class="big">Iscriviti alla newsletter e prova la beta prima di tutti.</h2>
-      <p class="lead2">Stiamo costruendo le app iOS e Android, oltre alla versione web già giocabile. Iscriviti per essere avvisato ad ogni novità.</p>
-      <div class="wl-offer">
-        <b>🎁 Offerta fondatori</b>
-        <p>Le prime 100 famiglie che si iscrivono avranno accesso gratuito a tutte le funzioni per 3 mesi, in cambio del loro feedback. Puoi anche invitare un amico: dopo l'iscrizione trovi un link personale da condividere.</p>
-      </div>
-      <p style="font-size:13.5px;color:var(--ink-soft);margin-top:14px">Sei un logopedista? Iscriviti comunque — la dashboard pro è sempre gratuita per te.</p>
+<!-- ===== NEWSLETTER / BETA OFFER (sezione secondaria: la conversione principale è
+     "Registrati gratis" verso app.lallo.app, vedi hero/nav/pricing — questa resta solo per
+     chi vuole essere avvisato di iOS/Android e per l'offerta fondatori) ===== -->
+<section class="band" id="lista" style="padding:56px 0">
+  <div class="wrap wl-compact">
+    <div class="kicker" style="justify-content:center">L'app per iPhone e Android è in sviluppo</div>
+    <h2 class="big" style="font-size:clamp(24px,3vw,32px)">Iscriviti alla newsletter per le novità</h2>
+    <div class="store-pills">
+      <span class="store-pill">🍎 Prossimamente su App Store</span>
+      <span class="store-pill">▶️ Prossimamente su Google Play</span>
     </div>
-    <div class="wl-form">
+    <div class="wl-offer">
+      <b>🎁 Offerta fondatori — <span id="wlCounter">caricamento…</span></b>
+      <p>Le prime 100 famiglie che si iscrivono avranno accesso gratuito a tutte le funzioni per 3 mesi, in cambio del loro feedback. Puoi anche invitare un amico: dopo l'iscrizione trovi un link personale da condividere.</p>
+    </div>
+    <div class="wl-form" style="max-width:460px;margin:24px auto 0">
       <div id="wlFormInner">
         <div class="seg">
           <input type="radio" name="role" id="r1" value="genitore" checked>
@@ -944,8 +967,8 @@
         <input class="inp" id="wlName" type="text" placeholder="Nome">
         <input class="inp" id="wlEmail" type="email" placeholder="Email">
         <input class="inp" id="wlExtra" type="text" placeholder="Città / studio (facoltativo)">
-        <button class="wl-submit" onclick="submitWL()">Iscrivimi e avvisami</button>
-        <p class="wl-note">Niente spam. Solo le novità su Lallo. 🦜</p>
+        <button class="wl-submit" onclick="submitWL()">Iscrivimi alla newsletter</button>
+        <p class="wl-note">Niente spam. Solo le novità su Lallo. Sei un logopedista? La dashboard pro resta sempre gratuita per te. 🦜</p>
       </div>
       <div class="wl-success" id="wlSuccess">
         <div class="big">🦜</div>
@@ -1016,6 +1039,26 @@
     </div>
     <a class="btn btn-coral dc-cta" id="dcCta" href="https://app.lallo.app" onclick="trackEvent('signup_cta_clicked',{placement:'demo_banner'})">Continua gratis con Lallo</a>
     <button class="dc-close" onclick="hideDemoConvert()" aria-label="Chiudi">✕</button>
+  </div>
+</div>
+
+<!-- Popup newsletter: compare una volta sola per visita, a metà scorrimento della pagina
+     (vedi lo scroll-listener più sotto) — chiude con la X, con Esc, o cliccando fuori dalla
+     card. Chiede l'iscrizione alla newsletter, con l'offerta fondatori come incentivo. -->
+<div class="modal-overlay" id="scrollModal" role="dialog" aria-modal="true" aria-labelledby="smTitle" onclick="if(event.target===this) hideScrollModal()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="hideScrollModal()" aria-label="Chiudi">✕</button>
+    <div class="modal-mascot">🦜</div>
+    <h3 id="smTitle" class="display">Iscriviti alla newsletter</h3>
+    <div id="smFormInner">
+      <p>Resta aggiornato su Lallo — novità, app iOS/Android in arrivo e, se sei tra le prime 100 famiglie, accesso gratuito a tutte le funzioni per 3 mesi.</p>
+      <input class="inp" id="smEmail" type="email" placeholder="La tua email">
+      <button class="wl-submit" onclick="submitScrollModal()">Iscrivimi</button>
+      <p class="wl-note">Niente spam. Puoi disiscriverti quando vuoi.</p>
+    </div>
+    <div id="smSuccess" style="display:none">
+      <p>Sei in lista! Ti scriviamo appena c'è una novità. 🦜</p>
+    </div>
   </div>
 </div>
 
@@ -1711,13 +1754,42 @@ function hideDemoConvert(){
   document.getElementById('demoConvert').classList.remove('show');
 }
 
+/* ---------- popup newsletter a metà scroll ----------
+   Una volta sola per visita (sessionStorage, non ad ogni volta che si passa quel punto della
+   pagina scorrendo su e giù) — mai durante il gioco nella demo: il trigger è la posizione di
+   scroll nella pagina, indipendente da cosa sta facendo il bambino nel telefono. */
+let scrollModalShown = sessionStorage.getItem('lallo_scroll_modal_shown')==='1';
+function onScrollForModal(){
+  if(scrollModalShown) return;
+  const scrolled = window.scrollY + window.innerHeight;
+  const pageHeight = document.documentElement.scrollHeight;
+  if(scrolled / pageHeight > 0.55){
+    showScrollModal();
+  }
+}
+window.addEventListener('scroll', onScrollForModal, { passive: true });
+function showScrollModal(){
+  if(scrollModalShown) return;
+  scrollModalShown = true;
+  sessionStorage.setItem('lallo_scroll_modal_shown','1');
+  document.getElementById('scrollModal').classList.add('show');
+  document.getElementById('smEmail')?.focus();
+  trackEvent('signup_cta_clicked',{placement:'scroll_modal_shown'});
+}
+function hideScrollModal(){
+  document.getElementById('scrollModal').classList.remove('show');
+}
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape' && document.getElementById('scrollModal').classList.contains('show')) hideScrollModal();
+});
+
 /* ---------- referral ("porta un amico") ----------
-   Niente contatore live finto di "posti rimasti" (l'offerta delle prime 100 famiglie resta un
-   impegno dichiarato, verificato manualmente — vedi CLAUDE.md, mai urgenza artificiale).
-   Il link di invito invece è reale: ?ref=<codice> viene salvato nella riga di chi si iscrive
-   grazie a quel link (referred_by), e ogni iscritto riceve il proprio codice (referral_code)
-   da condividere — niente round-trip verso Supabase per generarlo, basta un id casuale creato
-   qui e salvato insieme al resto dei dati. */
+   Il contatore delle "prime 100 famiglie" mostrato più su è reale (vedi loadWaitlistCounter):
+   nessun numero inventato, solo l'esito di waitlist_count() lato Supabase. Il link di invito
+   è reale a sua volta: ?ref=<codice> viene salvato nella riga di chi si iscrive grazie a quel
+   link (referred_by), e ogni iscritto riceve il proprio codice (referral_code) da condividere
+   — niente round-trip verso Supabase per generarlo, basta un id casuale creato qui e salvato
+   insieme al resto dei dati. */
 const incomingRef = new URLSearchParams(location.search).get('ref');
 function makeReferralCode(){
   return Math.random().toString(36).slice(2,8) + Math.random().toString(36).slice(2,5);
@@ -1759,6 +1831,35 @@ function openLegalDemo(){
 --------------------------------- */
 const SUPABASE_URL  = 'https://zrzrmarrhiityuoszdze.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyenJtYXJyaGlpdHl1b3N6ZHplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTg4MDcsImV4cCI6MjA5Nzg3NDgwN30._41IPPaOZZLUcFevmPZeaytFEFE1uoLB3c8Wcemyvnk';
+const SUPABASE_CONFIGURED = !SUPABASE_URL.includes('INCOLLA') && !SUPABASE_ANON.includes('INCOLLA');
+
+/* ---------- contatore reale "prime 100 famiglie" ----------
+   Chiama la funzione Postgres waitlist_count() (supabase/migrations/0005_waitlist_counter.sql
+   — devi eseguirla una volta nel SQL editor di Supabase) invece di leggere la tabella
+   direttamente: la RLS di waitlist è solo-inserimento apposta (nessuno scraping di email), la
+   funzione restituisce SOLO un numero aggregato, mai righe. Se la migrazione non è ancora
+   stata eseguita la chiamata fallisce e mostriamo un testo onesto senza numero, invece di un
+   errore o di un numero finto. */
+async function loadWaitlistCounter(){
+  const el = document.getElementById('wlCounter');
+  if(!el) return;
+  if(!SUPABASE_CONFIGURED){ el.textContent = 'Posti limitati per le prime 100 famiglie'; return; }
+  try{
+    const res = await fetch(SUPABASE_URL+'/rest/v1/rpc/waitlist_count', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'apikey':SUPABASE_ANON, 'Authorization':'Bearer '+SUPABASE_ANON },
+      body: '{}'
+    });
+    if(!res.ok) throw new Error('rpc waitlist_count '+res.status);
+    const count = Number(await res.json()) || 0;
+    const n = Math.min(100, count);
+    el.textContent = count>=100 ? 'Le prime 100 famiglie sono al completo — iscriviti comunque per gli aggiornamenti' : n+' famiglie su 100 già iscritte';
+  }catch(err){
+    console.warn('Contatore iscritti non disponibile (hai eseguito la migrazione 0005?):', err);
+    el.textContent = 'Posti limitati per le prime 100 famiglie';
+  }
+}
+loadWaitlistCounter();
 
 let wlSending=false;
 async function submitWL(){
@@ -1782,9 +1883,8 @@ async function submitWL(){
   const btn=document.querySelector('.wl-submit');
   wlSending=true; if(btn){ btn.textContent='Invio…'; btn.style.opacity='.7'; }
 
-  const configured = !SUPABASE_URL.includes('INCOLLA') && !SUPABASE_ANON.includes('INCOLLA');
   try{
-    if(configured){
+    if(SUPABASE_CONFIGURED){
       const res=await fetch(SUPABASE_URL+'/rest/v1/waitlist', {
         method:'POST',
         headers:{ 'Content-Type':'application/json', 'apikey':SUPABASE_ANON, 'Authorization':'Bearer '+SUPABASE_ANON, 'Prefer':'return=minimal' },
@@ -1804,6 +1904,45 @@ async function submitWL(){
   const refLink=document.getElementById('wlRefLink');
   if(refLink) refLink.value = 'https://www.lallo.app/?ref='+referralCode;
   trackEvent('waitlist_submitted', { role });
+  loadWaitlistCounter();
+}
+
+/* ---------- popup newsletter: invio ----------
+   Versione minima dello stesso insert di submitWL() sopra — solo email (name resta stringa
+   vuota: la colonna è "not null", non obbligata a un valore non vuoto). Stessa logica di
+   referral/codice dell'iscrizione principale, stesso aggiornamento del contatore. */
+let smSending=false;
+async function submitScrollModal(){
+  if(smSending) return;
+  const email=document.getElementById('smEmail').value.trim();
+  if(!email || !email.includes('@')){
+    alert('Inserisci un\'email valida.');
+    return;
+  }
+  smSending=true;
+  const referralCode=makeReferralCode();
+  const payload={ role:'genitore', name:'', email, extra:'', source:'scroll_modal', referral_code: referralCode, referred_by: incomingRef || null };
+  try{
+    if(SUPABASE_CONFIGURED){
+      const res=await fetch(SUPABASE_URL+'/rest/v1/waitlist', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'apikey':SUPABASE_ANON, 'Authorization':'Bearer '+SUPABASE_ANON, 'Prefer':'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error('Supabase '+res.status+' '+(await res.text()));
+    } else {
+      console.warn('⚠️ Waitlist NON ancora collegata — iscrizione dal popup non salvata →', payload);
+    }
+  }catch(err){
+    console.error('Errore salvataggio iscrizione (popup):', err, payload);
+  }finally{
+    smSending=false;
+  }
+  document.getElementById('smFormInner').style.display='none';
+  document.getElementById('smSuccess').style.display='block';
+  trackEvent('waitlist_submitted', { role:'genitore', source:'scroll_modal' });
+  loadWaitlistCounter();
+  setTimeout(hideScrollModal, 2600);
 }
 
 /* ---------- init demo telefono ---------- */

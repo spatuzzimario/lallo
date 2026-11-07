@@ -155,6 +155,19 @@ create table if not exists waitlist (
   created_at timestamptz not null default now()
 );
 
+-- Conteggio reale "prime 100 famiglie" per la homepage, senza aprire una via per leggere le
+-- righe (email) della tabella — vedi migrazione 0005.
+create or replace function waitlist_count()
+returns integer
+language sql
+security definer
+set search_path = public
+as $$
+  select count(*)::integer from waitlist;
+$$;
+
+grant execute on function waitlist_count() to anon;
+
 -- ---------- Row Level Security ----------
 -- Ogni policy è preceduta da un "drop policy if exists" con lo stesso nome: rende l'intero
 -- script sicuro da rieseguire più volte (idempotente), anche se in parte è già stato
