@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text, Image } from "react-native";
+import { Text, Image, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import IntroSplashScreen from "./src/screens/IntroSplashScreen";
@@ -209,7 +209,22 @@ export default function App() {
     (async () => {
       if (!isSupabaseConfigured) return;
       const session = await getCurrentSession();
-      if (!session) return;
+      if (!session) {
+        // Arrivato dal link "Accedi" della homepage (app.lallo.app/?mode=login) ma senza una
+        // sessione già valida in questo browser: manda dritto al login invece di lasciarlo
+        // sull'onboarding da zero come se avesse cliccato "Registrati" — vedi AuthScreen con
+        // loginOnly, che dopo l'accesso riprende i bambini già esistenti invece di provare a
+        // crearne uno nuovo. Solo sul web: su nativo non esiste questo link di marketing.
+        if (
+          Platform.OS === "web" &&
+          typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("mode") === "login" &&
+          navigationRef.isReady()
+        ) {
+          navigationRef.navigate("Login" as never);
+        }
+        return;
+      }
       const { data: children } = await getChildren();
       if (!children || children.length === 0) return; // sessione valida ma onboarding mai completato: resta su Trust
       // Elenco completo per il selettore (ChildSwitcher) — il figlio attivo all'avvio resta
@@ -269,6 +284,10 @@ export default function App() {
           <Stack.Screen name="TrustStat" component={TrustStatScreen} />
           <Stack.Screen name="Results" component={ResultsScreen} />
           <Stack.Screen name="Auth" component={AuthScreen} />
+          {/* Stessa schermata di Auth, con route.params.loginOnly: dopo l'accesso riprende i
+              bambini già esistenti invece di provarne a creare uno nuovo — raggiunta dal link
+              "Accedi" della homepage (?mode=login), mai dal flusso di onboarding normale. */}
+          <Stack.Screen name="Login" component={AuthScreen} initialParams={{ loginOnly: true }} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
           <Stack.Screen name="Permissions" component={PermissionsScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />

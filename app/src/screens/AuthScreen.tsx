@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Keyboa
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { requestOtpCode, verifyOtpCode, signInWithGoogle, signInWithFacebook } from "../api/auth";
 import { ensureParentProfile } from "../api/profiles";
-import { createChild } from "../api/children";
+import { createChild, getChildren } from "../api/children";
 import { ensureTherapistProfile, registerTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
 import { useGamificationStore } from "../store/useGamificationStore";
@@ -28,6 +28,11 @@ const C = {
 export default function AuthScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const role: "parent" | "therapist" = route.params?.role === "therapist" ? "therapist" : "parent";
+  // "Accedi" dalla homepage (route Login, vedi App.tsx) invece di "Registrati": dopo
+  // l'accesso riprende i bambini già esistenti di questo account invece di provare a
+  // crearne uno nuovo — stesso meccanismo di login (OTP/Google/Facebook), comportamento
+  // diverso dopo che Supabase conferma la sessione.
+  const loginOnly: boolean = !!route.params?.loginOnly;
   const name: string = route.params?.name || "il bambino";
   const gender: "maschio" | "femmina" | "preferisco_non_dire" | undefined = route.params?.gender;
   const avatarId: string | undefined = route.params?.avatarId;
@@ -50,6 +55,7 @@ export default function AuthScreen({ navigation, route }: any) {
   const setChildInfo = useGamificationStore((s) => s.setChildInfo);
   const children = useGamificationStore((s) => s.children);
   const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
+  const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
 
   async function sendCode() {
     if (!email.includes("@")) return;
@@ -80,6 +86,31 @@ export default function AuthScreen({ navigation, route }: any) {
         return "Accesso riuscito, ma non siamo riusciti a registrarti come logopedista. Riprova.";
       }
       navigation.navigate("TherapistCodeReady", { inviteCode: therapist.invite_code, fullName: therapist.full_name });
+      return null;
+    }
+
+    if (loginOnly) {
+      const { data: existingChildren, error: childrenError } = await getChildren();
+      if (childrenError) return "Accesso riuscito, ma non siamo riusciti a recuperare il tuo profilo. Riprova.";
+      if (existingChildren && existingChildren.length > 0) {
+        setChildrenRoster(
+          existingChildren.map((c) => ({ id: c.id, displayName: c.name, avatarId: c.avatar_id || DEFAULT_AVATAR_ID }))
+        );
+        const child = existingChildren[0];
+        await hydrateFromSupabase({
+          id: child.id,
+          name: child.name,
+          audioRecordingConsent: child.audio_recording_consent,
+          avatarId: child.avatar_id,
+          gender: child.gender,
+        });
+        navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
+        return null;
+      }
+      // Account esistente ma nessun bambino ancora creato (es. registrazione mai finita) —
+      // avvia l'onboarding del primo figlio; l'email è già verificata, si salta
+      // ParentEmailScreen (che la richiederebbe di nuovo da zero).
+      navigation.navigate("ChildName", {});
       return null;
     }
 
@@ -183,11 +214,13 @@ export default function AuthScreen({ navigation, route }: any) {
 
       {step === "email" ? (
         <>
-          <Text style={styles.title}>La tua email</Text>
+          <Text style={styles.title}>{loginOnly ? "Accedi" : "La tua email"}</Text>
           <Text style={styles.subtitle}>
             {role === "therapist"
               ? "Ti mandiamo un codice per accedere — niente password. Serve per creare il tuo profilo logopedista."
-              : `Ti mandiamo un codice per accedere — niente password. Serve per salvare i progressi di ${name}.`}
+              : loginOnly
+                ? "Ti mandiamo un codice per accedere — niente password. Usa l'email con cui ti sei registrato."
+                : `Ti mandiamo un codice per accedere — niente password. Serve per salvare i progressi di ${name}.`}
           </Text>
           <TextInput
             value={email}
