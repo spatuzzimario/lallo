@@ -48,7 +48,7 @@ export function TrustScreen({ navigation }: any) {
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Image source={require("../../assets/onboarding-trust.png")} style={styles.heroImage} resizeMode="contain" />
       </View>
-      <ContinueButton onPress={() => navigation.navigate("ChildName")} />
+      <ContinueButton onPress={() => navigation.navigate("ParentEmail")} />
       {/* Link secondario, non in competizione visiva con il flusso genitore (parent-first) —
           un logopedista che apre l'app per la prima volta deve comunque poterlo trovare. */}
       <Pressable onPress={() => navigation.navigate("TherapistOnboarding")} style={styles.skipLink}>
@@ -248,6 +248,56 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
   );
 }
 
+// Primo passo dell'onboarding genitore, subito dopo Trust — prima ancora del nome del
+// bambino (corretto dopo un test reale: raccoglierla alla fine della scelta avatar
+// significava comunque perdere chi abbandonava durante nome/età/avatar, non solo durante lo
+// screener). Non è l'account vero: nessuna verifica, nessuna sessione — solo un insert
+// "silenzioso" in waitlist (captureLeadEmail) che non deve mai bloccare l'onboarding se
+// fallisce. L'email raccolta qui viaggia nei route.params fino ad AuthScreen, che la
+// pre-compila invece di richiederla una seconda volta da zero.
+export function ParentEmailScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const isValid = email.includes("@") && email.length > 3;
+
+  async function next() {
+    setSaving(true);
+    try {
+      await captureLeadEmail({ email: email.trim() });
+    } catch {
+      // Non blocca mai l'onboarding: è una cattura extra, non il percorso critico (vedi
+      // commento in api/leads.ts).
+    }
+    setSaving(false);
+    navigation.navigate("ChildName", { ...route?.params, parentEmail: email.trim() });
+  }
+
+  return (
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text style={styles.back}>←</Text>
+      </Pressable>
+      <Text style={styles.title}>La tua email</Text>
+      <Text style={styles.subtitle}>
+        Ci serve per salvare i progressi di tuo figlio e permetterti di riprendere da dove avevi lasciato, anche da
+        un altro dispositivo.
+      </Text>
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        placeholder="La tua email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        style={styles.input}
+      />
+      <View style={{ flex: 1 }} />
+      {saving ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={!isValid} onPress={next} />}
+    </KeyboardAvoidingView>
+  );
+}
+
 // Screen 3 — name entry, direct port of the Speech Blubs pattern (illustration,
 // input, Skip in the top right). Their affirmative-nickname framing works well
 // for a sensitive context like speech delay, kept as-is.
@@ -412,60 +462,6 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
   );
 }
 
-// Cattura l'email PRIMA dello screener (fine ottobre 2026, segnalato dal founder: troppi
-// genitori rispondevano alle domande dello screener e poi abbandonavano proprio davanti al
-// vero gate di registrazione — AuthScreen, qualche schermata più avanti — senza lasciare
-// nessun contatto). Solo per il primo figlio durante l'onboarding: se route.params.addingChild
-// è true (genitore già autenticato che aggiunge un secondo bambino, vedi nota su
-// AvatarPickerScreen sotto) quella strada salta questa schermata, l'email la conosciamo già.
-// Non è l'account vero: nessuna verifica, nessuna sessione — solo un insert "silenzioso" in
-// waitlist (captureLeadEmail) che non deve mai bloccare l'onboarding se fallisce. L'email
-// raccolta qui viaggia nei route.params fino ad AuthScreen, che la pre-compila invece di
-// richiederla una seconda volta da zero.
-export function ParentEmailScreen({ navigation, route }: any) {
-  const insets = useSafeAreaInsets();
-  const name = route?.params?.name || "il tuo bambino";
-  const [email, setEmail] = useState("");
-  const [saving, setSaving] = useState(false);
-  const isValid = email.includes("@") && email.length > 3;
-
-  async function next() {
-    setSaving(true);
-    try {
-      await captureLeadEmail({ email: email.trim(), childName: name });
-    } catch {
-      // Non blocca mai l'onboarding: è una cattura extra, non il percorso critico (vedi
-      // commento in api/leads.ts).
-    }
-    setSaving(false);
-    navigation.navigate("WordCount", { ...route?.params, parentEmail: email.trim() });
-  }
-
-  return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
-      <Text style={styles.title}>La tua email</Text>
-      <Text style={styles.subtitle}>
-        Ci serve per salvare i progressi di {name} e permetterti di riprendere da dove avevi lasciato, anche da un
-        altro dispositivo.
-      </Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="La tua email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        style={styles.input}
-      />
-      <View style={{ flex: 1 }} />
-      {saving ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={!isValid} onPress={next} />}
-    </KeyboardAvoidingView>
-  );
-}
-
 // Ultimo passo prima dello screener (o, se route.params.addingChild è true, ultimo passo
 // in assoluto — vedi nota sotto): scelta dell'avatar tra illustrazioni già esistenti nel
 // word bank (constants/avatars.ts), non nuove foto/illustrazioni da generare. Pappagallo
@@ -495,7 +491,7 @@ export function AvatarPickerScreen({ navigation, route }: any) {
 
   async function finish() {
     if (!route?.params?.addingChild) {
-      navigation.navigate("ParentEmail", { ...route?.params, avatarId });
+      navigation.navigate("WordCount", { ...route?.params, avatarId });
       return;
     }
     setSaving(true);

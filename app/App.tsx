@@ -252,6 +252,7 @@ export default function App() {
       <NavigationContainer ref={navigationRef}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Trust" component={TrustScreen} />
+          <Stack.Screen name="ParentEmail" component={ParentEmailScreen} />
           <Stack.Screen name="TherapistLink" component={TherapistLinkScreen} />
           <Stack.Screen name="TherapistCodeEntry" component={TherapistCodeEntryScreen} />
           <Stack.Screen name="TherapistOnboarding" component={TherapistOnboardingScreen} />
@@ -261,7 +262,6 @@ export default function App() {
           <Stack.Screen name="ChildGender" component={ChildGenderScreen} />
           <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
           <Stack.Screen name="AvatarPicker" component={AvatarPickerScreen} />
-          <Stack.Screen name="ParentEmail" component={ParentEmailScreen} />
           <Stack.Screen name="WordCount" component={WordCountScreen} />
           <Stack.Screen name="EvaluatedByTherapist" component={EvaluatedByTherapistScreen} />
           <Stack.Screen name="DiagnosedConditions" component={DiagnosedConditionsScreen} />
