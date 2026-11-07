@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { requestOtpCode, verifyOtpCode, signInWithGoogle, signInWithFacebook } from "../api/auth";
+import {
+  signUpWithPassword,
+  signInWithPassword,
+  requestPasswordReset,
+  verifyPasswordResetCode,
+  updatePassword,
+  signInWithGoogle,
+  signInWithFacebook,
+} from "../api/auth";
 import { ensureParentProfile } from "../api/profiles";
 import { createChild, getChildren } from "../api/children";
 import { ensureTherapistProfile, registerTherapist } from "../api/therapists";
@@ -23,14 +31,15 @@ const C = {
 // sta per diventare reale (fine screener self-directed, oppure subito dopo aver inserito
 // un codice del logopedista) — non prima, per non aggiungere attrito allo screener stesso
 // (principio "genitore... fa un breve screener, e inizia da solo", brief §6.1). Email +
-// codice OTP: niente password, coerente con "scarica e inizia da solo". La lunghezza del
-// codice non è fissata lato app — dipende dal template email configurato in Supabase.
+// password vera (novembre 2026: prima era solo un codice OTP, cambiato su richiesta esplicita
+// del founder perché "Accedi" deve essere un vero login — vedi loginOnly sotto e
+// ForgotPasswordScreen più in fondo al file per il recupero password).
 export default function AuthScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const role: "parent" | "therapist" = route.params?.role === "therapist" ? "therapist" : "parent";
   // "Accedi" dalla homepage (route Login, vedi App.tsx) invece di "Registrati": dopo
   // l'accesso riprende i bambini già esistenti di questo account invece di provare a
-  // crearne uno nuovo — stesso meccanismo di login (OTP/Google/Facebook), comportamento
+  // crearne uno nuovo — stesso meccanismo di login (password/Google/Facebook), comportamento
   // diverso dopo che Supabase conferma la sessione.
   const loginOnly: boolean = !!route.params?.loginOnly;
   const name: string = route.params?.name || "il bambino";
@@ -44,11 +53,18 @@ export default function AuthScreen({ navigation, route }: any) {
   // Pre-compilata con l'email già raccolta in ParentEmailScreen (prima dello screener) quando
   // c'è — evita di richiederla una seconda volta da zero dopo che il genitore l'ha già data.
   const [email, setEmail] = useState(route.params?.parentEmail || "");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"email" | "code">("email");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Mostrato solo sull'errore di login (email/password errate O account inesistente — Supabase
+  // li rende indistinguibili apposta, vedi commento in api/auth.ts): offre la via d'uscita più
+  // probabile invece di lasciare l'utente bloccato su un errore generico.
+  const [showRegisterHint, setShowRegisterHint] = useState(false);
+  // Messaggio one-shot passato da ForgotPasswordScreen dopo un reset riuscito.
+  const resetSuccessMsg: string | null = route.params?.passwordResetDone
+    ? "Password aggiornata — accedi con la nuova password."
+    : null;
 
   const startSelfDirectedPlan = useGamificationStore((s) => s.startSelfDirectedPlan);
   const setSupabaseChildId = useGamificationStore((s) => s.setSupabaseChildId);
@@ -57,22 +73,9 @@ export default function AuthScreen({ navigation, route }: any) {
   const setChildrenRoster = useGamificationStore((s) => s.setChildrenRoster);
   const hydrateFromSupabase = useGamificationStore((s) => s.hydrateFromSupabase);
 
-  async function sendCode() {
-    if (!email.includes("@")) return;
-    setLoading(true);
-    setErrorMsg(null);
-    const { error } = await requestOtpCode(email.trim());
-    setLoading(false);
-    if (error) {
-      setErrorMsg("Non siamo riusciti a inviare il codice. Controlla la connessione e riprova.");
-      return;
-    }
-    setStep("code");
-  }
-
   // Tutto quello che succede DOPO che Supabase ha una sessione valida — identico sia che ci
-  // si sia arrivati con email+codice sia con Google/Facebook, quindi vive qui una volta sola
-  // invece che duplicato in verifyCode() e handleOAuth(). Ritorna un messaggio d'errore da
+  // si sia arrivati con email+password sia con Google/Facebook, quindi vive qui una volta
+  // sola invece che duplicato in submit() e handleOAuth(). Ritorna un messaggio d'errore da
   // mostrare, o null se è andato tutto bene (la navigazione l'ha già fatta lei stessa).
   async function completeSignIn(): Promise<string | null> {
     if (role === "therapist") {
@@ -133,16 +136,41 @@ export default function AuthScreen({ navigation, route }: any) {
     return null;
   }
 
-  async function verifyCode() {
-    if (code.trim().length < 4) return;
+  async function submit() {
+    if (!email.includes("@") || password.length < 6) return;
     setLoading(true);
     setErrorMsg(null);
-    const { error } = await verifyOtpCode(email.trim(), code.trim());
-    if (error) {
-      setLoading(false);
-      setErrorMsg("Codice non valido o scaduto. Richiedine uno nuovo.");
-      return;
+    setShowRegisterHint(false);
+
+    if (loginOnly) {
+      const { error } = await signInWithPassword(email.trim(), password);
+      if (error) {
+        setLoading(false);
+        setErrorMsg("Email o password errati.");
+        setShowRegisterHint(true);
+        return;
+      }
+    } else {
+      const { data, error } = await signUpWithPassword(email.trim(), password);
+      if (error) {
+        setLoading(false);
+        setErrorMsg(
+          /already registered|already exists/i.test(error.message)
+            ? "Esiste già un account con questa email — prova ad accedere invece di registrarti."
+            : "Non siamo riusciti a creare l'account. Controlla la connessione e riprova."
+        );
+        return;
+      }
+      if (!data?.session) {
+        // La conferma email è attiva lato Supabase (oggi non dovrebbe esserlo, ma non è
+        // garantito da qui): niente sessione finché non si clicca il link ricevuto, quindi
+        // non si può proseguire come se l'accesso fosse già avvenuto.
+        setLoading(false);
+        setErrorMsg("Ti abbiamo mandato un'email di conferma — aprila per completare la registrazione.");
+        return;
+      }
     }
+
     const resultError = await completeSignIn();
     setLoading(false);
     if (resultError) setErrorMsg(resultError);
@@ -212,16 +240,143 @@ export default function AuthScreen({ navigation, route }: any) {
         <Text style={styles.back}>←</Text>
       </Pressable>
 
+      <Text style={styles.title}>{loginOnly ? "Accedi" : role === "therapist" ? "Registrati come logopedista" : "Crea il tuo account"}</Text>
+      <Text style={styles.subtitle}>
+        {role === "therapist"
+          ? "Email e password per creare il tuo profilo logopedista."
+          : loginOnly
+            ? "Entra con l'email e la password che hai usato per registrarti."
+            : `Email e password per salvare i progressi di ${name}.`}
+      </Text>
+      {resetSuccessMsg && <Text style={styles.successText}>{resetSuccessMsg}</Text>}
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        placeholder="La tua email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        style={styles.input}
+      />
+      <TextInput
+        value={password}
+        onChangeText={setPassword}
+        placeholder={loginOnly ? "Password" : "Crea una password (almeno 6 caratteri)"}
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete={loginOnly ? "password" : "new-password"}
+        style={styles.input}
+      />
+      {loginOnly && (
+        <Pressable onPress={() => navigation.navigate("ForgotPassword", { email })} style={styles.forgotLink}>
+          <Text style={styles.forgotLinkText}>Password dimenticata?</Text>
+        </Pressable>
+      )}
+      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+      {showRegisterHint && (
+        <Pressable onPress={() => navigation.navigate("Trust")} style={styles.retryLink}>
+          <Text style={styles.retryLinkText}>Non hai un account? Registrati</Text>
+        </Pressable>
+      )}
+      <View style={{ flex: 1 }} />
+      {loading ? (
+        <ActivityIndicator color={C.primary} />
+      ) : (
+        <ContinueButton
+          label={loginOnly ? "Accedi" : "Continua"}
+          disabled={!email.includes("@") || password.length < 6}
+          onPress={submit}
+        />
+      )}
+
+      <View style={styles.dividerRow}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>oppure</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      <Pressable
+        onPress={() => handleOAuth("google")}
+        disabled={!!oauthLoading}
+        style={[styles.oauthBtn, oauthLoading && oauthLoading !== "google" && { opacity: 0.4 }]}
+      >
+        {oauthLoading === "google" ? (
+          <ActivityIndicator color={C.text} />
+        ) : (
+          <Text style={styles.oauthBtnText}>Continua con Google</Text>
+        )}
+      </Pressable>
+      <Pressable
+        onPress={() => handleOAuth("facebook")}
+        disabled={!!oauthLoading}
+        style={[styles.oauthBtn, { marginTop: 10 }, oauthLoading && oauthLoading !== "facebook" && { opacity: 0.4 }]}
+      >
+        {oauthLoading === "facebook" ? (
+          <ActivityIndicator color={C.text} />
+        ) : (
+          <Text style={styles.oauthBtnText}>Continua con Facebook</Text>
+        )}
+      </Pressable>
+    </KeyboardAvoidingView>
+  );
+}
+
+// Recupero password, in 2 passi — raggiunta dal link "Password dimenticata?" sopra. Non crea
+// una sessione "normale": verifyPasswordResetCode apre una sessione temporanea di tipo
+// recovery, usata solo per impostare la nuova password (updatePassword), poi si torna al
+// login vero e proprio per entrare con le nuove credenziali (più semplice e più sicuro che
+// provare a dedurre qui se l'account ha già dei bambini).
+export function ForgotPasswordScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
+  const [email, setEmail] = useState(route?.params?.email || "");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [step, setStep] = useState<"email" | "reset">("email");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  async function sendResetCode() {
+    if (!email.includes("@")) return;
+    setLoading(true);
+    setErrorMsg(null);
+    const { error } = await requestPasswordReset(email.trim());
+    setLoading(false);
+    if (error) {
+      setErrorMsg("Non siamo riusciti a inviare il codice. Controlla la connessione e riprova.");
+      return;
+    }
+    setStep("reset");
+  }
+
+  async function resetPassword() {
+    if (code.trim().length < 4 || newPassword.length < 6) return;
+    setLoading(true);
+    setErrorMsg(null);
+    const { error: verifyError } = await verifyPasswordResetCode(email.trim(), code.trim());
+    if (verifyError) {
+      setLoading(false);
+      setErrorMsg("Codice non valido o scaduto. Richiedine uno nuovo.");
+      return;
+    }
+    const { error: updateError } = await updatePassword(newPassword);
+    setLoading(false);
+    if (updateError) {
+      setErrorMsg("Non siamo riusciti a impostare la nuova password. Riprova.");
+      return;
+    }
+    navigation.navigate("Login", { passwordResetDone: true });
+  }
+
+  return (
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text style={styles.back}>←</Text>
+      </Pressable>
+
       {step === "email" ? (
         <>
-          <Text style={styles.title}>{loginOnly ? "Accedi" : "La tua email"}</Text>
-          <Text style={styles.subtitle}>
-            {role === "therapist"
-              ? "Ti mandiamo un codice per accedere — niente password. Serve per creare il tuo profilo logopedista."
-              : loginOnly
-                ? "Ti mandiamo un codice per accedere — niente password. Usa l'email con cui ti sei registrato."
-                : `Ti mandiamo un codice per accedere — niente password. Serve per salvare i progressi di ${name}.`}
-          </Text>
+          <Text style={styles.title}>Password dimenticata</Text>
+          <Text style={styles.subtitle}>Ti mandiamo un codice via email per impostarne una nuova.</Text>
           <TextInput
             value={email}
             onChangeText={setEmail}
@@ -236,42 +391,13 @@ export default function AuthScreen({ navigation, route }: any) {
           {loading ? (
             <ActivityIndicator color={C.primary} />
           ) : (
-            <ContinueButton label="Invia il codice" disabled={!email.includes("@")} onPress={sendCode} />
+            <ContinueButton label="Invia il codice" disabled={!email.includes("@")} onPress={sendResetCode} />
           )}
-
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>oppure</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <Pressable
-            onPress={() => handleOAuth("google")}
-            disabled={!!oauthLoading}
-            style={[styles.oauthBtn, oauthLoading && oauthLoading !== "google" && { opacity: 0.4 }]}
-          >
-            {oauthLoading === "google" ? (
-              <ActivityIndicator color={C.text} />
-            ) : (
-              <Text style={styles.oauthBtnText}>Continua con Google</Text>
-            )}
-          </Pressable>
-          <Pressable
-            onPress={() => handleOAuth("facebook")}
-            disabled={!!oauthLoading}
-            style={[styles.oauthBtn, { marginTop: 10 }, oauthLoading && oauthLoading !== "facebook" && { opacity: 0.4 }]}
-          >
-            {oauthLoading === "facebook" ? (
-              <ActivityIndicator color={C.text} />
-            ) : (
-              <Text style={styles.oauthBtnText}>Continua con Facebook</Text>
-            )}
-          </Pressable>
         </>
       ) : (
         <>
           <Text style={styles.title}>Inserisci il codice</Text>
-          <Text style={styles.subtitle}>Te lo abbiamo appena mandato a {email}.</Text>
+          <Text style={styles.subtitle}>Te lo abbiamo appena mandato a {email}. Poi scegli la nuova password.</Text>
           <TextInput
             value={code}
             onChangeText={setCode}
@@ -280,13 +406,22 @@ export default function AuthScreen({ navigation, route }: any) {
             maxLength={10}
             style={styles.input}
           />
+          <TextInput
+            value={newPassword}
+            onChangeText={setNewPassword}
+            placeholder="Nuova password (almeno 6 caratteri)"
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="new-password"
+            style={styles.input}
+          />
           {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
           <View style={{ flex: 1 }} />
           {loading ? (
             <ActivityIndicator color={C.primary} />
           ) : (
             <>
-              <ContinueButton label="Verifica" disabled={code.trim().length < 4} onPress={verifyCode} />
+              <ContinueButton label="Imposta la nuova password" disabled={code.trim().length < 4 || newPassword.length < 6} onPress={resetPassword} />
               <Pressable onPress={() => setStep("email")} style={styles.retryLink}>
                 <Text style={styles.retryLinkText}>Usa un'altra email</Text>
               </Pressable>
@@ -320,6 +455,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   errorText: { color: C.primary, fontSize: 13.5, marginTop: 12 },
+  successText: { color: C.jade, fontSize: 13.5, marginTop: 12, fontWeight: "600" },
+  forgotLink: { alignSelf: "flex-end", marginTop: 10 },
+  forgotLinkText: { color: C.jade, fontSize: 13.5, textDecorationLine: "underline" },
   cta: {
     backgroundColor: C.primary,
     borderRadius: 14,

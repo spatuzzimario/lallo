@@ -1,9 +1,10 @@
-// Autenticazione genitore via Supabase Auth — email + codice OTP a 6 cifre (no password,
-// no deep link): il genitore riceve un'email con un codice, lo digita nell'app. Scelta
-// deliberata invece del "magic link" cliccabile: un link che riapre l'app via deep link
-// (schema lallo://) è fragile da testare in Expo Go (usa un proprio schema URL e un IP di
-// rete locale che cambia a ogni sessione) — il codice OTP raggiunge lo stesso obiettivo
-// (accesso senza password) senza quella complessità.
+// Autenticazione genitore via Supabase Auth — email + password vera (richiesta esplicita del
+// founder, novembre 2026: "Accedi" deve essere un vero login, non la stessa procedura di
+// registrazione). Prima si usava solo un codice OTP via email (niente password) — scelta
+// abbandonata qui ma il principio che l'aveva motivata resta per il recupero password sotto:
+// un "magic link" cliccabile che riapre l'app via deep link (schema lallo://) è fragile da
+// testare in Expo Go (usa un proprio schema URL e un IP di rete locale che cambia ad ogni
+// sessione), quindi anche lì si usa un codice digitato a mano, non un link.
 //
 // Login social (Google/Facebook): stesso backend Supabase Auth, via OAuth. Su nativo si apre
 // il browser di sistema e si recuperano i token dal deep link di ritorno (schema "lallo://",
@@ -19,22 +20,43 @@ import { supabase } from "./supabase";
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Invia il codice via email. shouldCreateUser:true perché nel modello parent-first non
-// c'è un passaggio di "registrazione" separato — il primo accesso crea l'account.
-export async function requestOtpCode(email: string) {
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: true },
-  });
+// Registrazione: crea l'account con email+password. Se nel progetto Supabase la conferma
+// email è disattivata (così è oggi, coerente col vecchio flusso OTP che non la richiedeva),
+// data.session arriva già valorizzata e si può proseguire subito — altrimenti (email di
+// conferma attiva) session è null e il chiamante deve mostrare "controlla la tua email"
+// invece di andare avanti come se l'accesso fosse già avvenuto.
+export async function signUpWithPassword(email: string, password: string) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  return { data, error };
+}
+
+// Login: email+password di un account già esistente. Supabase restituisce un errore generico
+// ("Invalid login credentials") sia per password sbagliata sia per account inesistente —
+// indistinguibile apposta, per non rivelare a un malintenzionato quali email sono registrate.
+export async function signInWithPassword(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  return { data, error };
+}
+
+// Recupero password, in 2 passi — stesso principio "codice digitato, mai un link cliccabile"
+// del commento in cima al file. Il passo 1 manda il codice; perché l'email contenga davvero
+// un codice e non un link, il template "Reset Password" in Supabase (Authentication → Email
+// Templates) deve includere {{ .Token }}, esattamente come già succede per il template usato
+// in passato dall'OTP di accesso — se non l'hai ancora controllato, verificalo lì.
+export async function requestPasswordReset(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
   return { error };
 }
 
-export async function verifyOtpCode(email: string, code: string) {
-  const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token: code,
-    type: "email",
-  });
+// Passo 2: il codice ricevuto verifica l'identità e apre una sessione temporanea di
+// "recovery" — da quella sessione, updatePassword() sotto può impostare la nuova password.
+export async function verifyPasswordResetCode(email: string, code: string) {
+  const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: "recovery" });
+  return { data, error };
+}
+
+export async function updatePassword(newPassword: string) {
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
   return { data, error };
 }
 

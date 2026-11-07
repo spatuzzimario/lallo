@@ -35,7 +35,7 @@ import {
 } from "./src/screens/DiagnosticScreens";
 import PaywallScreen from "./src/screens/PaywallScreen";
 import PermissionsScreen from "./src/screens/PermissionsScreen";
-import AuthScreen from "./src/screens/AuthScreen";
+import AuthScreen, { ForgotPasswordScreen } from "./src/screens/AuthScreen";
 import { PrivacyConsentScreen } from "./src/screens/ParentScreens";
 import MicConsentScreen from "./src/screens/MicConsentScreen";
 // NOTA: TherapistAssignScreen è stato rimosso da questa app su richiesta esplicita —
@@ -288,6 +288,7 @@ export default function App() {
               bambini già esistenti invece di provarne a creare uno nuovo — raggiunta dal link
               "Accedi" della homepage (?mode=login), mai dal flusso di onboarding normale. */}
           <Stack.Screen name="Login" component={AuthScreen} initialParams={{ loginOnly: true }} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} />
           <Stack.Screen name="Permissions" component={PermissionsScreen} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
