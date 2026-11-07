@@ -36,7 +36,9 @@ export default function AuthScreen({ navigation, route }: any) {
   const therapistFullName: string = route.params?.fullName || "";
   const therapistAlboNumber: string = route.params?.alboNumber || "";
 
-  const [email, setEmail] = useState("");
+  // Pre-compilata con l'email già raccolta in ParentEmailScreen (prima dello screener) quando
+  // c'è — evita di richiederla una seconda volta da zero dopo che il genitore l'ha già data.
+  const [email, setEmail] = useState(route.params?.parentEmail || "");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);

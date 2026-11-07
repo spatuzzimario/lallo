@@ -295,6 +295,9 @@ export function ResultsScreen({ navigation, route }: any) {
               // salvato, quindi i rinforzi con la grammatica giusta non partivano mai).
               gender: route.params?.gender,
               avatarId: route.params?.avatarId,
+              // Email già raccolta in ParentEmailScreen, prima dello screener — passata qui
+              // per pre-compilare AuthScreen invece di richiederla una seconda volta.
+              parentEmail: route.params?.parentEmail,
             })
           }
         />

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
 import { createChild } from "../api/children";
+import { captureLeadEmail } from "../api/leads";
 import { useGamificationStore } from "../store/useGamificationStore";
 import { AVATAR_OPTIONS, DEFAULT_AVATAR_ID, getAvatarImage } from "../constants/avatars";
 import { useResponsiveColumns } from "../hooks/useResponsiveColumns";
@@ -411,6 +412,60 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
   );
 }
 
+// Cattura l'email PRIMA dello screener (fine ottobre 2026, segnalato dal founder: troppi
+// genitori rispondevano alle domande dello screener e poi abbandonavano proprio davanti al
+// vero gate di registrazione — AuthScreen, qualche schermata più avanti — senza lasciare
+// nessun contatto). Solo per il primo figlio durante l'onboarding: se route.params.addingChild
+// è true (genitore già autenticato che aggiunge un secondo bambino, vedi nota su
+// AvatarPickerScreen sotto) quella strada salta questa schermata, l'email la conosciamo già.
+// Non è l'account vero: nessuna verifica, nessuna sessione — solo un insert "silenzioso" in
+// waitlist (captureLeadEmail) che non deve mai bloccare l'onboarding se fallisce. L'email
+// raccolta qui viaggia nei route.params fino ad AuthScreen, che la pre-compila invece di
+// richiederla una seconda volta da zero.
+export function ParentEmailScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
+  const name = route?.params?.name || "il tuo bambino";
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const isValid = email.includes("@") && email.length > 3;
+
+  async function next() {
+    setSaving(true);
+    try {
+      await captureLeadEmail({ email: email.trim(), childName: name });
+    } catch {
+      // Non blocca mai l'onboarding: è una cattura extra, non il percorso critico (vedi
+      // commento in api/leads.ts).
+    }
+    setSaving(false);
+    navigation.navigate("WordCount", { ...route?.params, parentEmail: email.trim() });
+  }
+
+  return (
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text style={styles.back}>←</Text>
+      </Pressable>
+      <Text style={styles.title}>La tua email</Text>
+      <Text style={styles.subtitle}>
+        Ci serve per salvare i progressi di {name} e permetterti di riprendere da dove avevi lasciato, anche da un
+        altro dispositivo.
+      </Text>
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        placeholder="La tua email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        style={styles.input}
+      />
+      <View style={{ flex: 1 }} />
+      {saving ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={!isValid} onPress={next} />}
+    </KeyboardAvoidingView>
+  );
+}
+
 // Ultimo passo prima dello screener (o, se route.params.addingChild è true, ultimo passo
 // in assoluto — vedi nota sotto): scelta dell'avatar tra illustrazioni già esistenti nel
 // word bank (constants/avatars.ts), non nuove foto/illustrazioni da generare. Pappagallo
@@ -440,7 +495,7 @@ export function AvatarPickerScreen({ navigation, route }: any) {
 
   async function finish() {
     if (!route?.params?.addingChild) {
-      navigation.navigate("WordCount", { ...route?.params, avatarId });
+      navigation.navigate("ParentEmail", { ...route?.params, avatarId });
       return;
     }
     setSaving(true);

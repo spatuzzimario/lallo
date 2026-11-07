@@ -23,6 +23,7 @@ import {
   ChildGenderScreen,
   ChildBirthdateScreen,
   AvatarPickerScreen,
+  ParentEmailScreen,
 } from "./src/screens/OnboardingScreens";
 import {
   WordCountScreen,
@@ -260,6 +261,7 @@ export default function App() {
           <Stack.Screen name="ChildGender" component={ChildGenderScreen} />
           <Stack.Screen name="ChildBirthdate" component={ChildBirthdateScreen} />
           <Stack.Screen name="AvatarPicker" component={AvatarPickerScreen} />
+          <Stack.Screen name="ParentEmail" component={ParentEmailScreen} />
           <Stack.Screen name="WordCount" component={WordCountScreen} />
           <Stack.Screen name="EvaluatedByTherapist" component={EvaluatedByTherapistScreen} />
           <Stack.Screen name="DiagnosedConditions" component={DiagnosedConditionsScreen} />
