@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   signUpWithPassword,
@@ -52,7 +52,11 @@ export default function AuthScreen({ navigation, route }: any) {
 
   // Pre-compilata con l'email già raccolta in ParentEmailScreen (prima dello screener) quando
   // c'è — evita di richiederla una seconda volta da zero dopo che il genitore l'ha già data.
-  const [email, setEmail] = useState(route.params?.parentEmail || "");
+  // route.params.email: passato dagli hint "Accedi"/"Password dimenticata" qui sotto, quando
+  // si arriva già con un'email digitata (non ricominciare da zero). parentEmail resta quella
+  // raccolta prima dello screener (vedi ParentEmailScreen) — due provenienze diverse, stessa
+  // funzione di pre-compilazione.
+  const [email, setEmail] = useState(route.params?.parentEmail || route.params?.email || "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
@@ -61,6 +65,10 @@ export default function AuthScreen({ navigation, route }: any) {
   // li rende indistinguibili apposta, vedi commento in api/auth.ts): offre la via d'uscita più
   // probabile invece di lasciare l'utente bloccato su un errore generico.
   const [showRegisterHint, setShowRegisterHint] = useState(false);
+  // Mostrato quando ci si "registra" con un'email che ha già un account (es. creato prima
+  // del passaggio a email+password, quindi senza nessuna password impostata — bug reale
+  // segnalato da Apple: un account così non ha modo di accedere senza passare da qui).
+  const [showLoginHint, setShowLoginHint] = useState(false);
   // Messaggio one-shot passato da ForgotPasswordScreen dopo un reset riuscito.
   const resetSuccessMsg: string | null = route.params?.passwordResetDone
     ? "Password aggiornata — accedi con la nuova password."
@@ -141,6 +149,7 @@ export default function AuthScreen({ navigation, route }: any) {
     setLoading(true);
     setErrorMsg(null);
     setShowRegisterHint(false);
+    setShowLoginHint(false);
 
     if (loginOnly) {
       const { error } = await signInWithPassword(email.trim(), password);
@@ -154,11 +163,12 @@ export default function AuthScreen({ navigation, route }: any) {
       const { data, error } = await signUpWithPassword(email.trim(), password);
       if (error) {
         setLoading(false);
-        setErrorMsg(
-          /already registered|already exists/i.test(error.message)
-            ? "Esiste già un account con questa email — prova ad accedere invece di registrarti."
-            : "Non siamo riusciti a creare l'account. Controlla la connessione e riprova."
-        );
+        if (/already registered|already exists/i.test(error.message)) {
+          setErrorMsg("Esiste già un account con questa email.");
+          setShowLoginHint(true);
+        } else {
+          setErrorMsg("Non siamo riusciti a creare l'account. Controlla la connessione e riprova.");
+        }
         return;
       }
       if (!data?.session) {
@@ -204,119 +214,138 @@ export default function AuthScreen({ navigation, route }: any) {
     // persistito, quindi qui si ferma con un messaggio invece di fingere una registrazione.
     if (role === "therapist") {
       return (
-        <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-          <Pressable onPress={() => navigation.goBack()}>
-            <Text style={styles.back}>←</Text>
-          </Pressable>
-          <Text style={styles.title}>Backend non collegato</Text>
-          <Text style={styles.subtitle}>
-            La registrazione come logopedista richiede il backend collegato — non è disponibile in questo ambiente di
-            test.
-          </Text>
+        <View style={styles.container}>
+          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+            <Pressable onPress={() => navigation.goBack()}>
+              <Text style={styles.back}>←</Text>
+            </Pressable>
+            <Text style={styles.title}>Backend non collegato</Text>
+            <Text style={styles.subtitle}>
+              La registrazione come logopedista richiede il backend collegato — non è disponibile in questo ambiente di
+              test.
+            </Text>
+          </ScrollView>
         </View>
       );
     }
     return (
-      <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>Accesso non ancora configurato</Text>
-        <Text style={styles.subtitle}>
-          Il backend non è collegato in questo ambiente — continuiamo senza salvare i dati.
-        </Text>
-        <View style={{ flex: 1 }} />
-        <ContinueButton
-          onPress={() => {
-            setChildInfo({ displayName: name, gender, avatarId });
-            if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
-            navigation.navigate("Paywall");
-          }}
-        />
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+          <Text style={styles.title}>Accesso non ancora configurato</Text>
+          <Text style={styles.subtitle}>
+            Il backend non è collegato in questo ambiente — continuiamo senza salvare i dati.
+          </Text>
+          <View style={{ flex: 1, minHeight: 20 }} />
+          <ContinueButton
+            onPress={() => {
+              setChildInfo({ displayName: name, gender, avatarId });
+              if (sounds && sounds.length > 0) startSelfDirectedPlan(sounds);
+              navigation.navigate("Paywall");
+            }}
+          />
+        </ScrollView>
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
 
-      <Text style={styles.title}>{loginOnly ? "Accedi" : role === "therapist" ? "Registrati come logopedista" : "Crea il tuo account"}</Text>
-      <Text style={styles.subtitle}>
-        {role === "therapist"
-          ? "Email e password per creare il tuo profilo logopedista."
-          : loginOnly
-            ? "Entra con l'email e la password che hai usato per registrarti."
-            : `Email e password per salvare i progressi di ${name}.`}
-      </Text>
-      {resetSuccessMsg && <Text style={styles.successText}>{resetSuccessMsg}</Text>}
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="La tua email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        style={styles.input}
-      />
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder={loginOnly ? "Password" : "Crea una password (almeno 6 caratteri)"}
-        secureTextEntry
-        autoCapitalize="none"
-        autoComplete={loginOnly ? "password" : "new-password"}
-        style={styles.input}
-      />
-      {loginOnly && (
-        <Pressable onPress={() => navigation.navigate("ForgotPassword", { email })} style={styles.forgotLink}>
-          <Text style={styles.forgotLinkText}>Password dimenticata?</Text>
-        </Pressable>
-      )}
-      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-      {showRegisterHint && (
-        <Pressable onPress={() => navigation.navigate("Trust")} style={styles.retryLink}>
-          <Text style={styles.retryLinkText}>Non hai un account? Registrati</Text>
-        </Pressable>
-      )}
-      <View style={{ flex: 1 }} />
-      {loading ? (
-        <ActivityIndicator color={C.primary} />
-      ) : (
-        <ContinueButton
-          label={loginOnly ? "Accedi" : "Continua"}
-          disabled={!email.includes("@") || password.length < 6}
-          onPress={submit}
+        <Text style={styles.title}>{loginOnly ? "Accedi" : role === "therapist" ? "Registrati come logopedista" : "Crea il tuo account"}</Text>
+        <Text style={styles.subtitle}>
+          {role === "therapist"
+            ? "Email e password per creare il tuo profilo logopedista."
+            : loginOnly
+              ? "Entra con l'email e la password che hai usato per registrarti."
+              : `Email e password per salvare i progressi di ${name}.`}
+        </Text>
+        {resetSuccessMsg && <Text style={styles.successText}>{resetSuccessMsg}</Text>}
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="La tua email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          style={styles.input}
         />
-      )}
-
-      <View style={styles.dividerRow}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>oppure</Text>
-        <View style={styles.dividerLine} />
-      </View>
-
-      <Pressable
-        onPress={() => handleOAuth("google")}
-        disabled={!!oauthLoading}
-        style={[styles.oauthBtn, oauthLoading && oauthLoading !== "google" && { opacity: 0.4 }]}
-      >
-        {oauthLoading === "google" ? (
-          <ActivityIndicator color={C.text} />
-        ) : (
-          <Text style={styles.oauthBtnText}>Continua con Google</Text>
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder={loginOnly ? "Password" : "Crea una password (almeno 6 caratteri)"}
+          secureTextEntry
+          autoCapitalize="none"
+          autoComplete={loginOnly ? "password" : "new-password"}
+          style={styles.input}
+        />
+        {loginOnly && (
+          <Pressable onPress={() => navigation.navigate("ForgotPassword", { email })} style={styles.forgotLink}>
+            <Text style={styles.forgotLinkText}>Password dimenticata?</Text>
+          </Pressable>
         )}
-      </Pressable>
-      <Pressable
-        onPress={() => handleOAuth("facebook")}
-        disabled={!!oauthLoading}
-        style={[styles.oauthBtn, { marginTop: 10 }, oauthLoading && oauthLoading !== "facebook" && { opacity: 0.4 }]}
-      >
-        {oauthLoading === "facebook" ? (
-          <ActivityIndicator color={C.text} />
-        ) : (
-          <Text style={styles.oauthBtnText}>Continua con Facebook</Text>
+        {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+        {showRegisterHint && (
+          <Pressable onPress={() => navigation.navigate("Trust")} style={styles.retryLink}>
+            <Text style={styles.retryLinkText}>Non hai un account? Registrati</Text>
+          </Pressable>
         )}
-      </Pressable>
+        {showLoginHint && (
+          <>
+            <Pressable onPress={() => navigation.navigate("Login", { email })} style={styles.retryLink}>
+              <Text style={styles.retryLinkText}>Hai già un account? Accedi</Text>
+            </Pressable>
+            {/* Un account creato prima del passaggio a email+password (vedi commento in cima
+                al file) non ha nessuna password impostata — senza questo link resterebbe
+                bloccato anche su "Accedi": Password dimenticata gliene fa impostare una vera. */}
+            <Pressable onPress={() => navigation.navigate("ForgotPassword", { email })} style={styles.retryLink}>
+              <Text style={styles.retryLinkText}>Password dimenticata?</Text>
+            </Pressable>
+          </>
+        )}
+        <View style={{ flex: 1, minHeight: 20 }} />
+        {loading ? (
+          <ActivityIndicator color={C.primary} />
+        ) : (
+          <ContinueButton
+            label={loginOnly ? "Accedi" : "Continua"}
+            disabled={!email.includes("@") || password.length < 6}
+            onPress={submit}
+          />
+        )}
+
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>oppure</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Pressable
+          onPress={() => handleOAuth("google")}
+          disabled={!!oauthLoading}
+          style={[styles.oauthBtn, oauthLoading && oauthLoading !== "google" && { opacity: 0.4 }]}
+        >
+          {oauthLoading === "google" ? (
+            <ActivityIndicator color={C.text} />
+          ) : (
+            <Text style={styles.oauthBtnText}>Continua con Google</Text>
+          )}
+        </Pressable>
+        <Pressable
+          onPress={() => handleOAuth("facebook")}
+          disabled={!!oauthLoading}
+          style={[styles.oauthBtn, { marginTop: 10 }, oauthLoading && oauthLoading !== "facebook" && { opacity: 0.4 }]}
+        >
+          {oauthLoading === "facebook" ? (
+            <ActivityIndicator color={C.text} />
+          ) : (
+            <Text style={styles.oauthBtnText}>Continua con Facebook</Text>
+          )}
+        </Pressable>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -368,67 +397,69 @@ export function ForgotPasswordScreen({ navigation, route }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
 
-      {step === "email" ? (
-        <>
-          <Text style={styles.title}>Password dimenticata</Text>
-          <Text style={styles.subtitle}>Ti mandiamo un codice via email per impostarne una nuova.</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="La tua email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            style={styles.input}
-          />
-          {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-          <View style={{ flex: 1 }} />
-          {loading ? (
-            <ActivityIndicator color={C.primary} />
-          ) : (
-            <ContinueButton label="Invia il codice" disabled={!email.includes("@")} onPress={sendResetCode} />
-          )}
-        </>
-      ) : (
-        <>
-          <Text style={styles.title}>Inserisci il codice</Text>
-          <Text style={styles.subtitle}>Te lo abbiamo appena mandato a {email}. Poi scegli la nuova password.</Text>
-          <TextInput
-            value={code}
-            onChangeText={setCode}
-            placeholder="Codice"
-            keyboardType="number-pad"
-            maxLength={10}
-            style={styles.input}
-          />
-          <TextInput
-            value={newPassword}
-            onChangeText={setNewPassword}
-            placeholder="Nuova password (almeno 6 caratteri)"
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="new-password"
-            style={styles.input}
-          />
-          {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-          <View style={{ flex: 1 }} />
-          {loading ? (
-            <ActivityIndicator color={C.primary} />
-          ) : (
-            <>
-              <ContinueButton label="Imposta la nuova password" disabled={code.trim().length < 4 || newPassword.length < 6} onPress={resetPassword} />
-              <Pressable onPress={() => setStep("email")} style={styles.retryLink}>
-                <Text style={styles.retryLinkText}>Usa un'altra email</Text>
-              </Pressable>
-            </>
-          )}
-        </>
-      )}
+        {step === "email" ? (
+          <>
+            <Text style={styles.title}>Password dimenticata</Text>
+            <Text style={styles.subtitle}>Ti mandiamo un codice via email per impostarne una nuova.</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="La tua email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              style={styles.input}
+            />
+            {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+            <View style={{ flex: 1, minHeight: 20 }} />
+            {loading ? (
+              <ActivityIndicator color={C.primary} />
+            ) : (
+              <ContinueButton label="Invia il codice" disabled={!email.includes("@")} onPress={sendResetCode} />
+            )}
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>Inserisci il codice</Text>
+            <Text style={styles.subtitle}>Te lo abbiamo appena mandato a {email}. Poi scegli la nuova password.</Text>
+            <TextInput
+              value={code}
+              onChangeText={setCode}
+              placeholder="Codice"
+              keyboardType="number-pad"
+              maxLength={10}
+              style={styles.input}
+            />
+            <TextInput
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder="Nuova password (almeno 6 caratteri)"
+              secureTextEntry
+              autoCapitalize="none"
+              autoComplete="new-password"
+              style={styles.input}
+            />
+            {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+            <View style={{ flex: 1, minHeight: 20 }} />
+            {loading ? (
+              <ActivityIndicator color={C.primary} />
+            ) : (
+              <>
+                <ContinueButton label="Imposta la nuova password" disabled={code.trim().length < 4 || newPassword.length < 6} onPress={resetPassword} />
+                <Pressable onPress={() => setStep("email")} style={styles.retryLink}>
+                  <Text style={styles.retryLinkText}>Usa un'altra email</Text>
+                </Pressable>
+              </>
+            )}
+          </>
+        )}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -442,7 +473,11 @@ function ContinueButton({ label = "Continua", onPress, disabled = false }: any) 
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 24 },
+  // Rifiuto App Store (novembre 2026, guideline 4): "il bottone Continua non era visibile su
+  // iPad" — vedi lo stesso commento in OnboardingScreens.tsx. `container` è solo il guscio
+  // esterno, il padding e il flexGrow stanno su `scrollContent` dentro lo ScrollView.
+  container: { flex: 1, backgroundColor: C.bg },
+  scrollContent: { flexGrow: 1, padding: 24 },
   back: { fontSize: 24, color: C.jade, marginBottom: 20 },
   title: { fontSize: 26, fontWeight: "800", color: C.text, marginBottom: 12 },
   subtitle: { fontSize: 16, color: C.subtext, lineHeight: 22 },

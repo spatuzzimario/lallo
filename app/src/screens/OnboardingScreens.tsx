@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Image, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, Image, Pressable, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findTherapistByCode, linkChildToTherapist } from "../api/therapists";
 import { isSupabaseConfigured } from "../api/supabase";
@@ -39,21 +39,31 @@ function ContinueButton({ label = "Continua", onPress, disabled = false }: any) 
 export function TrustScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <Text style={styles.title}>Lallo segue la scala clinica{"\n"}usata dai logopedisti</Text>
-      <Text style={styles.subtitle}>
-        Ogni esercizio è strutturato sui 5 livelli di sviluppo fonetico,
-        così puoi seguire i progressi reali di tuo figlio — non solo il tempo di gioco.
-      </Text>
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Image source={require("../../assets/onboarding-trust.png")} style={styles.heroImage} resizeMode="contain" />
-      </View>
-      <ContinueButton onPress={() => navigation.navigate("ParentEmail")} />
-      {/* Link secondario, non in competizione visiva con il flusso genitore (parent-first) —
-          un logopedista che apre l'app per la prima volta deve comunque poterlo trovare. */}
-      <Pressable onPress={() => navigation.navigate("TherapistOnboarding")} style={styles.skipLink}>
-        <Text style={styles.skipText}>Sei un logopedista? Registrati qui</Text>
-      </Pressable>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+        <Text style={styles.title}>Lallo segue la scala clinica{"\n"}usata dai logopedisti</Text>
+        <Text style={styles.subtitle}>
+          Ogni esercizio è strutturato sui 5 livelli di sviluppo fonetico,
+          così puoi seguire i progressi reali di tuo figlio — non solo il tempo di gioco.
+        </Text>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", minHeight: 160 }}>
+          <Image source={require("../../assets/onboarding-trust.png")} style={styles.heroImage} resizeMode="contain" />
+        </View>
+        <ContinueButton onPress={() => navigation.navigate("ParentEmail")} />
+        {/* "Accedi" — prima raggiungibile solo dal link della homepage web (?mode=login,
+            vedi App.tsx), senza nessun modo di arrivarci dall'app nativa. Bug reale: chi ha
+            già un account (es. reinstalla l'app, o un account creato prima del passaggio a
+            email+password — vedi AuthScreen) finiva bloccato nel solo flusso "Registrati",
+            che fallisce con "esiste già un account" senza nessuna via d'uscita visibile. */}
+        <Pressable onPress={() => navigation.navigate("Login")} style={styles.skipLink}>
+          <Text style={styles.skipText}>Hai già un account? Accedi</Text>
+        </Pressable>
+        {/* Link secondario, non in competizione visiva con il flusso genitore (parent-first) —
+            un logopedista che apre l'app per la prima volta deve comunque poterlo trovare. */}
+        <Pressable onPress={() => navigation.navigate("TherapistOnboarding")} style={styles.skipLink}>
+          <Text style={styles.skipText}>Sei un logopedista? Registrati qui</Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 }
@@ -71,34 +81,36 @@ export function TherapistOnboardingScreen({ navigation }: any) {
   const canContinue = fullName.trim().length > 1 && alboNumber.trim().length > 1;
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
-      <Text style={styles.title}>Registrati come logopedista</Text>
-      <Text style={styles.subtitle}>
-        Ti diamo un codice da condividere con le famiglie che segui, per collegare Lallo alla tua terapia. La verifica
-        del numero di iscrizione all'Albo avviene manualmente da parte nostra dopo la registrazione.
-      </Text>
-      <TextInput
-        value={fullName}
-        onChangeText={setFullName}
-        placeholder="Nome e cognome"
-        style={styles.input}
-      />
-      <TextInput
-        value={alboNumber}
-        onChangeText={setAlboNumber}
-        placeholder="Numero di iscrizione all'Albo dei Logopedisti"
-        style={styles.input}
-      />
-      <View style={{ flex: 1 }} />
-      <ContinueButton
-        disabled={!canContinue}
-        onPress={() =>
-          navigation.navigate("Auth", { role: "therapist", fullName: fullName.trim(), alboNumber: alboNumber.trim() })
-        }
-      />
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+        <Text style={styles.title}>Registrati come logopedista</Text>
+        <Text style={styles.subtitle}>
+          Ti diamo un codice da condividere con le famiglie che segui, per collegare Lallo alla tua terapia. La verifica
+          del numero di iscrizione all'Albo avviene manualmente da parte nostra dopo la registrazione.
+        </Text>
+        <TextInput
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Nome e cognome"
+          style={styles.input}
+        />
+        <TextInput
+          value={alboNumber}
+          onChangeText={setAlboNumber}
+          placeholder="Numero di iscrizione all'Albo dei Logopedisti"
+          style={styles.input}
+        />
+        <View style={{ flex: 1, minHeight: 20 }} />
+        <ContinueButton
+          disabled={!canContinue}
+          onPress={() =>
+            navigation.navigate("Auth", { role: "therapist", fullName: fullName.trim(), alboNumber: alboNumber.trim() })
+          }
+        />
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -112,21 +124,23 @@ export function TherapistCodeReadyScreen({ navigation, route }: any) {
   const fullName: string = route.params?.fullName || "";
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <Text style={styles.title}>Sei registrato, {fullName.split(" ")[0]}!</Text>
-      <Text style={styles.subtitle}>
-        Condividi questo codice con le famiglie che segui — lo inseriranno nell'app, nell'area Genitori, per
-        collegare Lallo alla tua terapia.
-      </Text>
-      <View style={styles.codeBox}>
-        <Text style={styles.codeText}>{inviteCode}</Text>
-      </View>
-      <Text style={styles.subtitle}>
-        La verifica del tuo numero di iscrizione all'Albo è manuale da parte nostra — ti contatteremo appena
-        completata.
-      </Text>
-      <View style={{ flex: 1 }} />
-      <ContinueButton label="Ho capito" onPress={() => navigation.navigate("Trust")} />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+        <Text style={styles.title}>Sei registrato, {fullName.split(" ")[0]}!</Text>
+        <Text style={styles.subtitle}>
+          Condividi questo codice con le famiglie che segui — lo inseriranno nell'app, nell'area Genitori, per
+          collegare Lallo alla tua terapia.
+        </Text>
+        <View style={styles.codeBox}>
+          <Text style={styles.codeText}>{inviteCode}</Text>
+        </View>
+        <Text style={styles.subtitle}>
+          La verifica del tuo numero di iscrizione all'Albo è manuale da parte nostra — ti contatteremo appena
+          completata.
+        </Text>
+        <View style={{ flex: 1, minHeight: 20 }} />
+        <ContinueButton label="Ho capito" onPress={() => navigation.navigate("Trust")} />
+      </ScrollView>
     </View>
   );
 }
@@ -139,29 +153,31 @@ export function TherapistCodeReadyScreen({ navigation, route }: any) {
 export function TherapistLinkScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
-      <Text style={styles.title}>Hai un codice del tuo logopedista?</Text>
-      <Text style={styles.subtitle}>
-        Se il tuo logopedista ti ha dato un codice, collegalo per sbloccare
-        gli esercizi assegnati e monitorare i progressi insieme.
-      </Text>
-      <View style={{ flex: 1 }} />
-      <ContinueButton
-        label="Ho un codice"
-        onPress={() => navigation.navigate("TherapistCodeEntry")}
-      />
-      <Pressable
-        onPress={() => navigation.navigate("FindTherapist")}
-        style={styles.secondaryOption}
-      >
-        <Text style={styles.secondaryOptionTitle}>Non ho un logopedista</Text>
-        <Text style={styles.secondaryOptionSubtitle}>
-          Trova un logopedista vicino a te
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+        <Text style={styles.title}>Hai un codice del tuo logopedista?</Text>
+        <Text style={styles.subtitle}>
+          Se il tuo logopedista ti ha dato un codice, collegalo per sbloccare
+          gli esercizi assegnati e monitorare i progressi insieme.
         </Text>
-      </Pressable>
+        <View style={{ flex: 1, minHeight: 20 }} />
+        <ContinueButton
+          label="Ho un codice"
+          onPress={() => navigation.navigate("TherapistCodeEntry")}
+        />
+        <Pressable
+          onPress={() => navigation.navigate("FindTherapist")}
+          style={styles.secondaryOption}
+        >
+          <Text style={styles.secondaryOptionTitle}>Non ho un logopedista</Text>
+          <Text style={styles.secondaryOptionSubtitle}>
+            Trova un logopedista vicino a te
+          </Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 }
@@ -175,19 +191,21 @@ export function TherapistLinkScreen({ navigation }: any) {
 export function FindTherapistScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
-      <Text style={styles.title}>Trova un logopedista vicino a te</Text>
-      <Text style={styles.subtitle}>
-        Per i disturbi fonetico-fonologici nei bambini piccoli il lavoro in presenza con un
-        logopedista fa la differenza. La mappa dei logopedisti Lallo è in arrivo: nel
-        frattempo puoi chiedere indicazioni al pediatra o cercare un logopedista
-        specializzato in disturbi del linguaggio infantile nella tua zona.
-      </Text>
-      <View style={{ flex: 1 }} />
-      <ContinueButton label="Ho capito" onPress={() => navigation.goBack()} />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+        <Text style={styles.title}>Trova un logopedista vicino a te</Text>
+        <Text style={styles.subtitle}>
+          Per i disturbi fonetico-fonologici nei bambini piccoli il lavoro in presenza con un
+          logopedista fa la differenza. La mappa dei logopedisti Lallo è in arrivo: nel
+          frattempo puoi chiedere indicazioni al pediatra o cercare un logopedista
+          specializzato in disturbi del linguaggio infantile nella tua zona.
+        </Text>
+        <View style={{ flex: 1, minHeight: 20 }} />
+        <ContinueButton label="Ho capito" onPress={() => navigation.goBack()} />
+      </ScrollView>
     </View>
   );
 }
@@ -231,19 +249,21 @@ export function TherapistCodeEntryScreen({ navigation }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Text style={styles.title}>Inserisci il codice</Text>
-      <Text style={styles.subtitle}>Te lo ha fornito il tuo logopedista.</Text>
-      <TextInput
-        value={code}
-        onChangeText={setCode}
-        placeholder="Es. 7K4P9M"
-        autoCapitalize="characters"
-        style={styles.input}
-      />
-      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-      <View style={{ flex: 1 }} />
-      {loading ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={code.length < 4} onPress={submit} />}
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>Inserisci il codice</Text>
+        <Text style={styles.subtitle}>Te lo ha fornito il tuo logopedista.</Text>
+        <TextInput
+          value={code}
+          onChangeText={setCode}
+          placeholder="Es. 7K4P9M"
+          autoCapitalize="characters"
+          style={styles.input}
+        />
+        {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+        <View style={{ flex: 1, minHeight: 20 }} />
+        {loading ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={code.length < 4} onPress={submit} />}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -274,26 +294,28 @@ export function ParentEmailScreen({ navigation, route }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
-      <Text style={styles.title}>La tua email</Text>
-      <Text style={styles.subtitle}>
-        Ci serve per salvare i progressi di tuo figlio e permetterti di riprendere da dove avevi lasciato, anche da
-        un altro dispositivo.
-      </Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="La tua email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        style={styles.input}
-      />
-      <View style={{ flex: 1 }} />
-      {saving ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={!isValid} onPress={next} />}
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+        <Text style={styles.title}>La tua email</Text>
+        <Text style={styles.subtitle}>
+          Ci serve per salvare i progressi di tuo figlio e permetterti di riprendere da dove avevi lasciato, anche da
+          un altro dispositivo.
+        </Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="La tua email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          style={styles.input}
+        />
+        <View style={{ flex: 1, minHeight: 20 }} />
+        {saving ? <ActivityIndicator color={COLORS.primary} /> : <ContinueButton disabled={!isValid} onPress={next} />}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -305,32 +327,34 @@ export function ChildNameScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={styles.topRow}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>←</Text>
-        </Pressable>
-        <Pressable onPress={() => navigation.navigate("ChildGender", { ...route?.params, name: "" })}>
-          <Text style={styles.skip}>Salta</Text>
-        </Pressable>
-      </View>
-      <Text style={styles.title}>Come si chiama tuo figlio?</Text>
-      <Text style={styles.subtitle}>
-        O un soprannome. Ci aiuta a personalizzare l'esperienza nell'app.
-      </Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder="Nome"
-        style={styles.input}
-      />
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Image source={require("../../assets/lallo-splash.png")} style={styles.heroImage} resizeMode="contain" />
-      </View>
-      <ContinueButton
-        disabled={name.length === 0}
-        onPress={() => navigation.navigate("ChildGender", { ...route?.params, name })}
-      />
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <View style={styles.topRow}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text style={styles.back}>←</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate("ChildGender", { ...route?.params, name: "" })}>
+            <Text style={styles.skip}>Salta</Text>
+          </Pressable>
+        </View>
+        <Text style={styles.title}>Come si chiama tuo figlio?</Text>
+        <Text style={styles.subtitle}>
+          O un soprannome. Ci aiuta a personalizzare l'esperienza nell'app.
+        </Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder="Nome"
+          style={styles.input}
+        />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", minHeight: 120 }}>
+          <Image source={require("../../assets/lallo-splash.png")} style={styles.heroImage} resizeMode="contain" />
+        </View>
+        <ContinueButton
+          disabled={name.length === 0}
+          onPress={() => navigation.navigate("ChildGender", { ...route?.params, name })}
+        />
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -347,29 +371,31 @@ export function ChildGenderScreen({ navigation, route }: any) {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <View style={styles.topRow}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>←</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.topRow}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text style={styles.back}>←</Text>
+          </Pressable>
+          <Pressable onPress={() => pick("preferisco_non_dire")}>
+            <Text style={styles.skip}>Salta</Text>
+          </Pressable>
+        </View>
+        <Text style={styles.title}>{name} è un bambino o una bambina?</Text>
+        <Text style={styles.subtitle}>
+          Ci aiuta a usare le parole giuste quando parliamo di {name} nell'app.
+        </Text>
+        <View style={{ flex: 1, minHeight: 20 }} />
+        <Pressable style={genderStyles.option} onPress={() => pick("maschio")}>
+          <Text style={genderStyles.optionText}>Un bambino</Text>
         </Pressable>
-        <Pressable onPress={() => pick("preferisco_non_dire")}>
-          <Text style={styles.skip}>Salta</Text>
+        <Pressable style={genderStyles.option} onPress={() => pick("femmina")}>
+          <Text style={genderStyles.optionText}>Una bambina</Text>
         </Pressable>
-      </View>
-      <Text style={styles.title}>{name} è un bambino o una bambina?</Text>
-      <Text style={styles.subtitle}>
-        Ci aiuta a usare le parole giuste quando parliamo di {name} nell'app.
-      </Text>
-      <View style={{ flex: 1 }} />
-      <Pressable style={genderStyles.option} onPress={() => pick("maschio")}>
-        <Text style={genderStyles.optionText}>Un bambino</Text>
-      </Pressable>
-      <Pressable style={genderStyles.option} onPress={() => pick("femmina")}>
-        <Text style={genderStyles.optionText}>Una bambina</Text>
-      </Pressable>
-      <Pressable style={genderStyles.optionGhost} onPress={() => pick("preferisco_non_dire")}>
-        <Text style={genderStyles.optionGhostText}>Preferisco non dirlo</Text>
-      </Pressable>
+        <Pressable style={genderStyles.optionGhost} onPress={() => pick("preferisco_non_dire")}>
+          <Text style={genderStyles.optionGhostText}>Preferisco non dirlo</Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 }
@@ -422,42 +448,44 @@ export function ChildBirthdateScreen({ navigation, route }: any) {
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Text style={styles.back}>←</Text>
-      </Pressable>
-      <Text style={styles.title}>Quando è {bornWord} {name}?</Text>
-      <Text style={styles.subtitle}>
-        Ci serve la data di nascita per proporre esercizi adatti alla sua età.
-      </Text>
-      <View style={styles.dateRow}>
-        <TextInput
-          value={day}
-          onChangeText={(t: string) => setDay(t.replace(/[^0-9]/g, "").slice(0, 2))}
-          placeholder="GG"
-          keyboardType="number-pad"
-          maxLength={2}
-          style={[styles.input, styles.dateInputSmall]}
-        />
-        <TextInput
-          value={month}
-          onChangeText={(t: string) => setMonth(t.replace(/[^0-9]/g, "").slice(0, 2))}
-          placeholder="MM"
-          keyboardType="number-pad"
-          maxLength={2}
-          style={[styles.input, styles.dateInputSmall]}
-        />
-        <TextInput
-          value={year}
-          onChangeText={(t: string) => setYear(t.replace(/[^0-9]/g, "").slice(0, 4))}
-          placeholder="AAAA"
-          keyboardType="number-pad"
-          maxLength={4}
-          style={[styles.input, styles.dateInputLarge]}
-        />
-      </View>
-      <View style={{ flex: 1 }} />
-      <ContinueButton disabled={!isValid} onPress={next} />
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </Pressable>
+        <Text style={styles.title}>Quando è {bornWord} {name}?</Text>
+        <Text style={styles.subtitle}>
+          Ci serve la data di nascita per proporre esercizi adatti alla sua età.
+        </Text>
+        <View style={styles.dateRow}>
+          <TextInput
+            value={day}
+            onChangeText={(t: string) => setDay(t.replace(/[^0-9]/g, "").slice(0, 2))}
+            placeholder="GG"
+            keyboardType="number-pad"
+            maxLength={2}
+            style={[styles.input, styles.dateInputSmall]}
+          />
+          <TextInput
+            value={month}
+            onChangeText={(t: string) => setMonth(t.replace(/[^0-9]/g, "").slice(0, 2))}
+            placeholder="MM"
+            keyboardType="number-pad"
+            maxLength={2}
+            style={[styles.input, styles.dateInputSmall]}
+          />
+          <TextInput
+            value={year}
+            onChangeText={(t: string) => setYear(t.replace(/[^0-9]/g, "").slice(0, 4))}
+            placeholder="AAAA"
+            keyboardType="number-pad"
+            maxLength={4}
+            style={[styles.input, styles.dateInputLarge]}
+          />
+        </View>
+        <View style={{ flex: 1, minHeight: 20 }} />
+        <ContinueButton disabled={!isValid} onPress={next} />
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -519,40 +547,42 @@ export function AvatarPickerScreen({ navigation, route }: any) {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <View style={styles.topRow}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>←</Text>
-        </Pressable>
-      </View>
-      <Text style={styles.title}>Scegli il suo avatar</Text>
-      <Text style={styles.subtitle}>Potrà cambiarlo quando vuole dall'area Genitori.</Text>
-      <View style={avatarStyles.grid}>
-        {AVATAR_OPTIONS.map((opt) => {
-          const selected = opt.id === avatarId;
-          return (
-            <Pressable
-              key={opt.id}
-              onPress={() => setAvatarId(opt.id)}
-              style={[
-                avatarStyles.tile,
-                { width: avatarTileWidth, height: avatarTileWidth / 0.85 },
-                selected && avatarStyles.tileSelected,
-              ]}
-            >
-              <Image source={getAvatarImage(opt.id)} style={avatarStyles.tileImage} resizeMode="contain" />
-              <Text style={[avatarStyles.tileLabel, selected && avatarStyles.tileLabelSelected]}>{opt.label}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-      <View style={{ flex: 1 }} />
-      {saving ? (
-        <ActivityIndicator color={COLORS.primary} />
-      ) : (
-        <ContinueButton onPress={finish} />
-      )}
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.topRow}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text style={styles.back}>←</Text>
+          </Pressable>
+        </View>
+        <Text style={styles.title}>Scegli il suo avatar</Text>
+        <Text style={styles.subtitle}>Potrà cambiarlo quando vuole dall'area Genitori.</Text>
+        <View style={avatarStyles.grid}>
+          {AVATAR_OPTIONS.map((opt) => {
+            const selected = opt.id === avatarId;
+            return (
+              <Pressable
+                key={opt.id}
+                onPress={() => setAvatarId(opt.id)}
+                style={[
+                  avatarStyles.tile,
+                  { width: avatarTileWidth, height: avatarTileWidth / 0.85 },
+                  selected && avatarStyles.tileSelected,
+                ]}
+              >
+                <Image source={getAvatarImage(opt.id)} style={avatarStyles.tileImage} resizeMode="contain" />
+                <Text style={[avatarStyles.tileLabel, selected && avatarStyles.tileLabelSelected]}>{opt.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+        <View style={{ flex: 1, minHeight: 20 }} />
+        {saving ? (
+          <ActivityIndicator color={COLORS.primary} />
+        ) : (
+          <ContinueButton onPress={finish} />
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -570,7 +600,17 @@ const avatarStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
+  // Rifiuto App Store (novembre 2026, guideline 4): "il bottone Continua non era visibile su
+  // iPad" — queste schermate non avevano mai uno ScrollView, solo un flex:1 vuoto a spingere
+  // il bottone in fondo. Funziona finché contenuto+bottone stanno nell'altezza disponibile,
+  // ma su un dispositivo/orientamento con meno spazio verticale (o un iPhone con supportsTablet
+  // false eseguito su iPad, vedi app.json) il bottone finisce semplicemente fuori schermo,
+  // irraggiungibile, senza nessun modo di scorrere per recuperarlo. `container` ora è solo il
+  // guscio esterno (flex:1, nessun padding); il padding è su `scrollContent`, dentro lo
+  // ScrollView che ogni schermata usa — flexGrow:1 mantiene l'aspetto di oggi quando il
+  // contenuto ci sta, ma permette di scorrere quando non ci sta.
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  scrollContent: { flexGrow: 1, padding: 24 },
   heroImage: { width: 200, height: 200 },
   topRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
   back: { fontSize: 24, color: COLORS.jade },
